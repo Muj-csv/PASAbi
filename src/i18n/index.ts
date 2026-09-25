@@ -46,6 +46,25 @@ const en = {
   reporterMany: "reporters",
   spans: "spans",
 
+  // Uplink and dashboard (FR-009, FR-010)
+  dashboard: "Responder dashboard",
+  dashboardIntro:
+    "Rebuilt from uploaded observations using the same rules the phones use.",
+  sinceLastSync: "Since your last visit",
+  nothingChanged: "Nothing has changed since your last visit.",
+  refresh: "Refresh",
+  filterAll: "All categories",
+  notConfigured:
+    "No database configured. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.",
+  loadError: "Could not reach the database.",
+  loading: "Loading",
+  corroborationCaveat:
+    "Corroboration counts distinct devices, not people. One person carrying several phones can inflate it. Stations can resolve false incidents.",
+  uploadNow: "Upload now",
+  uploadedCount: "uploaded",
+  pendingCount: "waiting to upload",
+  uploadOffline: "Nothing uploaded. No database configured on this device.",
+
   // Station board (FR-006 to FR-008)
   stationMode: "Station mode",
   stationLocked: "Enter the station PIN",
@@ -127,6 +146,24 @@ const fil: Strings = {
   reporterOne: "nag-ulat",
   reporterMany: "mga nag-ulat",
   spans: "lawak",
+
+  dashboard: "Dashboard ng responder",
+  dashboardIntro:
+    "Muling binuo mula sa mga na-upload na ulat, gamit ang parehong tuntunin ng mga telepono.",
+  sinceLastSync: "Mula noong huli kang bumisita",
+  nothingChanged: "Walang nagbago mula noong huli kang bumisita.",
+  refresh: "I-refresh",
+  filterAll: "Lahat ng kategorya",
+  notConfigured:
+    "Walang database. Itakda ang EXPO_PUBLIC_SUPABASE_URL at EXPO_PUBLIC_SUPABASE_ANON_KEY.",
+  loadError: "Hindi maabot ang database.",
+  loading: "Naglo-load",
+  corroborationCaveat:
+    "Binibilang ang magkakaibang device, hindi tao. Ang may maraming telepono ay maaaring magpalaki nito. Maaaring tapusin ng istasyon ang maling insidente.",
+  uploadNow: "I-upload na",
+  uploadedCount: "na-upload",
+  pendingCount: "naghihintay i-upload",
+  uploadOffline: "Walang na-upload. Walang database sa teleponong ito.",
 
   stationMode: "Station mode",
   stationLocked: "Ilagay ang PIN ng istasyon",

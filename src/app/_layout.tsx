@@ -18,6 +18,7 @@ export default function RootLayout() {
       <Stack.Screen name="my-data" options={{ title: "Pasabi" }} />
       <Stack.Screen name="station" options={{ title: "Pasabi" }} />
       <Stack.Screen name="incident/[key]" options={{ title: "Pasabi" }} />
+      <Stack.Screen name="dashboard" options={{ title: "Pasabi" }} />
     </Stack>
   );
 }

@@ -8,3 +8,4 @@ export * from "./StorePolicy";
 export * from "./wire";
 export * from "./SyncProtocol";
 export * from "./Snapshot";
+export * from "./upload";

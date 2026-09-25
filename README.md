@@ -35,8 +35,8 @@ At the barangay hall or evacuation centre, a **station** device shows the whole 
 | Phone-to-phone exchange over Bluetooth / Wi-Fi (Multipeer on iOS, Nearby on Android) | Planned |
 | On-device incident engine: grouping, corroboration, urgency with explanation | Done |
 | Station mode: situation board, acknowledge / resolve, "what changed" | Done |
-| Automatic upload when any device gets internet | Planned |
-| Responder web dashboard (list, map, since-last-sync summary) | Planned |
+| Upload to the cloud when a device has internet | Done (manual trigger; automatic on network change is later) |
+| Responder web dashboard (ranked list, category filter, since-last-sync) | Done (map deferred) |
 | Signed observations (tamper resistance) | Planned, supporting |
 | Android background carry service | Planned, supporting |
 | SMS / satellite uplink, photos, cross-platform mesh | Later |

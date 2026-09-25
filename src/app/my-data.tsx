@@ -13,6 +13,7 @@ import { compute, type Incident, type Observation } from "@pasabi/core";
 
 import { CATEGORY_LABELS, plural, useLang, useStrings } from "@/i18n";
 import { deleteOwnObservation, loadObservations } from "@/storage/observations";
+import { uploadPending } from "@/storage/uplink";
 
 function when(epochSeconds: number): string {
   return new Date(epochSeconds * 1000).toLocaleString();
@@ -24,6 +25,7 @@ export default function MyData() {
   const lang = useLang();
   const [observations, setObservations] = useState<Observation[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [uploadNote, setUploadNote] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     const stored = await loadObservations();
@@ -60,8 +62,38 @@ export default function MyData() {
         {plural(incidents.length, t.incidentOne, t.incidentMany)}
       </Text>
 
+      <Pressable
+        style={styles.upload}
+        onPress={() => {
+          void (async () => {
+            const result = await uploadPending();
+            setUploadNote(
+              !result.attempted
+                ? t.uploadOffline
+                : result.error !== null
+                  ? t.loadError + " " + result.error
+                  : String(result.uploaded) +
+                    " " +
+                    t.uploadedCount +
+                    ", " +
+                    String(result.pending) +
+                    " " +
+                    t.pendingCount,
+            );
+            await reload();
+          })();
+        }}
+      >
+        <Text style={styles.uploadText}>{t.uploadNow}</Text>
+      </Pressable>
+      {uploadNote ? <Text style={styles.muted}>{uploadNote}</Text> : null}
+
       <Link href="/" style={styles.link}>
         {t.newObservation}
+      </Link>
+
+      <Link href="/dashboard" style={styles.link}>
+        {t.dashboard}
       </Link>
 
       {sorted.length === 0 ? (
@@ -107,6 +139,13 @@ const styles = StyleSheet.create({
   page: { padding: 16, gap: 12, paddingBottom: 48 },
   summary: { fontSize: 18, fontWeight: "700" },
   link: { fontSize: 16, color: "#1566c0", paddingVertical: 4 },
+  upload: {
+    backgroundColor: "#1566c0",
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  uploadText: { color: "#ffffff", fontWeight: "700", fontSize: 15 },
   card: {
     borderWidth: 1,
     borderColor: "#d8dde3",

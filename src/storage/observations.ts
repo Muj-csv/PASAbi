@@ -96,6 +96,28 @@ export function deleteOwnObservation(id: string): Promise<Observation[]> {
   });
 }
 
+/**
+ * FR-009: record that these observations reached the server.
+ *
+ * This does not contradict BR-002. `uploaded` is a local-only field
+ * describing this device's relationship to an observation, not part of the
+ * observation itself, and it never travels (see toServerRow). It is also
+ * load-bearing for BR-008: own observations are protected from eviction only
+ * until they are uploaded, so failing to mark them would slowly fill a
+ * resident store with data it is not allowed to evict.
+ */
+export function markUploaded(ids: string[]): Promise<Observation[]> {
+  const wanted = new Set(ids);
+  return serialize(async () => {
+    const now = nowSeconds();
+    const existing = await loadObservations();
+    const marked = existing.map((o) =>
+      wanted.has(o.id) ? { ...o, uploaded: true } : o,
+    );
+    return persist(marked, now);
+  });
+}
+
 /** Re-runs expiry and eviction without adding anything. */
 export function refreshStore(): Promise<Observation[]> {
   return serialize(async () => persist(await loadObservations(), nowSeconds()));

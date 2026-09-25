@@ -7,7 +7,7 @@
 | D-003 | Grouping constants R = 150 m, T = 6 h, urgency weights (PRD BR-005) | Proposed, tune after the field test | IncidentEngine |
 | D-004 | Incidents derived on every device, never transmitted (ADR-002) | Proposed | Core design |
 | D-005 | Rule-based urgency, no ML (ADR-004) | Proposed | Ranking |
-| D-006 | Hosted Postgres for uplink: **Supabase vs Vercel Postgres** | **Open** — Vercel Postgres is now plausible since the web build already deploys there | Uplink, dashboard |
+| D-006 | Hosted Postgres for uplink: **Supabase** | **Accepted** (2026-09-26). Supabase ships PostgREST and row-level security, so a phone and a browser can talk to Postgres directly with a public anon key. Vercel Postgres (Neon) exposes a connection string, which cannot ship in a client bundle and would have forced the serverless API layer ADR-003 rejects | Uplink, dashboard |
 | D-007 | ~~Engine in Kotlin + TypeScript with shared vectors (ADR-005)~~ | **Superseded by D-014** — one TS engine, written once | Dashboard |
 | D-008 | Server retention: 30 days after the event | Proposed | Data |
 | D-009 | Team split with Sinopia (GIBC V2), same week | **Open** | Staffing |
