@@ -1,18 +1,23 @@
-# Phase 0: Foundation + radio proof
+# Phase 0: Foundation
 
-**Goal:** repo and CI in place; two physical phones exchange bytes over Nearby Connections with airplane mode on.
+**Goal:** an Expo monorepo that runs on iOS, Android and web, with the web build live on Vercel and CI green.
 
 ## Tasks
-1. Android project (Kotlin, Compose, minSdk 29) with the package layout in `CLAUDE.md`; `dashboard/` Vite + TS skeleton; `shared/` folder.
-2. GitHub Actions: `testDebugUnitTest`, `assembleDebug`, and `npm test` in `dashboard/`.
-3. Debug screen: Advertise / Discover / Send "hello" (`Strategy.P2P_CLUSTER`, service ID `ph.pasabi.v1`).
-4. Runtime permissions (ARCHITECTURE §7) and a "turn on Bluetooth/Wi-Fi" prompt when radios are off.
+1. Expo project (TypeScript, Expo Router, React Native Web) with the package layout in `CLAUDE.md`: `packages/core/`, `packages/transport/`, `src/app/`.
+2. `packages/core/` wired as a pure-TS workspace package with a test runner. It must not be able to import `react`, `react-native` or DOM types — enforce with tsconfig/lint, not with good intentions.
+3. GitHub Actions: `npm test`, typecheck, and a web build.
+4. Deploy the web build to Vercel and put the preview URL in the README.
+5. Placeholder screens only, enough to prove routing works on all three targets.
 
 ## Acceptance
-- "hello" both ways between two phones (ideally different brands) in airplane mode with Bluetooth/Wi-Fi on; note the result in `docs/FIELD_TEST.md`.
-- CI green.
+- `npx expo start` runs on a simulator; `npx expo start --web` runs in a browser.
+- The Vercel preview URL loads and the team can open it.
+- CI green on a pull request.
 
 ## Don't touch
-Room, observation model, real UI.
+The engine, the observation model, transports, real UI.
 
-Stop and report which phone pairs worked.
+## In parallel, not part of this phase
+Start **Apple Developer enrolment** (D-011). It takes 24–48 h and blocks nothing else.
+
+Stop and report the Vercel URL and the CI run.
