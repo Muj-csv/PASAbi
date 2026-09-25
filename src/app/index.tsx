@@ -79,15 +79,32 @@ export default function NewObservation() {
   const [areaText, setAreaText] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [needArea, setNeedArea] = useState(false);
 
   // R-7: a check-in is counted per area, so it always needs one. Without a
   // GPS fix, area text is the only thing that can group an observation.
-  const areaRequired = category === SAFE_CHECKIN || fixState === "none";
+  // Keyed on whether a fix actually exists, not on needArea alone, so a fix
+  // arriving late clears the requirement instead of leaving submit stuck.
+  const areaRequired =
+    category === SAFE_CHECKIN ||
+    (fix === null && (fixState === "none" || needArea));
   const areaMissing = areaRequired && areaText.trim().length === 0;
   const canSubmit = category !== null && !areaMissing && !busy;
 
   const submit = async (): Promise<void> => {
     if (category === null || areaMissing) return;
+
+    // Field visibility cannot cover the window where location is still
+    // resolving: areaRequired is false there, so submit is enabled, and an
+    // observation saved in that window would carry neither a fix nor an area
+    // and could never group with anything. Validate the real condition, at
+    // the moment it actually matters.
+    if (fix === null && areaText.trim().length === 0) {
+      setNeedArea(true);
+      setMessage(t.areaNeededToSave);
+      return;
+    }
+
     setBusy(true);
     setMessage(null);
     try {

@@ -5,3 +5,5 @@ export * from "./types";
 export * from "./rules";
 export * from "./IncidentEngine";
 export * from "./StorePolicy";
+export * from "./wire";
+export * from "./SyncProtocol";

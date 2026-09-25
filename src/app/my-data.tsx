@@ -11,7 +11,7 @@ import {
 
 import { compute, type Incident, type Observation } from "@pasabi/core";
 
-import { CATEGORY_LABELS, useLang, useStrings } from "@/i18n";
+import { CATEGORY_LABELS, plural, useLang, useStrings } from "@/i18n";
 import { deleteOwnObservation, loadObservations } from "@/storage/observations";
 
 function when(epochSeconds: number): string {
@@ -55,8 +55,9 @@ export default function MyData() {
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <Text style={styles.summary}>
-        {t.carrying} {observations.length} {t.observationsWord} ·{" "}
-        {incidents.length} {t.incidentsWord}
+        {t.carrying}{" "}
+        {plural(observations.length, t.observationOne, t.observationMany)} ·{" "}
+        {plural(incidents.length, t.incidentOne, t.incidentMany)}
       </Text>
 
       <Link href="/" style={styles.link}>
@@ -86,7 +87,7 @@ export default function MyData() {
           ) : null}
           {typeof o.people === "number" ? (
             <Text style={styles.muted}>
-              {t.peopleAffected}: {o.people}
+              {t.peopleAffectedShort}: {o.people}
             </Text>
           ) : null}
           {o.own ? (

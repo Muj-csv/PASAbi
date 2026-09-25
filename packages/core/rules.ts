@@ -105,3 +105,14 @@ export const RATE_LIMIT_WINDOW_SECONDS = 3600;
  */
 export const MAX_OWN_OBSERVATIONS =
   RATE_LIMIT_PER_HOUR * (TTL_SECONDS / RATE_LIMIT_WINDOW_SECONDS);
+
+// ------------------------------------------- Encounter sync (ARCHITECTURE 4)
+
+/** FR-005 and NFR-004: one encounter gets ten seconds. */
+export const SYNC_BUDGET_MS = 10000;
+
+/** Skip a peer for two minutes after a sync that exchanged nothing. */
+export const PEER_COOLDOWN_MS = 120000;
+
+/** Ceiling for a single payload. Adapters may report less; never more. */
+export const MAX_PAYLOAD_BYTES = 30000;

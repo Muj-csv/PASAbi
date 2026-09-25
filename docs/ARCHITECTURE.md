@@ -26,6 +26,7 @@ flowchart LR
 | `packages/core/rules.ts` | All constants: categories, R, T, weights, capacities, TTLs | **Single source of truth.** One language, so no mirror file and no parity test |
 | `packages/core/IncidentEngine.ts` | Observations → incidents, corroboration, status, urgency + breakdown | Pure TS, no platform imports; tested against `test-vectors/` |
 | `packages/core/StorePolicy.ts` | Eviction and expiry (BR-008/009), rate limit (BR-010) | Pure TS |
+| `packages/core/wire.ts` | Message framing and binary UUID encoding (R-9) | Pure TS |
 | `packages/core/SyncProtocol.ts` | HELLO → SUMMARY → BATCH → BYE; urgency-ordered transfer | Pure TS, driven through the `Transport` interface; tested with the mock |
 | `packages/transport/` | `Transport` interface + `multipeer` (iOS), `nearby` (Android), `mock` (web, tests) | ADR-007 |
 | `src/storage/` | Observation store (AsyncStorage JSON blob, D-015) + `Uplink` | Every write runs `StorePolicy` before persisting |
