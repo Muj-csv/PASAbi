@@ -7,3 +7,4 @@ export * from "./IncidentEngine";
 export * from "./StorePolicy";
 export * from "./wire";
 export * from "./SyncProtocol";
+export * from "./Snapshot";

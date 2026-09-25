@@ -34,7 +34,7 @@ At the barangay hall or evacuation centre, a **station** device shows the whole 
 | Structured observation form (works fully offline, English + Filipino) | Done |
 | Phone-to-phone exchange over Bluetooth / Wi-Fi (Multipeer on iOS, Nearby on Android) | Planned |
 | On-device incident engine: grouping, corroboration, urgency with explanation | Done |
-| Station mode: situation board, acknowledge / resolve, "what changed" | Planned |
+| Station mode: situation board, acknowledge / resolve, "what changed" | Done |
 | Automatic upload when any device gets internet | Planned |
 | Responder web dashboard (list, map, since-last-sync summary) | Planned |
 | Signed observations (tamper resistance) | Planned, supporting |

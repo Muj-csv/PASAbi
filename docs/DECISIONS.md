@@ -18,6 +18,7 @@
 | D-014 | React Native (Expo) + React Native Web, one codebase, **iOS-first, not iOS-only** (ADR-006) | **Accepted** (leader's instruction, 2026-09-25) | Whole app |
 | D-015 | Local store is a single JSON blob in AsyncStorage, not SQLite | Proposed — a 3,000-observation station store is roughly 900 KB, well inside limits, and the engine already loads the full set into memory. Upgrade to expo-sqlite if the store outgrows it | Storage |
 | D-016 | Vercel hosts the **web build as the team preview surface and the responder dashboard**; native builds ship through EAS | **Assumed, needs confirmation** — this is the reading of "Vercel will be used for testing" that the rewritten docs are built on | Deployment |
+| D-017 | BR-010 rate limit counts REPORT observations only; STATUS actions are exempt | **Accepted** — the limit is anti-spam for reports, and counting acknowledgements would lock a station operator out of their own board after six, penalising the primary user with a rule aimed at flooders | BR-010, FR-008 |
 
 ## Package R (applied 2026-09-25)
 

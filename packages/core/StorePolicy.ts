@@ -42,6 +42,16 @@ export function expire(
 
 // ---------------------------------------------------------------- BR-010
 
+/**
+ * D-017: REPORT observations only.
+ *
+ * BR-010 exists to stop one device flooding the network with reports. STATUS
+ * observations are operator actions, and a station working through a busy
+ * board would be locked out after six acknowledgements, which penalises the
+ * primary user (PRD section 3) with a rule aimed at spam. Status actions are
+ * inherently bounded anyway: they can only reference incidents that already
+ * exist.
+ */
 export function ownObservationsInWindow(
   observations: Observation[],
   deviceId: string,
@@ -50,6 +60,7 @@ export function ownObservationsInWindow(
   const since = now - RATE_LIMIT_WINDOW_SECONDS;
   let count = 0;
   for (const o of observations) {
+    if (o.type !== "REPORT") continue;
     if (o.device_id === deviceId && o.created_at > since) count += 1;
   }
   return count;
