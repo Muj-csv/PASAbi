@@ -1,0 +1,31 @@
+{
+  "name": "Three same-spot FLOOD reports from three devices form one strongly corroborated incident",
+  "why": "PRD section 10 acceptance case. base 30 + corroboration 20 + people 0 + unacknowledged 10 + staleness 0 = 60",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000001", "type": "REPORT", "category": "FLOOD", "device_id": "dev-a", "lat": 14.5995, "lon": 120.9842, "created_at": 1758998800 },
+    { "id": "00000000-0000-4000-8000-000000000002", "type": "REPORT", "category": "FLOOD", "device_id": "dev-b", "lat": 14.59995, "lon": 120.9842, "created_at": 1758999100 },
+    { "id": "00000000-0000-4000-8000-000000000003", "type": "REPORT", "category": "FLOOD", "device_id": "dev-c", "lat": 14.5995, "lon": 120.984664, "created_at": 1758999400 }
+  ],
+  "expected_incidents": [
+    {
+      "key": "00000000-0000-4000-8000-000000000001",
+      "category": "FLOOD",
+      "observationIds": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000003"
+      ],
+      "independentReporters": 3,
+      "corroboration": "strongly_corroborated",
+      "peopleAffected": 0,
+      "firstSeen": 1758998800,
+      "lastSeen": 1758999400,
+      "centroid": { "lat": 14.59965, "lon": 120.9843547 },
+      "spatialExtentM": 71,
+      "status": "open",
+      "score": 60,
+      "breakdown": { "base": 30, "corroboration": 20, "people": 0, "unacknowledged": 10, "staleness": 0, "total": 60 }
+    }
+  ]
+}

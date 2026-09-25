@@ -1,5 +1,7 @@
-// Pure TypeScript. No react, react-native, DOM or platform imports (CLAUDE.md).
-// The incident engine, rules and store policy land in Phase 1.
+// Public surface of the pure-TypeScript core.
+// No react, no react-native, no DOM anywhere below this point (CLAUDE.md).
 
-/** Wire-protocol version carried in every HELLO. See ARCHITECTURE section 4. */
-export const PROTO_VERSION = 1;
+export * from "./types";
+export * from "./rules";
+export * from "./IncidentEngine";
+export * from "./StorePolicy";

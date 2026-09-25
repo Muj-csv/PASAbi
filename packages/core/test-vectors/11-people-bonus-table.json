@@ -1,0 +1,29 @@
+{
+  "name": "R-3: the people bonus comes from the integer lookup table and caps at 15 people",
+  "why": "Max reported is 20, which clamps to index 15 and scores +20. No floating point anywhere. base 20 + 10 + 20 + 10 + 0 = 60",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000001", "type": "REPORT", "category": "WATER_FOOD", "device_id": "dev-a", "people": 2, "lat": 14.5995, "lon": 120.9842, "created_at": 1758998800 },
+    { "id": "00000000-0000-4000-8000-000000000002", "type": "REPORT", "category": "WATER_FOOD", "device_id": "dev-b", "people": 20, "lat": 14.59995, "lon": 120.9842, "created_at": 1758999400 }
+  ],
+  "expected_incidents": [
+    {
+      "key": "00000000-0000-4000-8000-000000000001",
+      "category": "WATER_FOOD",
+      "observationIds": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002"
+      ],
+      "independentReporters": 2,
+      "corroboration": "corroborated",
+      "peopleAffected": 20,
+      "firstSeen": 1758998800,
+      "lastSeen": 1758999400,
+      "centroid": { "lat": 14.599725, "lon": 120.9842 },
+      "spatialExtentM": 50,
+      "status": "open",
+      "score": 60,
+      "breakdown": { "base": 20, "corroboration": 10, "people": 20, "unacknowledged": 10, "staleness": 0, "total": 60 }
+    }
+  ]
+}

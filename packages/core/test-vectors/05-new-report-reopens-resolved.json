@@ -1,0 +1,30 @@
+{
+  "name": "A newer REPORT reopens a resolved incident",
+  "why": "BR-007. The RESOLVE now predates the latest report, so it no longer counts and the incident is open again with two reporters.",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000001", "type": "REPORT", "category": "FLOOD", "device_id": "dev-a", "lat": 14.5995, "lon": 120.9842, "created_at": 1758992800 },
+    { "id": "00000000-0000-4000-8000-000000000002", "type": "STATUS", "action": "RESOLVE", "device_id": "dev-s", "refs": ["00000000-0000-4000-8000-000000000001"], "created_at": 1758994600 },
+    { "id": "00000000-0000-4000-8000-000000000003", "type": "REPORT", "category": "FLOOD", "device_id": "dev-b", "lat": 14.59995, "lon": 120.9842, "created_at": 1758998200 }
+  ],
+  "expected_incidents": [
+    {
+      "key": "00000000-0000-4000-8000-000000000001",
+      "category": "FLOOD",
+      "observationIds": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000003"
+      ],
+      "independentReporters": 2,
+      "corroboration": "corroborated",
+      "peopleAffected": 0,
+      "firstSeen": 1758992800,
+      "lastSeen": 1758998200,
+      "centroid": { "lat": 14.599725, "lon": 120.9842 },
+      "spatialExtentM": 50,
+      "status": "open",
+      "score": 50,
+      "breakdown": { "base": 30, "corroboration": 10, "people": 0, "unacknowledged": 10, "staleness": 0, "total": 50 }
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "SAFE_CHECKIN observations never form incidents and are counted per area",
+  "why": "BR-006. R-7 requires area_text on a check-in, which is what the per-area count is keyed on. Only the FLOOD report becomes an incident.",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000001", "type": "REPORT", "category": "SAFE_CHECKIN", "device_id": "dev-a", "area_text": "Purok 3", "created_at": 1758998200 },
+    { "id": "00000000-0000-4000-8000-000000000002", "type": "REPORT", "category": "SAFE_CHECKIN", "device_id": "dev-b", "area_text": "purok 3", "created_at": 1758998800 },
+    { "id": "00000000-0000-4000-8000-000000000003", "type": "REPORT", "category": "FLOOD", "device_id": "dev-c", "lat": 14.5995, "lon": 120.9842, "created_at": 1758999400 }
+  ],
+  "expected_safe_counts": { "purok 3": 2 },
+  "expected_incidents": [
+    {
+      "key": "00000000-0000-4000-8000-000000000003",
+      "category": "FLOOD",
+      "observationIds": ["00000000-0000-4000-8000-000000000003"],
+      "independentReporters": 1,
+      "corroboration": "single",
+      "peopleAffected": 0,
+      "firstSeen": 1758999400,
+      "lastSeen": 1758999400,
+      "centroid": { "lat": 14.5995, "lon": 120.9842 },
+      "spatialExtentM": 0,
+      "status": "open",
+      "score": 40,
+      "breakdown": { "base": 30, "corroboration": 0, "people": 0, "unacknowledged": 10, "staleness": 0, "total": 40 }
+    }
+  ]
+}

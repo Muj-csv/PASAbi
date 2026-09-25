@@ -1,0 +1,43 @@
+{
+  "name": "R-2: a stale acknowledged incident clamps to 0 and still sorts above a resolved one",
+  "why": "SHELTER base 15 minus 20 staleness would be -5, which used to sort BELOW resolved incidents scoring 0. Open scores now clamp at 0, and resolved sorts last by status rather than by score value.",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000001", "type": "REPORT", "category": "SHELTER", "device_id": "dev-a", "lat": 14.5995, "lon": 120.9842, "created_at": 1758910000 },
+    { "id": "00000000-0000-4000-8000-000000000002", "type": "STATUS", "action": "ACK", "device_id": "dev-s", "refs": ["00000000-0000-4000-8000-000000000001"], "created_at": 1758913600 },
+    { "id": "00000000-0000-4000-8000-000000000003", "type": "REPORT", "category": "MEDICAL", "device_id": "dev-b", "lat": 14.62, "lon": 120.9842, "created_at": 1758892000 },
+    { "id": "00000000-0000-4000-8000-000000000004", "type": "STATUS", "action": "RESOLVE", "device_id": "dev-s", "refs": ["00000000-0000-4000-8000-000000000003"], "created_at": 1758928000 }
+  ],
+  "expected_incidents": [
+    {
+      "key": "00000000-0000-4000-8000-000000000001",
+      "category": "SHELTER",
+      "observationIds": ["00000000-0000-4000-8000-000000000001"],
+      "independentReporters": 1,
+      "corroboration": "single",
+      "peopleAffected": 0,
+      "firstSeen": 1758910000,
+      "lastSeen": 1758910000,
+      "centroid": { "lat": 14.5995, "lon": 120.9842 },
+      "spatialExtentM": 0,
+      "status": "acknowledged",
+      "score": 0,
+      "breakdown": { "base": 15, "corroboration": 0, "people": 0, "unacknowledged": 0, "staleness": -20, "total": -5 }
+    },
+    {
+      "key": "00000000-0000-4000-8000-000000000003",
+      "category": "MEDICAL",
+      "observationIds": ["00000000-0000-4000-8000-000000000003"],
+      "independentReporters": 1,
+      "corroboration": "single",
+      "peopleAffected": 0,
+      "firstSeen": 1758892000,
+      "lastSeen": 1758892000,
+      "centroid": { "lat": 14.62, "lon": 120.9842 },
+      "spatialExtentM": 0,
+      "status": "resolved",
+      "score": 0,
+      "breakdown": { "base": 50, "corroboration": 0, "people": 0, "unacknowledged": 0, "staleness": -20, "total": 30 }
+    }
+  ]
+}
