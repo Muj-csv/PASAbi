@@ -226,6 +226,10 @@ export default function NewObservation() {
       <Link href="/my-data" style={styles.link}>
         {t.myData}
       </Link>
+
+      <Link href="/station" style={styles.link}>
+        {t.stationMode}
+      </Link>
     </ScrollView>
   );
 }

@@ -4,10 +4,30 @@ import {
   applyPolicy,
   canCreate,
   CAPACITY_RESIDENT,
+  statusCreatedAt,
   type Observation,
+  type StatusAction,
 } from "@pasabi/core";
 
+import { newObservationId } from "./device";
+
 const OBSERVATIONS_KEY = "pasabi.observations.v1";
+
+/**
+ * BR-008: 500 on a resident phone, 3,000 on a station. Station mode sets this
+ * (src/storage/station.ts) and restores it at startup, so a device that was a
+ * station before a restart does not silently evict down to resident size on
+ * its first write.
+ */
+let capacity: number = CAPACITY_RESIDENT;
+
+export function setStoreCapacity(next: number): void {
+  capacity = next;
+}
+
+export function storeCapacity(): number {
+  return capacity;
+}
 
 /**
  * D-015: the whole store is one JSON blob. A station at capacity is roughly
@@ -51,7 +71,7 @@ async function persist(
   observations: Observation[],
   now: number,
 ): Promise<Observation[]> {
-  const kept = applyPolicy(observations, CAPACITY_RESIDENT, now);
+  const kept = applyPolicy(observations, capacity, now);
   await AsyncStorage.setItem(OBSERVATIONS_KEY, JSON.stringify(kept));
   return kept;
 }
@@ -84,4 +104,39 @@ export function refreshStore(): Promise<Observation[]> {
 /** BR-010, checked before the form will accept a new observation. */
 export async function canCreateNow(deviceId: string): Promise<boolean> {
   return canCreate(await loadObservations(), deviceId, nowSeconds());
+}
+
+/**
+ * FR-008: acknowledge or resolve, as a STATUS observation that spreads like
+ * any other. `created_at` goes through the BR-007 clamp so a station whose
+ * clock is behind cannot produce a status that looks older than the report it
+ * answers, which would leave the incident stuck open forever (R-6).
+ */
+export function addStatusObservation(
+  action: StatusAction,
+  refs: string[],
+  deviceId: string,
+): Promise<Observation[]> {
+  return serialize(async () => {
+    const deviceNow = nowSeconds();
+    const existing = await loadObservations();
+    const referenced = existing.filter(
+      (o) => o.type === "REPORT" && refs.includes(o.id),
+    );
+    const createdAt = statusCreatedAt(deviceNow, referenced);
+
+    const status: Observation = {
+      id: newObservationId(),
+      type: "STATUS",
+      action,
+      refs,
+      device_id: deviceId,
+      created_at: createdAt,
+      received_at: deviceNow,
+      hops: 0,
+      own: true,
+      uploaded: false,
+    };
+    return persist([...existing, status], deviceNow);
+  });
 }

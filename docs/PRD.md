@@ -79,7 +79,7 @@ The network is still useful with only stations and a few volunteers.
 | BR-007 | Status actions (acknowledge, resolve) are themselves observations of type `STATUS` that reference observation IDs. They apply to the incident containing those IDs. A newer non-status observation added to a resolved incident reopens it. A STATUS observation's `created_at` is set at creation to `max(device clock, latest referenced REPORT created_at + 1 s)`, so clock skew cannot make a status appear to precede what it answers. |
 | BR-008 | Storage capacity: resident **500** observations, station 3,000. When full, evict in this order: `SAFE_CHECKIN` first; then observations of the lowest-urgency incident, but always keep that incident's earliest and latest observations; then the oldest. A device never evicts its own un-uploaded observations **while any other candidate exists**; as a last resort it evicts its own oldest un-uploaded observation rather than refuse to record a new one. |
 | BR-009 | Observations expire 72 h after creation (`SAFE_CHECKIN`: 24 h). |
-| BR-010 | A device may create at most 6 observations per hour. |
+| BR-010 | A device may create at most 6 **REPORT** observations per hour. STATUS observations are operator actions and are not rate limited (D-017). |
 
 BR-009 and BR-010 together bound a device's own observations at **432**, below the 500 resident capacity, so the store cannot deadlock on un-evictable own data. The last-resort rung in BR-008 preserves that invariant if either constant changes.
 
