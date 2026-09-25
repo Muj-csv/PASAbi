@@ -13,11 +13,14 @@ const en = {
   newObservation: "New observation",
   categoryPrompt: "What is happening?",
   peopleAffected: "People affected (optional)",
+  /** The same field read back rather than filled in, so no "(optional)". */
+  peopleAffectedShort: "People affected",
   note: "Short note (optional)",
   noteCounter: "characters left",
   areaLabel: "Purok or landmark",
   areaRequiredNoGps: "No GPS fix, so a purok or landmark is required.",
   areaRequiredCheckin: "A safe check-in always needs a purok or landmark.",
+  areaNeededToSave: "Still no location. Name the purok or landmark to save.",
   locating: "Getting location",
   locationFound: "Location attached",
   locationNone: "No location. Name the purok or landmark instead.",
@@ -28,8 +31,10 @@ const en = {
   myData: "My data",
   back: "Back",
   carrying: "Carrying",
-  observationsWord: "observations",
-  incidentsWord: "incidents",
+  observationOne: "observation",
+  observationMany: "observations",
+  incidentOne: "incident",
+  incidentMany: "incidents",
   mine: "Mine",
   carried: "Carried",
   deleteAction: "Delete",
@@ -49,12 +54,15 @@ const fil: Strings = {
   newObservation: "Bagong ulat",
   categoryPrompt: "Ano ang nangyayari?",
   peopleAffected: "Bilang ng apektado (opsyonal)",
+  peopleAffectedShort: "Bilang ng apektado",
   note: "Maikling paliwanag (opsyonal)",
   noteCounter: "natitirang titik",
   areaLabel: "Purok o palatandaan",
   areaRequiredNoGps: "Walang GPS, kaya kailangan ang purok o palatandaan.",
   areaRequiredCheckin:
     "Ang ligtas na ulat ay laging kailangan ng purok o palatandaan.",
+  areaNeededToSave:
+    "Wala pa ring lokasyon. Ilagay ang purok o palatandaan para maitala.",
   locating: "Kinukuha ang lokasyon",
   locationFound: "Nakakabit ang lokasyon",
   locationNone: "Walang lokasyon. Ilagay ang purok o palatandaan.",
@@ -65,8 +73,11 @@ const fil: Strings = {
   myData: "Aking datos",
   back: "Balik",
   carrying: "Dala",
-  observationsWord: "mga ulat",
-  incidentsWord: "mga insidente",
+  // Filipino does not inflect the noun; "mga" is what marks the plural.
+  observationOne: "ulat",
+  observationMany: "mga ulat",
+  incidentOne: "insidente",
+  incidentMany: "mga insidente",
   mine: "Akin",
   carried: "Dala-dala",
   deleteAction: "Burahin",
@@ -139,4 +150,15 @@ export function useLang(): Lang {
 
 export function useStrings(): Strings {
   return TABLE[useLang()];
+}
+
+/**
+ * "1 observation" / "2 observations", and in Filipino "1 ulat" / "2 mga ulat".
+ *
+ * ponytail: a two-form rule, not Intl.PluralRules. English and Filipino both
+ * only need one and many here. Reach for Intl if a language with dual or
+ * paucal forms is ever added.
+ */
+export function plural(count: number, one: string, many: string): string {
+  return String(count) + " " + (count === 1 ? one : many);
 }
