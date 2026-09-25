@@ -1,0 +1,33 @@
+{
+  "name": "D-010: a four-hop chain merges into one incident spanning 400 m",
+  "why": "Consecutive reports are 133 m apart, inside R, but the first and last are 400 m apart and never link directly. Connected components make them one incident. This documents the known limit rather than hiding it. spatialExtentM is what the UI shows so an operator can spot a bad merge. base 30 + corroboration 30 capped + 0 + 10 + 0 = 70",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000001", "type": "REPORT", "category": "FLOOD", "device_id": "dev-a", "lat": 14.5995, "lon": 120.9842, "created_at": 1758996400 },
+    { "id": "00000000-0000-4000-8000-000000000002", "type": "REPORT", "category": "FLOOD", "device_id": "dev-b", "lat": 14.6007, "lon": 120.9842, "created_at": 1758997300 },
+    { "id": "00000000-0000-4000-8000-000000000003", "type": "REPORT", "category": "FLOOD", "device_id": "dev-c", "lat": 14.6019, "lon": 120.9842, "created_at": 1758998200 },
+    { "id": "00000000-0000-4000-8000-000000000004", "type": "REPORT", "category": "FLOOD", "device_id": "dev-d", "lat": 14.6031, "lon": 120.9842, "created_at": 1758999100 }
+  ],
+  "expected_incidents": [
+    {
+      "key": "00000000-0000-4000-8000-000000000001",
+      "category": "FLOOD",
+      "observationIds": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000003",
+        "00000000-0000-4000-8000-000000000004"
+      ],
+      "independentReporters": 4,
+      "corroboration": "strongly_corroborated",
+      "peopleAffected": 0,
+      "firstSeen": 1758996400,
+      "lastSeen": 1758999100,
+      "centroid": { "lat": 14.6013, "lon": 120.9842 },
+      "spatialExtentM": 400,
+      "status": "open",
+      "score": 70,
+      "breakdown": { "base": 30, "corroboration": 30, "people": 0, "unacknowledged": 10, "staleness": 0, "total": 70 }
+    }
+  ]
+}

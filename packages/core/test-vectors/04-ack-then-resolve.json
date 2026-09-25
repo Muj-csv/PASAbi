@@ -1,0 +1,27 @@
+{
+  "name": "An ACK followed by a RESOLVE leaves the incident resolved",
+  "why": "BR-007. The RESOLVE was created after the latest REPORT, so it sticks. Resolved scores exactly 0, but the breakdown still shows the real terms.",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000001", "type": "REPORT", "category": "MEDICAL", "device_id": "dev-a", "lat": 14.5995, "lon": 120.9842, "created_at": 1758992800 },
+    { "id": "00000000-0000-4000-8000-000000000002", "type": "STATUS", "action": "ACK", "device_id": "dev-s", "refs": ["00000000-0000-4000-8000-000000000001"], "created_at": 1758994600 },
+    { "id": "00000000-0000-4000-8000-000000000003", "type": "STATUS", "action": "RESOLVE", "device_id": "dev-s", "refs": ["00000000-0000-4000-8000-000000000001"], "created_at": 1758996400 }
+  ],
+  "expected_incidents": [
+    {
+      "key": "00000000-0000-4000-8000-000000000001",
+      "category": "MEDICAL",
+      "observationIds": ["00000000-0000-4000-8000-000000000001"],
+      "independentReporters": 1,
+      "corroboration": "single",
+      "peopleAffected": 0,
+      "firstSeen": 1758992800,
+      "lastSeen": 1758992800,
+      "centroid": { "lat": 14.5995, "lon": 120.9842 },
+      "spatialExtentM": 0,
+      "status": "resolved",
+      "score": 0,
+      "breakdown": { "base": 50, "corroboration": 0, "people": 0, "unacknowledged": 0, "staleness": -2, "total": 48 }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "Two observations without a GPS fix group by normalized area text",
+  "why": "BR-003 branch b. Normalization lowercases, trims and collapses whitespace. base 20 + 10 + 0 + 10 + 0 = 40",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000001", "type": "REPORT", "category": "WATER_FOOD", "device_id": "dev-a", "area_text": "Purok 3", "created_at": 1758996400 },
+    { "id": "00000000-0000-4000-8000-000000000002", "type": "REPORT", "category": "WATER_FOOD", "device_id": "dev-b", "area_text": "  purok   3 ", "created_at": 1758998200 }
+  ],
+  "expected_incidents": [
+    {
+      "key": "00000000-0000-4000-8000-000000000001",
+      "category": "WATER_FOOD",
+      "observationIds": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002"
+      ],
+      "independentReporters": 2,
+      "corroboration": "corroborated",
+      "peopleAffected": 0,
+      "firstSeen": 1758996400,
+      "lastSeen": 1758998200,
+      "areaText": "Purok 3",
+      "spatialExtentM": 0,
+      "status": "open",
+      "score": 40,
+      "breakdown": { "base": 20, "corroboration": 10, "people": 0, "unacknowledged": 10, "staleness": 0, "total": 40 }
+    }
+  ]
+}

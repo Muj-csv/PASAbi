@@ -3,13 +3,34 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "@pasabi/core": ["./packages/core"],
-      "@pasabi/core/*": ["./packages/core/*"],
-      "@pasabi/transport": ["./packages/transport"],
-      "@pasabi/transport/*": ["./packages/transport/*"]
-    }
+      "@/*": [
+        "./src/*"
+      ],
+      "@pasabi/core": [
+        "./packages/core"
+      ],
+      "@pasabi/core/*": [
+        "./packages/core/*"
+      ],
+      "@pasabi/transport": [
+        "./packages/transport"
+      ],
+      "@pasabi/transport/*": [
+        "./packages/transport/*"
+      ]
+    },
+    "types": [
+      "node"
+    ]
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

@@ -1,0 +1,43 @@
+{
+  "name": "R-1: two observations that both have a GPS fix do not group by shared area text",
+  "why": "They are 800 m apart in the same purok. Area text applies only when at least one lacks a fix, so distance wins and they stay separate. Equal scores, so lastSeen descending breaks the tie.",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000001", "type": "REPORT", "category": "FLOOD", "device_id": "dev-a", "lat": 14.5995, "lon": 120.9842, "area_text": "Purok 3", "created_at": 1758998800 },
+    { "id": "00000000-0000-4000-8000-000000000002", "type": "REPORT", "category": "FLOOD", "device_id": "dev-b", "lat": 14.6067, "lon": 120.9842, "area_text": "Purok 3", "created_at": 1758999400 }
+  ],
+  "expected_incidents": [
+    {
+      "key": "00000000-0000-4000-8000-000000000002",
+      "category": "FLOOD",
+      "observationIds": ["00000000-0000-4000-8000-000000000002"],
+      "independentReporters": 1,
+      "corroboration": "single",
+      "peopleAffected": 0,
+      "firstSeen": 1758999400,
+      "lastSeen": 1758999400,
+      "centroid": { "lat": 14.6067, "lon": 120.9842 },
+      "areaText": "Purok 3",
+      "spatialExtentM": 0,
+      "status": "open",
+      "score": 40,
+      "breakdown": { "base": 30, "corroboration": 0, "people": 0, "unacknowledged": 10, "staleness": 0, "total": 40 }
+    },
+    {
+      "key": "00000000-0000-4000-8000-000000000001",
+      "category": "FLOOD",
+      "observationIds": ["00000000-0000-4000-8000-000000000001"],
+      "independentReporters": 1,
+      "corroboration": "single",
+      "peopleAffected": 0,
+      "firstSeen": 1758998800,
+      "lastSeen": 1758998800,
+      "centroid": { "lat": 14.5995, "lon": 120.9842 },
+      "areaText": "Purok 3",
+      "spatialExtentM": 0,
+      "status": "open",
+      "score": 40,
+      "breakdown": { "base": 30, "corroboration": 0, "people": 0, "unacknowledged": 10, "staleness": 0, "total": 40 }
+    }
+  ]
+}

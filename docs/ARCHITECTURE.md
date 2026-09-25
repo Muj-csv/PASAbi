@@ -39,7 +39,7 @@ flowchart LR
 
 1. Split REPORT observations by category; set aside `SAFE_CHECKIN` (counted per `area_text`, which BR-006 requires) and `STATUS` (applied in step 4).
 2. Per category, link two observations if `|t1 - t2| <= T` **and** either **(a)** both have a GPS fix and haversine distance `<= R`, or **(b)** at least one has no GPS fix and their normalized area texts are equal and non-empty (R-1). Normalization: lowercase, trim, collapse internal whitespace.
-   - Use a ~150 m grid so only neighbouring cells are compared (O(n) average).
+   - A time-sorted window scan with a latitude pre-reject, NOT a spatial grid. Measured in Phase 1 at 6.9 ms for 3,000 observations, about 40x inside NFR-003, so the grid would be complexity buying nothing. Revisit if the benchmark ever fails.
    - Groups = connected components (union-find), so the result doesn't depend on input order.
    - Chains are transitive and unbounded — see **D-010**.
 3. For each group compute: key (smallest lowercase-UUID ID), independent reporters (distinct `device_id`), corroboration level, people affected (max reported), first/last seen (`created_at`), centroid (mean lat/lon of GPS members) or area text, and **spatial extent** (greatest distance between any two GPS members, shown in the UI as the D-010 mitigation).

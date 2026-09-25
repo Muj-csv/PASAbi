@@ -1,0 +1,26 @@
+{
+  "name": "R-6: a RESOLVE from a device whose clock is behind still resolves the incident",
+  "why": "The station clock read earlier than the REPORT it was answering. BR-007 clamps created_at to latest referenced REPORT plus one second at creation time, so step 4 still sees the RESOLVE as newer. Without the clamp this incident would never show resolved.",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000001", "type": "REPORT", "category": "MEDICAL", "device_id": "dev-a", "lat": 14.5995, "lon": 120.9842, "created_at": 1758996400 },
+    { "id": "00000000-0000-4000-8000-000000000002", "type": "STATUS", "action": "RESOLVE", "device_id": "dev-s", "refs": ["00000000-0000-4000-8000-000000000001"], "created_at": 1758996401 }
+  ],
+  "expected_incidents": [
+    {
+      "key": "00000000-0000-4000-8000-000000000001",
+      "category": "MEDICAL",
+      "observationIds": ["00000000-0000-4000-8000-000000000001"],
+      "independentReporters": 1,
+      "corroboration": "single",
+      "peopleAffected": 0,
+      "firstSeen": 1758996400,
+      "lastSeen": 1758996400,
+      "centroid": { "lat": 14.5995, "lon": 120.9842 },
+      "spatialExtentM": 0,
+      "status": "resolved",
+      "score": 0,
+      "breakdown": { "base": 50, "corroboration": 0, "people": 0, "unacknowledged": 0, "staleness": -1, "total": 49 }
+    }
+  ]
+}
