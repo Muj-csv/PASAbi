@@ -69,8 +69,8 @@ Ranking uses fixed, documented rules (category, number of independent reporters,
 | App | TypeScript, React Native (Expo), Expo Router, React Native Web |
 | Offline transport | Multipeer Connectivity (iOS), Google Nearby Connections (Android) |
 | Local store | AsyncStorage |
-| Cloud | Hosted Postgres with row-level security |
-| Dashboard | The same app's web build · Leaflet + OpenStreetMap |
+| Cloud | Supabase (Postgres + row-level security) |
+| Dashboard | The same app's web build, running the same incident engine |
 | Hosting | Vercel (web build) · EAS (native builds) |
 | CI | GitHub Actions |
 
@@ -78,32 +78,44 @@ One codebase targets iOS, Android and the web. The incident engine is written **
 
 ## Getting started
 
-> Setup steps will be confirmed once the first build lands.
-
 **Requirements**
 - Node.js 20+
 - Expo CLI / EAS CLI
 - **At least 2–3 physical phones on the same platform.** Peer-to-peer transport doesn't work in simulators, and iOS and Android can't mesh with each other (see Known limitations).
 - For iOS builds: an Apple Developer account, and a Mac or EAS cloud builds
-- A hosted Postgres project for upload and the dashboard
+- A Supabase project (free tier) for upload and the dashboard
 
 **Run it**
 ```bash
 git clone https://github.com/<org>/pasabi.git
 cd pasabi
 npm install
-npm test                 # incident engine + shared test vectors
+npm test                 # engine, store policy, sync protocol — 56 tests
 npx expo start --web     # web preview (mock transport, no real sync)
 npx expo start           # native dev build
 ```
 
-Create `.env` from `.env.example` with your database URL and **read-only** key. Never commit keys.
+**Set up the database**
+1. Create a Supabase project.
+2. In the SQL editor, run `db/schema.sql`, then `db/rls.sql`.
+3. Copy `.env.example` to `.env` and fill in your project URL and the **anon** key.
 
-**Try it**
+The anon key is public by design and ships in the bundle. That is safe only because of `db/rls.sql`, which lets it insert and upsert observations and read one view, and nothing else. **Never put the `service_role` key in this repo** — it bypasses row-level security entirely, and CI fails the build if it finds one in the bundle.
+
+**Try it without any phones**
+Open `/sim` in the web build. It runs the real sync protocol over a mock transport and shows three simulated devices converging to identical incident lists. It proves the protocol; it proves nothing about Bluetooth or Wi-Fi.
+
+**Try it with phones**
 1. Install the dev build on 3 phones of the same platform, turn on airplane mode, then turn Bluetooth and Wi-Fi back on.
-2. Set one device to Station mode.
+2. Set one device to Station mode and give it a PIN.
 3. Create overlapping observations on the other two, e.g. two FLOOD reports near the same spot.
 4. Bring the devices near the station, with Pasabi open on screen, and watch one corroborated incident appear.
+5. Follow [the field test run sheet](docs/FIELD_TEST.md) and write the numbers down as they happen.
+
+**Sharing the app offline**
+Once the storm has passed, a phone that has Pasabi can pass it to one that doesn't, without internet:
+- **Android:** share the APK directly over Nearby Share, Bluetooth, or a memory card.
+- **iOS:** there is no offline sideloading path. An iPhone needs App Store or TestFlight access, which needs connectivity. Plan to enrol iOS devices **before** typhoon season, not after.
 
 ## Project structure
 
@@ -122,12 +134,16 @@ docs/                  PRD, architecture, implementation plan, decisions, build 
 - [Architecture](docs/ARCHITECTURE.md)
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md)
 - [Decision log](docs/DECISIONS.md)
+- [Field test run sheet](docs/FIELD_TEST.md)
+- [Submission checklist and demo script](docs/SUBMISSION.md)
 
 ## Known limitations
 
 - **iOS carries only while the app is open.** iOS has no equivalent of Android's foreground service, so an iPhone exchanges observations while Pasabi is on screen, not passively in a pocket. Station devices stay plugged in and foregrounded; volunteers open the app when they arrive somewhere. Android restores passive background carrying.
 - **iOS and Android can't mesh with each other.** Multipeer Connectivity is Apple-only and Nearby Connections is Android-only. A mixed barangay runs two separate networks that reconcile once either reaches the internet. Standardise on one platform per deployment.
-- **The web build can't sync.** Browsers have no peer-to-peer radio access, so the web version is for previewing the UI and reading the responder dashboard.
+- **The web build can't sync.** Browsers have no peer-to-peer radio access, so the web version is for previewing the UI, running the `/sim` protocol demo, and reading the responder dashboard.
+- **Upload is a manual action.** There's an "Upload now" button and it retries on failure, but nothing yet watches for a network change and uploads by itself.
+- **The dashboard has no map yet.** Ranked list, category filter and "since last sync" are there; the map was cut for time and is the first thing to add back.
 - **Needs enough devices.** Pasabi works best when station devices and volunteers are set up *before* typhoon season.
 - **Corroboration counts devices, not people.** One person with several phones could inflate it. Stations can resolve false incidents.
 - **Grouping thresholds are initial values.** Distance and time windows need tuning with real barangays, and reports strung along a road can chain into one oversized incident — the board shows each incident's spatial extent so an operator can spot it.
