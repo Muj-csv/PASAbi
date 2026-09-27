@@ -174,3 +174,18 @@ export const GAP_QUESTIONS: Record<Category, readonly Category[]> = {
   SHELTER: ["WATER_FOOD", "MEDICAL"],
   SAFE_CHECKIN: [],
 };
+
+// ----------------------------------- Coverage per area (BR-014, R5)
+// Initial values, to tune after the field test (D-023).
+
+/** D-023: distinct devices are counted over this window (age < 3 h). */
+export const COVERAGE_WINDOW_SECONDS = 3 * 60 * 60;
+
+/** D-023: this many distinct devices in the window is HIGH coverage. */
+export const COVERAGE_HIGH_DEVICES = 3;
+
+/** D-023: an area whose latest observation is this old or older is STALE. */
+export const COVERAGE_STALE_SECONDS = 3 * 60 * 60;
+
+/** Expected areas (puroks) a station can list; a small cap keeps it a list. */
+export const EXPECTED_AREAS_MAX = 50;

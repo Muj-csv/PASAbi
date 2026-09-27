@@ -1,0 +1,26 @@
+{
+  "name": "Coverage per area: high, limited, stale, no reports, and the no-area bucket",
+  "why": "BR-014. Purok 1: three phones in the last 3 h (one spelled 'PUROK  1', which normalizes the same) -> high. Purok 2: two phones in the window; a third phone reported 11000 s ago, outside the 3 h window, so it does not count -> limited. Purok 3: latest is exactly 10800 s old -> stale, and no phone is inside the window. 69 has GPS but no area text -> the no-area bucket, one phone -> limited. 70 is an ACK with no location, so it belongs to no area. Purok 5 is expected but has no observations -> none. Order: none, stale, limited, high; by area name within a level, the no-area bucket last.",
+  "now": 1759000000,
+  "expected_areas": ["Purok 1", "Purok 5"],
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000061", "type": "REPORT", "category": "FLOOD", "device_id": "dev-a", "area_text": "Purok 1", "created_at": 1758999400 },
+    { "id": "00000000-0000-4000-8000-000000000062", "type": "REPORT", "category": "SAFE_CHECKIN", "device_id": "dev-b", "area_text": "purok 1", "created_at": 1758998800 },
+    { "id": "00000000-0000-4000-8000-000000000063", "type": "REPORT", "category": "WATER_FOOD", "device_id": "dev-c", "area_text": "PUROK  1", "created_at": 1758998200 },
+    { "id": "00000000-0000-4000-8000-000000000064", "type": "REPORT", "category": "FLOOD", "device_id": "dev-a", "area_text": "Purok 2", "created_at": 1758999700 },
+    { "id": "00000000-0000-4000-8000-000000000065", "type": "REPORT", "category": "SHELTER", "device_id": "dev-b", "area_text": "Purok 2", "created_at": 1758996400 },
+    { "id": "00000000-0000-4000-8000-000000000066", "type": "REPORT", "category": "FLOOD", "device_id": "dev-c", "area_text": "Purok 2", "created_at": 1758989000 },
+    { "id": "00000000-0000-4000-8000-000000000067", "type": "REPORT", "category": "ROAD_BLOCKED", "device_id": "dev-a", "area_text": "Purok 3", "created_at": 1758989200 },
+    { "id": "00000000-0000-4000-8000-000000000068", "type": "REPORT", "category": "FLOOD", "device_id": "dev-b", "area_text": "Purok 3", "created_at": 1758980000 },
+    { "id": "00000000-0000-4000-8000-000000000069", "type": "REPORT", "category": "FLOOD", "device_id": "dev-d", "lat": 14.5995, "lon": 120.9842, "created_at": 1758999900 },
+    { "id": "00000000-0000-4000-8000-000000000070", "type": "STATUS", "action": "ACK", "device_id": "dev-s", "refs": ["00000000-0000-4000-8000-000000000061"], "created_at": 1758999950 }
+  ],
+  "expected": [],
+  "coverage": [
+    { "area": "purok 5", "label": "Purok 5", "level": "none", "lastObservationAt": null, "distinctDevices": 0 },
+    { "area": "purok 3", "label": "Purok 3", "level": "stale", "lastObservationAt": 1758989200, "distinctDevices": 0 },
+    { "area": "purok 2", "label": "Purok 2", "level": "limited", "lastObservationAt": 1758999700, "distinctDevices": 2 },
+    { "area": null, "label": null, "level": "limited", "lastObservationAt": 1758999900, "distinctDevices": 1 },
+    { "area": "purok 1", "label": "Purok 1", "level": "high", "lastObservationAt": 1758999400, "distinctDevices": 3 }
+  ]
+}

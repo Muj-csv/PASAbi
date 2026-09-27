@@ -14,3 +14,4 @@ export * from "./Evidence";
 export * from "./qr";
 export * from "./Propagation";
 export * from "./Gaps";
+export * from "./Coverage";

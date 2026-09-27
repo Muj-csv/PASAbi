@@ -6,6 +6,7 @@ import {
   CATEGORIES,
   changesSince,
   compute,
+  coverageByArea,
   evidenceOf,
   fromServerRow,
   gapsFor,
@@ -13,6 +14,7 @@ import {
   safeCheckinCounts,
   snapshotOf,
   wasUploadedBefore,
+  type AreaCoverage,
   type Category,
   type Evidence,
   type Incident,
@@ -22,6 +24,7 @@ import {
 } from "@pasabi/core";
 
 import { Button } from "@/components/Button";
+import { CoverageRow } from "@/components/CoverageRow";
 import { IncidentCard } from "@/components/IncidentCard";
 import { KnownUnknownList } from "@/components/KnownUnknownList";
 import { Notice } from "@/components/Notice";
@@ -89,6 +92,8 @@ export default function Dashboard() {
   const [observationCount, setObservationCount] = useState(0);
   /** The one card whose known / not-yet-reported list is open. */
   const [gapsOpen, setGapsOpen] = useState<string | null>(null);
+  const [coverage, setCoverage] = useState<AreaCoverage[]>([]);
+  const [loadedAt, setLoadedAt] = useState(nowSeconds());
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [evidence, setEvidence] = useState<Map<string, Evidence>>(new Map());
   const [safe, setSafe] = useState<SafeCheckinCounts>({});
@@ -125,6 +130,9 @@ export default function Dashboard() {
 
       setObservations(observations);
       setObservationCount(observations.length);
+      // FR-017: the same function as the station board.
+      setCoverage(coverageByArea(observations, now));
+      setLoadedAt(now);
       setIncidents(current);
       setEvidence(
         new Map(current.map((i) => [i.key, evidenceOf(i, observations, now)])),
@@ -262,6 +270,15 @@ export default function Dashboard() {
           </IncidentCard>
         );
       })}
+
+      {coverage.length > 0 ? (
+        <View style={styles.panel}>
+          <Text style={styles.panelTitle}>{t.coverageHeading}</Text>
+          {coverage.map((row) => (
+            <CoverageRow key={row.area ?? "\u0000"} row={row} now={loadedAt} />
+          ))}
+        </View>
+      ) : null}
 
       {safeAreas.length > 0 ? (
         <View style={styles.panel}>

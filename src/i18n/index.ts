@@ -178,6 +178,25 @@ const en = {
   knownEmpty: "Nothing related reported nearby yet.",
   gapsShow: "What is known nearby",
   gapsHide: "Hide what is known nearby",
+
+  // Coverage per area (R5, BR-014, DESIGN_BRIEF section 12)
+  coverageHeading: "Coverage by area",
+  coverageHigh: "High coverage",
+  coverageLimited: "Limited coverage",
+  coverageStale: "No recent reports",
+  coverageNone: "No reports — this does not mean it is safe",
+  noAreaNamed: "No area named",
+  coverageLast: "Last report {t} ago",
+  phones: "phones",
+  coverageEmpty: "No areas named yet.",
+  thinCoverageOne: "1 area with limited coverage",
+  thinCoverageMany: "{n} areas with limited coverage",
+  expectedHeading: "Expected puroks",
+  expectedHint:
+    "Add the puroks you expect to hear from. One with no reports then shows as missing, not as safe.",
+  addArea: "Add",
+  removeArea: "Remove {area}",
+  expectedFull: "The list is full.",
 };
 
 export type Strings = typeof en;
@@ -350,6 +369,25 @@ const fil: Strings = {
   knownEmpty: "Wala pang kaugnay na ulat sa malapit.",
   gapsShow: "Ano ang alam sa malapit",
   gapsHide: "Itago ang alam sa malapit",
+
+  // Drafts for a native speaker to review (DESIGN_BRIEF section 12).
+  coverageHeading: "Saklaw bawat lugar",
+  coverageHigh: "Mataas na saklaw",
+  coverageLimited: "Limitadong saklaw",
+  coverageStale: "Walang bagong ulat",
+  coverageNone: "Walang ulat — hindi ibig sabihing ligtas",
+  noAreaNamed: "Walang pangalang lugar",
+  coverageLast: "Huling ulat: {t} na ang nakalipas",
+  phones: "telepono",
+  coverageEmpty: "Wala pang pangalan ng lugar.",
+  thinCoverageOne: "1 lugar na limitado ang saklaw",
+  thinCoverageMany: "{n} lugar na limitado ang saklaw",
+  expectedHeading: "Mga inaasahang purok",
+  expectedHint:
+    "Idagdag ang mga purok na inaasahang may ulat. Ang walang ulat ay lalabas na kulang, hindi ligtas.",
+  addArea: "Idagdag",
+  removeArea: "Alisin ang {area}",
+  expectedFull: "Puno na ang listahan.",
 };
 
 export const CATEGORY_LABELS: Record<Lang, Record<Category, string>> = {

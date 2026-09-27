@@ -5,9 +5,13 @@ import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import {
   changesSince,
   compute,
+  coverageByArea,
   evidenceOf,
+  EXPECTED_AREAS_MAX,
+  normalizeArea,
   safeCheckinCounts,
   snapshotOf,
+  type AreaCoverage,
   type Evidence,
   type Incident,
   type IncidentChange,
@@ -15,14 +19,17 @@ import {
 } from "@pasabi/core";
 
 import { Button } from "@/components/Button";
+import { CoverageRow } from "@/components/CoverageRow";
 import { IncidentCard } from "@/components/IncidentCard";
 import { fill, plural, useStrings } from "@/i18n";
 import { loadObservations } from "@/storage/observations";
 import {
   disableStation,
   enableStation,
+  loadExpectedAreas,
   loadSnapshot,
   loadStation,
+  saveExpectedAreas,
   saveSnapshot,
 } from "@/storage/station";
 import { color, radius, size, space, tabularNums } from "@/theme/tokens";
@@ -53,13 +60,24 @@ export default function Station() {
     new Map(),
   );
   const [seenAt, setSeenAt] = useState<number | null>(null);
+  const [coverage, setCoverage] = useState<AreaCoverage[]>([]);
+  const [now, setNow] = useState(nowSeconds());
+  const [expected, setExpected] = useState<string[]>([]);
+  const [newArea, setNewArea] = useState("");
+  const [expectedNote, setExpectedNote] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     const stored = await loadObservations();
     const now = nowSeconds();
     const current = compute(stored, now);
     const snapshot = await loadSnapshot();
+    const expectedAreas = await loadExpectedAreas();
 
+    setNow(now);
+    setExpected(expectedAreas);
+    // FR-017: every observation type counts; silence in an expected purok
+    // shows as "no reports", never as safe.
+    setCoverage(coverageByArea(stored, now, expectedAreas));
     setIncidents(current);
     // ponytail: evidenceOf scans every observation per incident, O(n x m)
     // per reload. Trivial at field sizes; index statuses by ref if a full
@@ -103,6 +121,29 @@ export default function Station() {
     router.replace("/");
   };
 
+  const addExpected = async (): Promise<void> => {
+    const area = newArea.trim();
+    if (!area) return;
+    if (expected.some((a) => normalizeArea(a) === normalizeArea(area))) {
+      setNewArea("");
+      return;
+    }
+    if (expected.length >= EXPECTED_AREAS_MAX) {
+      setExpectedNote(t.expectedFull);
+      return;
+    }
+    await saveExpectedAreas([...expected, area]);
+    setNewArea("");
+    setExpectedNote(null);
+    await reload();
+  };
+
+  const removeExpected = async (area: string): Promise<void> => {
+    await saveExpectedAreas(expected.filter((a) => a !== area));
+    setExpectedNote(null);
+    await reload();
+  };
+
   const markSeen = async (): Promise<void> => {
     await saveSnapshot(snapshotOf(incidents, nowSeconds()));
     await reload();
@@ -137,6 +178,7 @@ export default function Station() {
   const staleCount = [...evidence.values()].filter(
     (e) => e.freshness === "stale",
   ).length;
+  const thinCount = coverage.filter((c) => c.level !== "high").length;
   const safeAreas = Object.entries(safe).sort((a, b) =>
     a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0,
   );
@@ -147,6 +189,11 @@ export default function Station() {
       <Text style={styles.summary}>
         {plural(incidents.length, t.incidentOne, t.incidentMany)}
         {staleCount > 0 ? " · " + fill(t.staleCount, { n: staleCount }) : ""}
+        {thinCount === 1
+          ? " · " + t.thinCoverageOne
+          : thinCount > 1
+            ? " · " + fill(t.thinCoverageMany, { n: thinCount })
+            : ""}
       </Text>
       <Text style={styles.muted}>
         {seenAt === null ? t.seenNever : t.seenAt + " " + shortTime(seenAt)}
@@ -196,6 +243,47 @@ export default function Station() {
         );
       })}
 
+      {/* FR-017, after the incidents: the operator's first question is
+          what to act on; the second is where the picture is thin. */}
+      <View style={styles.panel}>
+        <Text style={styles.panelTitle}>{t.coverageHeading}</Text>
+        {coverage.length === 0 ? (
+          <Text style={styles.muted}>{t.coverageEmpty}</Text>
+        ) : (
+          coverage.map((row) => (
+            <CoverageRow key={row.area ?? "\u0000"} row={row} now={now} />
+          ))
+        )}
+      </View>
+
+      <View style={styles.panel}>
+        <Text style={styles.panelTitle}>{t.expectedHeading}</Text>
+        <Text style={styles.muted}>{t.expectedHint}</Text>
+        <View style={styles.row}>
+          <TextInput
+            value={newArea}
+            onChangeText={setNewArea}
+            onSubmitEditing={() => void addExpected()}
+            placeholder="Purok 5"
+            placeholderTextColor={color.textSecondary}
+            style={[styles.input, styles.areaInput]}
+            accessibilityLabel={t.expectedHeading}
+          />
+          <Button label={t.addArea} onPress={() => void addExpected()} />
+        </View>
+        {expectedNote ? <Text style={styles.hint}>{expectedNote}</Text> : null}
+        <View style={styles.row}>
+          {expected.map((area) => (
+            <Button
+              key={area}
+              label={fill(t.removeArea, { area })}
+              variant="secondary"
+              onPress={() => void removeExpected(area)}
+            />
+          ))}
+        </View>
+      </View>
+
       {safeAreas.length > 0 ? (
         <View style={styles.panel}>
           <Text style={styles.panelTitle}>{t.safePanel}</Text>
@@ -236,6 +324,12 @@ const styles = StyleSheet.create({
     fontSize: size.h3,
     letterSpacing: 6,
     color: color.textPrimary,
+  },
+  areaInput: {
+    flexGrow: 1,
+    flexBasis: 160,
+    fontSize: size.body,
+    letterSpacing: 0,
   },
   panel: {
     backgroundColor: color.surface,
