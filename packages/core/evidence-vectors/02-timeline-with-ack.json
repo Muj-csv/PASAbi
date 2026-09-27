@@ -1,0 +1,39 @@
+{
+  "name": "Timeline holds the incident's reports and only the statuses that reference it",
+  "why": "FR-014. FLOOD 11, 12, 16 group (within 11 m). 12 and 16 share a created_at, so ID breaks the tie. The ACK (13) references 11, so it joins the FLOOD timeline; the RESOLVE (15) references the MEDICAL report 14 and must not. 11 and 16 come from the same phone: 3 reports, 2 sources.",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000011", "type": "REPORT", "category": "FLOOD", "device_id": "3f9a1c2e-7b44-4d0e-9a51-6c2d8e1f0a37", "lat": 14.5995, "lon": 120.9842, "people": 6, "note": "hanggang tuhod ang baha", "created_at": 1758998200 },
+    { "id": "00000000-0000-4000-8000-000000000012", "type": "REPORT", "category": "FLOOD", "device_id": "b07d55e1-2c9f-4a63-8e10-d4f7a2b96c05", "lat": 14.5996, "lon": 120.9842, "area_text": "Purok 4", "created_at": 1758998800 },
+    { "id": "00000000-0000-4000-8000-000000000013", "type": "STATUS", "action": "ACK", "device_id": "c4e8a0f3-91d2-4b7e-a6c8-0e5f3d2b1a94", "refs": ["00000000-0000-4000-8000-000000000011"], "created_at": 1758999400 },
+    { "id": "00000000-0000-4000-8000-000000000014", "type": "REPORT", "category": "MEDICAL", "device_id": "71c3e9b8-4a0d-4f25-b3e6-8d9c2a1f7e40", "lat": 14.6995, "lon": 120.9842, "created_at": 1758999100 },
+    { "id": "00000000-0000-4000-8000-000000000015", "type": "STATUS", "action": "RESOLVE", "device_id": "c4e8a0f3-91d2-4b7e-a6c8-0e5f3d2b1a94", "refs": ["00000000-0000-4000-8000-000000000014"], "created_at": 1758999700 },
+    { "id": "00000000-0000-4000-8000-000000000016", "type": "REPORT", "category": "FLOOD", "device_id": "3f9a1c2e-7b44-4d0e-9a51-6c2d8e1f0a37", "lat": 14.5995, "lon": 120.9842, "created_at": 1758998800 }
+  ],
+  "expected": [
+    {
+      "key": "00000000-0000-4000-8000-000000000011",
+      "evidence": {
+        "reportCount": 3, "sourceCount": 2,
+        "firstSeen": 1758998200, "lastSeen": 1758998800, "latestAgeSeconds": 1200, "freshness": "fresh",
+        "timeline": [
+          { "id": "00000000-0000-4000-8000-000000000011", "type": "REPORT", "category": "FLOOD", "people": 6, "note": "hanggang tuhod ang baha", "source": "3f9a1c", "created_at": 1758998200 },
+          { "id": "00000000-0000-4000-8000-000000000012", "type": "REPORT", "category": "FLOOD", "area_text": "Purok 4", "source": "b07d55", "created_at": 1758998800 },
+          { "id": "00000000-0000-4000-8000-000000000016", "type": "REPORT", "category": "FLOOD", "source": "3f9a1c", "created_at": 1758998800 },
+          { "id": "00000000-0000-4000-8000-000000000013", "type": "STATUS", "action": "ACK", "source": "c4e8a0", "created_at": 1758999400 }
+        ]
+      }
+    },
+    {
+      "key": "00000000-0000-4000-8000-000000000014",
+      "evidence": {
+        "reportCount": 1, "sourceCount": 1,
+        "firstSeen": 1758999100, "lastSeen": 1758999100, "latestAgeSeconds": 900, "freshness": "fresh",
+        "timeline": [
+          { "id": "00000000-0000-4000-8000-000000000014", "type": "REPORT", "category": "MEDICAL", "source": "71c3e9", "created_at": 1758999100 },
+          { "id": "00000000-0000-4000-8000-000000000015", "type": "STATUS", "action": "RESOLVE", "source": "c4e8a0", "created_at": 1758999700 }
+        ]
+      }
+    }
+  ]
+}

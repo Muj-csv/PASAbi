@@ -3,6 +3,7 @@ import { useEffect } from "react";
 
 import { restoreLanguage } from "@/i18n";
 import { restoreStationMode } from "@/storage/station";
+import { color } from "@/theme/tokens";
 
 export default function RootLayout() {
   useEffect(() => {
@@ -13,7 +14,15 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <Stack screenOptions={{ headerTitleStyle: { fontWeight: "700" } }}>
+    // DESIGN_BRIEF section 7: light only this round, and the page ground is
+    // set on purpose rather than inherited from React Navigation's default.
+    <Stack
+      screenOptions={{
+        headerTitleStyle: { fontWeight: "700", color: color.textPrimary },
+        headerStyle: { backgroundColor: color.surface },
+        contentStyle: { backgroundColor: color.bg },
+      }}
+    >
       <Stack.Screen name="index" options={{ title: "Pasabi" }} />
       <Stack.Screen name="my-data" options={{ title: "Pasabi" }} />
       <Stack.Screen name="station" options={{ title: "Pasabi" }} />

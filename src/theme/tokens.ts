@@ -7,6 +7,8 @@
 // - success (green) is RESERVED for "resolved" and explicit safe check-ins.
 //   Coverage, sources and freshness never use it (BR-017).
 
+import type { TextStyle } from "react-native";
+
 export const color = {
   bg: "#f2f2f2",
   surface: "#ffffff",
@@ -62,5 +64,11 @@ export const breakpoint = {
 /** Minimum touch target on iPhone (Apple HIG 44 pt; WCAG 2.5.8 floor is 24). */
 export const TOUCH_TARGET = 44;
 
-/** Counts, times and scores line up in columns when scanned down a list. */
-export const tabularNums = { fontVariant: ["tabular-nums"] as const };
+/**
+ * Counts, times and scores line up in columns when scanned down a list.
+ * Typed as TextStyle: `as const` made the array readonly, which React
+ * Native's mutable FontVariant[] rejects wherever this is spread.
+ */
+export const tabularNums: Pick<TextStyle, "fontVariant"> = {
+  fontVariant: ["tabular-nums"],
+};

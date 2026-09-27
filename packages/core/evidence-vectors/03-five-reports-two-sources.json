@@ -1,0 +1,28 @@
+{
+  "name": "Five reports from two phones are 5 reports, 2 sources",
+  "why": "BR-012: report count and source count are two separate numbers. Five FLOOD reports within about 22 m; phone 5e2b04 sent three, phone 9d41f7 sent two. The latest is 4000 s old, so aging.",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000021", "type": "REPORT", "category": "FLOOD", "device_id": "5e2b04a9-6c13-4e8f-9b70-2d6a1c8e3f55", "lat": 14.5995, "lon": 120.9842, "created_at": 1758991000 },
+    { "id": "00000000-0000-4000-8000-000000000022", "type": "REPORT", "category": "FLOOD", "device_id": "9d41f7c6-0b28-4a95-8e3d-7f1c6b2a9e08", "lat": 14.5996, "lon": 120.9842, "created_at": 1758992000 },
+    { "id": "00000000-0000-4000-8000-000000000023", "type": "REPORT", "category": "FLOOD", "device_id": "5e2b04a9-6c13-4e8f-9b70-2d6a1c8e3f55", "lat": 14.5997, "lon": 120.9842, "created_at": 1758994000 },
+    { "id": "00000000-0000-4000-8000-000000000024", "type": "REPORT", "category": "FLOOD", "device_id": "9d41f7c6-0b28-4a95-8e3d-7f1c6b2a9e08", "lat": 14.5995, "lon": 120.9842, "created_at": 1758995000 },
+    { "id": "00000000-0000-4000-8000-000000000025", "type": "REPORT", "category": "FLOOD", "device_id": "5e2b04a9-6c13-4e8f-9b70-2d6a1c8e3f55", "lat": 14.5996, "lon": 120.9842, "created_at": 1758996000 }
+  ],
+  "expected": [
+    {
+      "key": "00000000-0000-4000-8000-000000000021",
+      "evidence": {
+        "reportCount": 5, "sourceCount": 2,
+        "firstSeen": 1758991000, "lastSeen": 1758996000, "latestAgeSeconds": 4000, "freshness": "aging",
+        "timeline": [
+          { "id": "00000000-0000-4000-8000-000000000021", "type": "REPORT", "category": "FLOOD", "source": "5e2b04", "created_at": 1758991000 },
+          { "id": "00000000-0000-4000-8000-000000000022", "type": "REPORT", "category": "FLOOD", "source": "9d41f7", "created_at": 1758992000 },
+          { "id": "00000000-0000-4000-8000-000000000023", "type": "REPORT", "category": "FLOOD", "source": "5e2b04", "created_at": 1758994000 },
+          { "id": "00000000-0000-4000-8000-000000000024", "type": "REPORT", "category": "FLOOD", "source": "9d41f7", "created_at": 1758995000 },
+          { "id": "00000000-0000-4000-8000-000000000025", "type": "REPORT", "category": "FLOOD", "source": "5e2b04", "created_at": 1758996000 }
+        ]
+      }
+    }
+  ]
+}

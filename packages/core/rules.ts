@@ -116,3 +116,19 @@ export const PEER_COOLDOWN_MS = 120000;
 
 /** Ceiling for a single payload. Adapters may report less; never more. */
 export const MAX_PAYLOAD_BYTES = 30000;
+
+// ------------------------------------ Evidence and freshness (BR-011, R1)
+// Separate from the score's staleness term, which is unchanged. Initial
+// values, to tune after the field test (D-023).
+
+/** D-023: latest evidence younger than this is FRESH (age < 3600). */
+export const FRESH_MAX_AGE_SECONDS = 60 * 60;
+
+/** D-023: latest evidence this old or older is STALE (age >= 10800). */
+export const STALE_MIN_AGE_SECONDS = 3 * 60 * 60;
+
+/**
+ * ARCHITECTURE section 3a: timeline sources show this many characters of
+ * device_id. Four collide too often (about 7 % among 100 devices).
+ */
+export const SOURCE_LABEL_CHARS = 6;

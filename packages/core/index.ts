@@ -10,3 +10,4 @@ export * from "./SyncProtocol";
 export * from "./Snapshot";
 export * from "./upload";
 export * from "./ingest";
+export * from "./Evidence";
