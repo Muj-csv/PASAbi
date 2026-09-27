@@ -19,7 +19,7 @@
 
 ## Overview
 
-When a typhoon knocks out power, cell towers go dark with it. For the first 24–48 hours, a barangay's disaster-response team only knows what people walk in and tell them, usually as a pile of duplicate, scattered reports.
+When a typhoon knocks out power, cell towers go dark with it. For days, sometimes weeks, a barangay's disaster-response team only knows what people walk in and tell them, usually as a pile of duplicate, scattered reports.
 
 Pasabi turns the phones already in the community into the network. Residents and volunteers record short, structured **observations** ("flood water entering the road", "3 households need water"). Phones pass those observations to each other over Bluetooth and Wi-Fi whenever they come near one another, with no signal or internet needed. Every phone groups related observations into **incidents**, counts how many independent people reported each one, and ranks them with a transparent urgency score.
 
@@ -169,10 +169,15 @@ What Pasabi adds is grouping and corroborating reports **on the devices, offline
 
 ## Team
 
-| Name | Role |
-|---|---|
-| Jum Flores | Team lead |
-| _TBD_ | _TBD_ |
+| Name | GitHub | Role |
+|---|---|---|
+| Ian Patrick Flores | [@Muj-csv](https://github.com/Muj-csv) | Team lead |
+| Jace Matthew Catriz | [@anonymouslugaw](https://github.com/anonymouslugaw) | Member |
+| Fiona Guiao | [@pyonaa](https://github.com/pyonaa) | Member |
+| Mary Princess Angel Dizon | [@mpadizon](https://github.com/mpadizon) | Member |
+| Joey Cuison | [@joeycuison333-stack](https://github.com/joeycuison333-stack) | Member |
+| Eiko Yaiki | [@gomezeiko](https://github.com/gomezeiko) | Member |
+| Mark Jemiel Guevarra | _GitHub pending_ | Member |
 
 ## License
 

@@ -5,6 +5,7 @@ import {
   applyPolicy,
   CAPACITY_STATION,
   compute,
+  mergeReceived,
   SyncSession,
   type Observation,
   type SyncContext,
@@ -61,10 +62,12 @@ class SimDevice {
       now: () => NOW,
       observations: () => this.observations,
       apply: (incoming) => {
-        const merged = [...this.observations];
-        const known = new Set(merged.map((o) => o.id));
-        for (const o of incoming) if (!known.has(o.id)) merged.push(o);
-        this.observations = applyPolicy(merged, CAPACITY_STATION, NOW);
+        // The same ingest path as receiveObservations in the app (R0).
+        this.observations = applyPolicy(
+          mergeReceived(this.observations, incoming, NOW),
+          CAPACITY_STATION,
+          NOW,
+        );
       },
       freeCapacity: () => CAPACITY_STATION - this.observations.length,
     };

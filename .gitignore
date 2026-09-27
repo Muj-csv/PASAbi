@@ -47,3 +47,6 @@ example
 
 # test coverage
 coverage/
+
+# AEGIS design-check output
+.aegis/

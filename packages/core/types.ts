@@ -40,11 +40,16 @@ export interface Observation {
   action?: StatusAction;
   sig?: string;
 
-  // Local-only fields. Never sent over the wire.
+  // Local-only fields (BR-016). Never sent: toWire() in ingest.ts strips
+  // them from every batch, and asReceived() resets them on arrival.
   received_at?: number;
   hops?: number;
   own?: boolean;
   uploaded?: boolean;
+  /** BR-015, set in R3. Only ever goes from false to true. */
+  passed_on?: boolean;
+  /** BR-015, set in R3. Only ever goes from false to true. */
+  reached_station?: boolean;
 }
 
 /** BR-007. */

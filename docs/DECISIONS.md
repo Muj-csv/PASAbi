@@ -10,7 +10,7 @@
 | D-006 | Hosted Postgres for uplink: **Supabase** | **Accepted** (2026-09-26). Supabase ships PostgREST and row-level security, so a phone and a browser can talk to Postgres directly with a public anon key. Vercel Postgres (Neon) exposes a connection string, which cannot ship in a client bundle and would have forced the serverless API layer ADR-003 rejects | Uplink, dashboard |
 | D-007 | ~~Engine in Kotlin + TypeScript with shared vectors (ADR-005)~~ | **Superseded by D-014** — one TS engine, written once | Dashboard |
 | D-008 | Server retention: 30 days after the event | Proposed | Data |
-| D-009 | Team split with Sinopia (GIBC V2), same week | **Open** | Staffing |
+| D-009 | Team split with Sinopia (GIBC V2), same week | **Open** — roster is 7 people (README, 2026-09-27); FirstCommit allows **6** per team, so who is listed on Devpost, and who works on which phase, is still to decide | Staffing, submission |
 | D-010 | Transitive chaining is unbounded in space and time: a linear flood can merge into one incident spanning kilometres, with a centroid pointing at nothing real | **Accepted with mitigation** — documented by a 4-hop test vector, and each incident's spatial extent is shown in the UI so an operator can resolve a bad merge. Revisit after the field test | IncidentEngine |
 | D-011 | Device and account inventory: Mac, Apple Developer account, iPhones, Android phones | **Open — start Apple enrolment today.** Gates the iOS build and decides which mesh is demoed. Does **not** block engine, UI, web or Android work | Testing, demo, submission |
 | D-012 | iOS and Android meshes do **not** interoperate (Multipeer is Apple-only, Nearby Connections is Android-only). Bridging needs the out-of-scope custom BLE layer | **Accepted limitation** — the two islands reconcile through the cloud uplink, free under ADR-002. Field test and demo run on one platform's mesh; the limit is stated, not demonstrated | Transport, demo |
@@ -19,6 +19,20 @@
 | D-015 | Local store is a single JSON blob in AsyncStorage, not SQLite | Proposed — a 3,000-observation station store is roughly 900 KB, well inside limits, and the engine already loads the full set into memory. Upgrade to expo-sqlite if the store outgrows it | Storage |
 | D-016 | Vercel hosts the **web build as the team preview surface and the responder dashboard**; native builds ship through EAS | **Assumed, needs confirmation** — this is the reading of "Vercel will be used for testing" that the rewritten docs are built on | Deployment |
 | D-017 | BR-010 rate limit counts REPORT observations only; STATUS actions are exempt | **Accepted** — the limit is anti-spam for reports, and counting acknowledgements would lock a station operator out of their own board after six, penalising the primary user with a rule aimed at flooders | BR-010, FR-008 |
+| D-018 | The Relay specification is the product direction. **PASAbi is Relay's name**; no rename of code, packages or aliases | **Accepted** (2026-09-27) | Whole product; PRD v0.5 |
+| D-019 | Device inventory (answers D-011 in part): **6 iPhones, no Android phones**. Field test and demo are iPhone-only; the Android Nearby transport is dropped for this round. Whether a Mac with Xcode and an Apple account that can install development builds exist is **still open** and gates R6 only | **Accepted** (2026-09-27) | Transport, demo, field test |
+| D-020 | **QR bundle transfer** is the guaranteed phone-to-phone path (ADR-008). Runs in Expo Go, no native module, no Apple account | **Accepted** (2026-09-27) | FR-004, FR-013 |
+| D-021 | iOS Multipeer is a **timeboxed stretch** (R6), started only after R1–R5 and a yes on D-019's open part | **Accepted** (2026-09-27) | FR-005, demo |
+| D-022 | Relay scope for FirstCommit: adopt freshness, reports-vs-sources, evidence timeline, honest propagation status, information gaps, coverage. Defer the rest (PRD v0.5 §8) | **Accepted** (2026-09-27) | Scope |
+| D-023 | Freshness (1 h / 3 h), gap radius (300 m) and coverage (3 devices, 3 h) thresholds | Proposed — initial values, tune after the field test | BR-011, BR-013, BR-014 |
+| D-024 | **Expo Go is the runtime for this round.** It loads the JavaScript from the laptop's dev server; nothing is bundled into an installed app. So the demo loads PASAbi while online, then switches to airplane mode and keeps PASAbi in the foreground without reloading. A reload or a killed Expo Go cannot restart offline. A standalone build removes this and needs D-019's open part | **Accepted** (2026-09-27), stated in the honest limits | Demo, FR-002 verification, NFR-001 |
+| D-025 | QR bundles **page** through everything the sender holds (most urgent first, `QR_MAX_OBSERVATIONS` per page) and **skip what the same receiver already acknowledged**, using the receiver's device ID carried in the receipt. A fixed "top 60" bundle would resend the same 60 at every exchange, and anything ranked lower would never cross by QR | Recommended (AERIAL review, 2026-09-27) | FR-013 |
+| D-026 | Run a 45-minute **QR spike before R1** (pass bar in `VALIDATION.md`) | Recommended (PRISM/AERIAL, 2026-09-27) — skip only by team decision | Schedule |
+| D-027 | QR pages are **deflate-compressed** (`fflate`, pure JS) before base64, and frames are **500 characters**. Measured on the real `encodeBatch`: a 60-observation page drops from 33 frames (QR version 22) to 18 (version 18) even with worst-case note text (`docs/analysis/ARGUS_constants.md`) | Recommended (ARGUS, 2026-09-27) — confirm with the QR spike's measured catch rate | FR-013, NFR-009 |
+
+**D-011 update (2026-09-27):** partly answered by D-019 (iPhones only). Mac and Apple account still open.
+
+**ADR-008** (QR bundle transfer sits beside `Transport`, not behind it) is recorded in `ARCHITECTURE.md` §9.
 
 ## Package R (applied 2026-09-25)
 

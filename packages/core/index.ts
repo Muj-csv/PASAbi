@@ -9,3 +9,4 @@ export * from "./wire";
 export * from "./SyncProtocol";
 export * from "./Snapshot";
 export * from "./upload";
+export * from "./ingest";
