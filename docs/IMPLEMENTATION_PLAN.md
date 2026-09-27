@@ -1,60 +1,63 @@
-# Pasabi: Implementation Plan
+# PASAbi: Implementation Plan
 
-**Deadline:** Sept 30, 5:00 pm EDT = **Oct 1, 05:00 PHT**. **Target:** submitted by Sept 30, 22:00 PHT.
-**Revised 2026-09-25** for the React Native / Expo, iOS-first stack (D-014).
+**Deadline:** Sept 30, 5:00 pm EDT = **Oct 1, 05:00 PHT**. **Target:** submitted by **Sept 30, 22:00 PHT** (7 h buffer).
+**Revised 2026-09-27** for the Relay direction and the iPhone-only inventory (D-018 to D-026). Phase detail and guardrails: `docs/IMPLEMENTATION_UPDATE.md`.
 
-> **Schedule reality.** The original plan assumed a Sept 24 start with 4 people. It is Sept 25 with no code yet. The order below is dependency-correct; the dates are aggressive. The cut order is at the bottom — decide it deliberately, not at 2 am on the 29th.
+## Where things stand
 
-| Phase | Dates (PHT) | Goal | Exit gate |
-|---|---|---|---|
-| 0: Foundation | Sep 25 | Expo monorepo, RN Web, Vercel preview, CI | Web preview live on Vercel; `npm test` green in CI |
-| 1: Observations + incident engine | Sep 25–26 | `rules.ts`, `IncidentEngine`, `StorePolicy`, vectors, observation form, My data | All vectors + shuffle test green; an observation survives a restart |
-| 2: Sync | Sep 26–28 | `SyncProtocol`, `Transport` interface, mock + native transports | **2a** simulated 3-device convergence in CI · **2b** two real devices converge |
-| 3: Station mode | Sep 28–29 | Situation board, why-ranked breakdown, what changed, ack/resolve | Board updates as carriers arrive; resolve spreads after one encounter |
-| 4: Uplink + dashboard | Sep 28–29 | Postgres, upload, dashboard route on the web build | Dashboard incidents match a station board for the same observations |
-| 5: Field test + submission | Sep 29–30 | Supporting items if green, field test, video, README, Devpost | Submitted |
+Phases 0, 1, 2a, 3 and 4 are merged and green in CI (lint, typecheck, 56 tests, web build, `service_role` check). Phase 2b (radio transports) was never built. Phase 5's paperwork is drafted but needs people. Supabase has never been created; nothing has run on a phone.
 
-**Phase 2 is the critical path and carries all the schedule risk.** It splits deliberately:
-- **2a — no hardware.** `Transport` interface, `mock` transport, `SyncProtocol`, simulated multi-device encounters running in CI and in the browser. Certain to land.
-- **2b — hardware.** Android Nearby transport (no Apple dependency, start here) and the iOS Multipeer native module (spike, in parallel). Either one alone satisfies the exit gate, because iOS-first is not iOS-only.
+## Revised phases (plan backwards from Sept 30, 22:00 PHT)
 
-**Owners (assumed 4; revisit under D-009):**
-- **A:** `Transport` + `SyncProtocol` + native transports (Phase 2). Android first, then the Multipeer spike.
-- **B:** `rules.ts`, `IncidentEngine`, `StorePolicy`, test vectors (Phase 1), then the dashboard route (Phase 4).
-- **C:** Expo UI: form, My data, station board (Phases 1, 3).
-- **D:** Foundation + Vercel + CI (Phase 0), Postgres + uplink (Phase 4), then field test, video and devlog (Phase 5).
+| Phase | When (PHT) | Goal | Exit gate | Parallel with |
+|---|---|---|---|---|
+| **Human unblock** | Sun Sep 27 | Licence, Supabase, Vercel, Expo Go on the iPhones, D-019's open part, one BDRRMO conversation booked | `.env` filled; dashboard URL live; app opens in Expo Go on 3+ iPhones | Everything |
+| **RS: QR spike** (D-026) | Sun, 45 min | Prove Expo Go can scan cycling multi-frame QR on your iPhones | 30 frames × 500 chars in ≤ 30 s, 4 of 5 attempts, and record the catch rate p at 500 and 700 (D-027) — or take the fallback | R0 |
+| **R0: Wire hygiene** | Sun | `toWire` / `asReceived`, one `receiveObservations()` ingest path, docs pointers | Leak tests fail before, pass after | RS |
+| **R1: Evidence + freshness** | Sun–Mon | Reports vs sources, freshness, timeline on board, detail, dashboard | Evidence fixtures green; visible in the browser | R2 UI work |
+| **R2: QR bundle transfer** | Mon | Share (paged) / scan / receipt | Two iPhones in airplane mode: A's 3 FLOOD reports become one incident on B | R1 |
+| **R3: Propagation status** | Mon | Honest status for the reporter | "Passed to another phone" / "Reached a station" after a receipt | R4 |
+| **R4: Known / not yet reported** | Mon–Tue | Gaps on detail and dashboard | Gap fixtures green | R3, R5 |
+| **R5: Coverage** | Tue | Coverage per area | Coverage fixtures green | R4 |
+| **R7: Field test + submission** | Tue–Wed | Field test, video, Devpost, README | **Submitted by Wed 22:00** | — |
+| **R6: Multipeer** (stretch) | Only if R1–R5 are green by Tue midday **and** D-019's open part is yes | Radio sync on iPhones, 1-day timebox | Two iPhones converge over Multipeer | — |
 
-B and C work against in-memory data and the mock transport until A's native work lands. Nothing except Phase 2b and the field test depends on D-011.
+**The riskiest proof comes first.** RS decides whether the demo shows real phones or leans on `/sim`, so it runs before any feature work. R1 is low-risk engine work that will land either way.
 
-## Start today, in parallel with Phase 0
+## Owners
 
-- **Apple Developer enrolment** (D-011). It can take 24–48 h and blocks nothing else, so the only cost of starting now is the fee.
-- **Confirm D-016** — that Vercel is the preview/dashboard surface and native ships through EAS.
-- **Answer D-009** (staffing). The plan is sized for 4.
+The roster is seven people (`README.md`); roles A–D below aren't assigned yet (D-009). FirstCommit lists at most **6** members per team. The plan works with 2–4 active builders; with one, run the phases in order and cut per below.
+
+| Role | Work |
+|---|---|
+| **A — Transfer** | RS, R2, R3 (and R6 if it happens) |
+| **B — Core** | R0, then the pure modules for R1, R4, R5 and their fixtures |
+| **C — UI** | Board, detail, dashboard and My data screens for R1, R3, R4, R5; English and Filipino strings |
+| **D — Ship** | Human unblock tasks, Supabase and Vercel, field test run sheet, video, Devpost, README |
+
+B and C work in the browser against local data; only A and the field test need phones.
 
 ## Traceability
 
 | Goal | Requirements | Components | Phase | Verified by |
 |---|---|---|---|---|
-| G-1 incidents offline | FR-003, BR-003–007 | IncidentEngine | 1 | Vectors, field test |
-| G-2 same picture everywhere | NFR-002, FR-005 | IncidentEngine, SyncProtocol | 1–2 | Shuffle test, simulated convergence (2a), real convergence (2b) |
-| G-3 urgent survives | BR-005, BR-008, FR-005 | StorePolicy, SyncProtocol | 1–2 | Eviction tests, field test |
-| G-4 what changed | FR-007, FR-010 | Station board, dashboard route | 3–4 | Snapshot diff tests, field test |
+| G-1 incidents offline | FR-003, BR-003–007 | IncidentEngine | done | 11 vectors, shuffle test |
+| G-2 same picture everywhere | NFR-002, FR-005, FR-013 | IncidentEngine, SyncProtocol, qr.ts | done, R2 | Shuffle test, `/sim`, two-iPhone QR test |
+| G-3 urgent moves first | BR-005, BR-008, FR-013 | StorePolicy, qr.ts paging | done, R2 | Eviction tests, QR paging test |
+| G-4 what changed | FR-007, FR-010 | Snapshot, board, dashboard | done | Snapshot tests, field test |
+| G-5 how we know, how recent | BR-011, BR-012, FR-014 | Evidence.ts | R1 | Evidence fixtures |
+| G-6 what is unknown | BR-013, BR-014, FR-016, FR-017 | Gaps.ts, Coverage.ts | R4, R5 | Gap and coverage fixtures |
+| G-7 honest status | BR-015, BR-016, BR-017, FR-015 | ingest.ts, qr.ts receipt | R0, R3 | Wire-hygiene tests, receipt test |
 
 ## Cut order, if something has to give
 
-1. Supporting items (signatures, Android background service, app-sharing guide) — already deferred.
-2. Phase 4's dashboard **map**; keep the ranked list and "since last sync".
-3. Phase 3's "what changed" highlighting; keep the board itself.
-4. Phase 2b's **iOS** transport — demo the Android mesh and state the iOS status honestly.
+1. R6 (Multipeer) — already a stretch.
+2. R5's optional expected-areas list, then R5.
+3. R4.
+4. R3's `SyncSession` hook (keep the QR-receipt part).
 
-The station board is the demo centrepiece. Protect Phases 1, 2a and 3 above everything else.
+**Protect RS, R0, R1 and R2.** Never cut the human unblock tasks or R7: an unsubmitted project scores zero.
 
 ## Demo video (3–5 min)
 
-1. The problem in 20 s.
-2. Why mesh chat isn't enough: name Bridgefy, BitChat, MeshAid.
-3. Live: 3 devices in airplane mode create overlapping FLOOD reports → they meet → the station board shows **one** strongly corroborated incident, not three messages.
-4. Acknowledge on the station → the status spreads.
-5. One device gets Wi-Fi → dashboard: "since last sync: +1 flood incident (3 reports), +1 road blocked, 5 households need water".
-6. What we learned + honest limits — including iOS foreground-only carrying (D-013) and the single-platform mesh (D-012).
+Scenario and script: `docs/IMPLEMENTATION_UPDATE.md` §9, with the D-024 Expo Go protocol. Judging weights to keep in mind: Learning & Growth 30 %, Creativity & Impact 25 %, Technical Execution 25 %, Presentation 20 %.

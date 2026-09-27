@@ -1,6 +1,7 @@
 // Wire format for encounter sync. ARCHITECTURE section 4.
 // Pure TypeScript: no react, no react-native, no DOM (CLAUDE.md).
 
+import { toWire } from "./ingest";
 import type { Observation } from "./types";
 
 export const MSG_HELLO = 0x01;
@@ -71,8 +72,12 @@ export function encodeHello(hello: Hello): Uint8Array {
   return json(MSG_HELLO, hello);
 }
 
+/**
+ * BR-016: every batch goes through toWire, here rather than at each caller,
+ * so neither SyncSession nor the QR path (R2) can leak local-only fields.
+ */
 export function encodeBatch(observations: Observation[]): Uint8Array {
-  return json(MSG_BATCH, observations);
+  return json(MSG_BATCH, observations.map(toWire));
 }
 
 export function encodeBye(): Uint8Array {

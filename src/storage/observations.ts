@@ -4,6 +4,7 @@ import {
   applyPolicy,
   canCreate,
   CAPACITY_RESIDENT,
+  mergeReceived,
   statusCreatedAt,
   type Observation,
   type StatusAction,
@@ -115,6 +116,25 @@ export function markUploaded(ids: string[]): Promise<Observation[]> {
       wanted.has(o.id) ? { ...o, uploaded: true } : o,
     );
     return persist(marked, now);
+  });
+}
+
+/**
+ * R0: the ONE way observations from another phone enter the store, by QR
+ * bundle (R2) now and by SyncSession later. Nothing else writes received
+ * data. mergeReceived drops malformed items, resets the local-only fields
+ * (BR-016) and never replaces what is already held; persist runs StorePolicy
+ * in the same serialized write.
+ *
+ * Resolves to how many new observations survived, for "Received N (M new)".
+ */
+export function receiveObservations(incoming: unknown[]): Promise<number> {
+  return serialize(async () => {
+    const now = nowSeconds();
+    const existing = await loadObservations();
+    const before = new Set(existing.map((o) => o.id));
+    const kept = await persist(mergeReceived(existing, incoming, now), now);
+    return kept.filter((o) => !before.has(o.id)).length;
   });
 }
 

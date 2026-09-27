@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { MockNetwork } from "../transport/mock";
 import { compute } from "./IncidentEngine";
+import { mergeReceived } from "./ingest";
 import { CAPACITY_STATION } from "./rules";
 import { applyPolicy } from "./StorePolicy";
 import { SyncSession, type SyncContext } from "./SyncProtocol";
@@ -45,11 +46,13 @@ class Device {
       now: () => NOW,
       observations: () => this.observations,
       apply: (incoming) => {
-        // Atomic batch apply through StorePolicy, as ARCHITECTURE requires.
-        const merged = [...this.observations];
-        const known = new Set(merged.map((o) => o.id));
-        for (const o of incoming) if (!known.has(o.id)) merged.push(o);
-        this.observations = applyPolicy(merged, CAPACITY_STATION, NOW);
+        // Atomic batch apply through the real ingest path, then StorePolicy,
+        // exactly as receiveObservations does in the app (R0).
+        this.observations = applyPolicy(
+          mergeReceived(this.observations, incoming, NOW),
+          CAPACITY_STATION,
+          NOW,
+        );
       },
       freeCapacity: () => CAPACITY_STATION - this.observations.length,
     };
@@ -152,6 +155,30 @@ describe("FR-005 encounter sync", () => {
     );
     expect(a.observations).toHaveLength(3);
     expect(sessionA.stats.truncated).toBe(false);
+  });
+
+  it("BR-016: a synced own observation arrives as someone else's, not uploaded", async () => {
+    const network = new MockNetwork();
+    const a = new Device("dev-a", [
+      observation(1, {
+        device_id: "dev-a",
+        own: true,
+        uploaded: true,
+        hops: 0,
+        received_at: NOW - 600,
+      }),
+    ]);
+    const b = new Device("dev-b", []);
+
+    await encounter(network, a, b);
+
+    const copy = b.observations.find((o) => o.id === uuid(1));
+    expect(copy?.own).toBe(false);
+    expect(copy?.uploaded).toBe(false);
+    expect(copy?.received_at).toBe(NOW);
+    expect(copy).not.toHaveProperty("hops");
+    // The sender's own copy is untouched.
+    expect(a.observations[0].own).toBe(true);
   });
 
   it("sends nothing when both devices already agree", async () => {

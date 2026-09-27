@@ -19,7 +19,10 @@ so nothing is discovered missing at 2am.
 
 **Still blank in the README, and each needs a human:**
 - [ ] Dashboard / preview URL (needs Vercel connected)
-- [ ] Team names beyond the lead
+- [x] Team names beyond the lead (README, 2026-09-27) — Mark Jemiel Guevarra's GitHub still missing
+- [ ] **Team size: 7 named, FirstCommit allows 6.** Decide who is listed on Devpost before submitting, and make the README match
+- [ ] Age eligibility (13–21): six confirmed; Mark's pending. Three members are 20–21; the rules don't say whether 21 is inclusive, so ask the organisers if unsure
+- [ ] Keep emails and birthdates out of the repo — Devpost collects those directly
 - [ ] Licence — *pick one before submitting*. "To be decided" on a public repo means nobody may legally use it.
 - [ ] Remove the "Draft README" notice once the above are filled
 
@@ -57,8 +60,10 @@ If the field test did not happen, add:
 
 ### Inspiration
 
-When a typhoon knocks out power, the cell towers go with it. For the first
-24–48 hours a barangay's disaster-response team knows only what people walk
+When a typhoon knocks out power, the cell towers go with it. For days, and
+sometimes weeks (after Typhoon Odette in 2021, commercial telecoms took until
+late March 2022 to substantially recover in the hardest-hit areas), a
+barangay's disaster-response team knows only what people walk
 in and tell them, and that arrives as a pile of duplicates and fragments
 rather than a picture of where the problems are.
 
@@ -164,7 +169,7 @@ service, and a map on the dashboard.
 
 | Time | Beat |
 |---|---|
-| 0:00–0:20 | The problem. Towers go down with the grid; a barangay is blind for 24–48 hours. |
+| 0:00–0:20 | The problem. Towers go down with the grid; a barangay can be blind for days to weeks (Odette: about three months to restore commercial telecoms in the hardest-hit areas). |
 | 0:20–0:50 | Why mesh chat is not enough. Name Bridgefy, BitChat, MeshAid. A feed of 100 messages is not a picture. |
 | 0:50–2:20 | **Live.** Three devices in airplane mode. Create three FLOOD reports near one spot. Bring them together. The station board shows **one strongly corroborated incident**, not three messages. Open it: "why ranked here", term by term. |
 | 2:20–2:50 | Acknowledge on the station. Carry to another device — the status travelled. |
