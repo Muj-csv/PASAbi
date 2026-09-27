@@ -77,7 +77,8 @@ export function urgencyByObservation(
   return score;
 }
 
-function byUrgencyThenId(
+/** Most urgent first, then by ID. Shared with the QR pager (qr.ts). */
+export function byUrgencyThenId(
   urgency: Map<string, number>,
 ): (a: Observation, b: Observation) => number {
   return (a, b) => {

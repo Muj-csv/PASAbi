@@ -199,3 +199,41 @@ converging to identical incident lists: honest evidence about the protocol
 and no evidence at all about radios. Describe it in exactly those terms.
 Judges weight Learning & Growth heavily, and a clearly stated limitation
 reads better than a staged demo.
+
+---
+
+## 8. QR transfer (RS spike and R2)
+
+This round moves observations by QR code (ADR-008), in Expo Go, following
+the D-024 protocol: load PASAbi online, switch to airplane mode, never reload.
+Sections 0 to 7 above describe the radio test and apply only if R6 lands.
+
+### RS spike (before relying on R2)
+
+Pass bar, decided in advance: at 500 characters per frame, all 30 frames in
+**30 s or less, in 4 of 5 attempts**, indoors, phone to phone. Record the
+share of displayed frames the camera caught (p); `docs/analysis/ARGUS_constants.md`
+figure 2 turns p into seconds per page.
+
+| Attempt | Chars per frame | Frames caught / shown (p) | Seconds for all 30 | Pass? |
+|---|---|---|---|---|
+| 1 | 500 | | | |
+| 2 | 500 | | | |
+| 3 | 500 | | | |
+| 4 | 500 | | | |
+| 5 | 500 | | | |
+| 1 | 700 | | | (p only) |
+
+If it fails: set `QR_FRAME_CHARS = 400` and `QR_MAX_OBSERVATIONS = 20` in
+`packages/core/rules.ts`, rerun once, and note the result here.
+
+### R2 exchange (NFR-009: a full page in 60 s or less)
+
+Use Share on one phone and Scan on the other. Time from the first frame on
+screen to "Received N (M new)". Then scan the receipt back.
+
+| Sharer → scanner | Observations on page | Frames | Seconds to complete | Receipt scanned? | Notes (light, glare, hand shake) |
+|---|---|---|---|---|---|
+| | | | | | |
+| | | | | | |
+| | | | | | |

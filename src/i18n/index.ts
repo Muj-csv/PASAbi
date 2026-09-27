@@ -126,6 +126,39 @@ const en = {
   incidentChanged: "This incident changed. Back to the board.",
   chooseCategoryFirst: "Choose what is happening first.",
   pinTooShort: "Enter at least 4 digits.",
+
+  // QR bundle transfer (R2, DESIGN_BRIEF section 12)
+  shareTitle: "Pass on by QR",
+  shareHint: "Let the other phone scan this. Keep it steady and turn brightness up.",
+  frameCounter: "Frame {i} of {n} · Page {p} of {P}",
+  nextPage: "Next page",
+  pause: "Pause",
+  play: "Play",
+  previousFrame: "Previous frame",
+  nextFrame: "Next frame",
+  scanReceipt: "Scan their receipt",
+  swapHint: "To get their reports too, swap: they show, you scan.",
+  scanTheirPhoneFirst: "Scan their phone first (optional)",
+  skippingKnown: "Skipping what that phone already has.",
+  nothingToShare: "Nothing to pass on yet.",
+  receiptRecorded: "Receipt scanned: that phone received this page.",
+  receiptStation: "It says it is a station.",
+  receiptWrong: "That receipt is for a different page.",
+  cancel: "Cancel",
+  scanTitle: "Receive by QR",
+  showIdFirst: "Show this to the sharer first (optional)",
+  scanPointAt: "Point the camera at the other phone's QR code.",
+  scanProgress: "{k} of {n} frames",
+  scanDone: "Received {N} ({M} new)",
+  showReceipt: "Show this receipt to the sharer",
+  receiveAnother: "Receive another",
+  wrongBundle: "That's a different code. Keep scanning this one.",
+  scanFailed: "Those frames didn't read correctly. Keep scanning.",
+  allowCamera: "Allow camera",
+  cameraDenied:
+    "PASAbi needs the camera to receive by QR. Allow it in Settings › Expo Go › Camera.",
+  cameraUnavailable:
+    "Camera scanning isn't available here. Use PASAbi on a phone to scan.",
 };
 
 export type Strings = typeof en;
@@ -244,6 +277,41 @@ const fil: Strings = {
   incidentChanged: "Nagbago ang insidenteng ito. Bumalik sa board.",
   chooseCategoryFirst: "Piliin muna kung ano ang nangyayari.",
   pinTooShort: "Maglagay ng hindi bababa sa 4 na numero.",
+
+  // QR, drafts for a native speaker to review (DESIGN_BRIEF section 12).
+  shareTitle: "Ipasa gamit ang QR",
+  shareHint:
+    "Ipa-scan sa kabilang telepono. Huwag galawin at lakasan ang liwanag ng screen.",
+  frameCounter: "Frame {i} ng {n} · Pahina {p} ng {P}",
+  nextPage: "Susunod na pahina",
+  pause: "I-pause",
+  play: "Ituloy",
+  previousFrame: "Nakaraang frame",
+  nextFrame: "Susunod na frame",
+  scanReceipt: "I-scan ang resibo nila",
+  swapHint:
+    "Para makuha rin ang ulat nila, magpalit: sila ang magpapakita, ikaw ang mag-i-scan.",
+  scanTheirPhoneFirst: "I-scan muna ang telepono nila (opsyonal)",
+  skippingKnown: "Nilaktawan ang mayroon na sa teleponong iyon.",
+  nothingToShare: "Wala pang maipapasa.",
+  receiptRecorded: "Na-scan ang resibo: natanggap ng teleponong iyon ang pahinang ito.",
+  receiptStation: "Sinasabi nitong istasyon ito.",
+  receiptWrong: "Para sa ibang pahina ang resibong iyan.",
+  cancel: "Kanselahin",
+  scanTitle: "Tumanggap gamit ang QR",
+  showIdFirst: "Ipakita muna ito sa magpapasa (opsyonal)",
+  scanPointAt: "Itutok ang camera sa QR code ng kabilang telepono.",
+  scanProgress: "{k} sa {n} frame",
+  scanDone: "Natanggap ang {N} ({M} bago)",
+  showReceipt: "Ipakita ang resibong ito sa nagpasa",
+  receiveAnother: "Tumanggap ulit",
+  wrongBundle: "Ibang code iyan. Ituloy ang pag-scan sa naunang code.",
+  scanFailed: "Hindi nabasa nang tama. Ituloy ang pag-scan.",
+  allowCamera: "Payagan ang camera",
+  cameraDenied:
+    "Kailangan ng PASAbi ang camera para makatanggap gamit ang QR. Payagan ito sa Settings › Expo Go › Camera.",
+  cameraUnavailable:
+    "Walang camera scanning dito. Gamitin ang PASAbi sa telepono para mag-scan.",
 };
 
 export const CATEGORY_LABELS: Record<Lang, Record<Category, string>> = {

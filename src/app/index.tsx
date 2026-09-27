@@ -1,5 +1,5 @@
 import * as Location from "expo-location";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -83,6 +83,7 @@ export default function NewObservation() {
   const t = useStrings();
   const lang = useLang();
   const { state: fixState, fix } = useLocation();
+  const router = useRouter();
 
   const scroll = useRef<ScrollView>(null);
   const areaY = useRef(0);
@@ -283,6 +284,20 @@ export default function NewObservation() {
         </Text>
       ) : null}
 
+      {/* FR-004: prominent pass-on and receive actions, by QR this round. */}
+      <View style={styles.qrRow}>
+        <Button
+          label={t.shareTitle}
+          variant="secondary"
+          onPress={() => router.push("/share")}
+        />
+        <Button
+          label={t.scanTitle}
+          variant="secondary"
+          onPress={() => router.push("/scan")}
+        />
+      </View>
+
       <Link href="/my-data" style={styles.link}>
         {t.myData}
       </Link>
@@ -340,4 +355,5 @@ const styles = StyleSheet.create({
   // Recorded is not "help is coming": plain text, never green (BR-017).
   message: { fontSize: size.body, color: color.textPrimary, fontWeight: "600" },
   link: { fontSize: size.body, color: color.accent, paddingVertical: space[2] },
+  qrRow: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
 });

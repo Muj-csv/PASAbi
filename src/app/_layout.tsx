@@ -28,6 +28,8 @@ export default function RootLayout() {
       <Stack.Screen name="station" options={{ title: "Pasabi" }} />
       <Stack.Screen name="incident/[key]" options={{ title: "Pasabi" }} />
       <Stack.Screen name="dashboard" options={{ title: "Pasabi" }} />
+      <Stack.Screen name="share" options={{ title: "Pasabi" }} />
+      <Stack.Screen name="scan" options={{ title: "Pasabi" }} />
     </Stack>
   );
 }

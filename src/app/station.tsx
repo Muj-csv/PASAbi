@@ -160,6 +160,18 @@ export default function Station() {
           onPress={() => void leave()}
         />
       </View>
+      <View style={styles.row}>
+        <Button
+          label={t.scanTitle}
+          variant="secondary"
+          onPress={() => router.push("/scan")}
+        />
+        <Button
+          label={t.shareTitle}
+          variant="secondary"
+          onPress={() => router.push("/share")}
+        />
+      </View>
 
       {incidents.length === 0 ? (
         <Text style={styles.muted}>{t.noIncidents}</Text>
