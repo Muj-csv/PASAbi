@@ -31,7 +31,7 @@ const en = {
   locationNone: "No location. Name the purok or landmark instead.",
   submit: "Record observation",
   saving: "Saving",
-  saved: "Recorded. It passes on when you meet another phone.",
+  saved: "Recorded.",
   rateLimited: "Six observations recorded this hour. Try again later.",
   myData: "My data",
   back: "Back",
@@ -159,6 +159,16 @@ const en = {
     "PASAbi needs the camera to receive by QR. Allow it in Settings › Expo Go › Camera.",
   cameraUnavailable:
     "Camera scanning isn't available here. Use PASAbi on a phone to scan.",
+
+  // Reporter status (R3, BR-015, DESIGN_BRIEF section 3a)
+  stepSaved: "Saved on this phone",
+  stepPassed: "Passed to another phone",
+  stepStation: "Reached a station",
+  stepUploaded: "Uploaded from this phone",
+  stepGroupedOne: "Grouped with a report from 1 other phone",
+  stepGrouped: "Grouped with reports from {n} other phones",
+  stepFooter:
+    "This shows only what this phone knows. It does not mean responders have seen it.",
 };
 
 export type Strings = typeof en;
@@ -183,7 +193,7 @@ const fil: Strings = {
   locationNone: "Walang lokasyon. Ilagay ang purok o palatandaan.",
   submit: "Itala ang ulat",
   saving: "Itinatala",
-  saved: "Naitala. Ipapasa ito kapag may makasalubong na telepono.",
+  saved: "Naitala.",
   rateLimited: "Anim na ulat na sa oras na ito. Subukan mamaya.",
   myData: "Aking datos",
   back: "Balik",
@@ -312,6 +322,16 @@ const fil: Strings = {
     "Kailangan ng PASAbi ang camera para makatanggap gamit ang QR. Payagan ito sa Settings › Expo Go › Camera.",
   cameraUnavailable:
     "Walang camera scanning dito. Gamitin ang PASAbi sa telepono para mag-scan.",
+
+  // Drafts for a native speaker to review (DESIGN_BRIEF section 12).
+  stepSaved: "Nakatala sa teleponong ito",
+  stepPassed: "Naipasa sa ibang telepono",
+  stepStation: "Nakarating sa istasyon",
+  stepUploaded: "Na-upload mula sa teleponong ito",
+  stepGroupedOne: "Kasama ng ulat mula sa 1 pang telepono",
+  stepGrouped: "Kasama ng mga ulat mula sa {n} pang telepono",
+  stepFooter:
+    "Ito lang ang alam ng teleponong ito. Hindi ibig sabihing nakita na ito ng mga responder.",
 };
 
 export const CATEGORY_LABELS: Record<Lang, Record<Category, string>> = {

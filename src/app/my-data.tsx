@@ -1,36 +1,47 @@
 import { Link, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+
 import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+  compute,
+  propagationFor,
+  type Incident,
+  type Observation,
+  type Propagation,
+} from "@pasabi/core";
 
-import { compute, type Incident, type Observation } from "@pasabi/core";
-
+import { Button } from "@/components/Button";
+import { StatusSteps } from "@/components/StatusSteps";
 import { CATEGORY_LABELS, plural, useLang, useStrings } from "@/i18n";
 import { deleteOwnObservation, loadObservations } from "@/storage/observations";
 import { uploadPending } from "@/storage/uplink";
+import { color, radius, size, space, tabularNums } from "@/theme/tokens";
 
 function when(epochSeconds: number): string {
   return new Date(epochSeconds * 1000).toLocaleString();
 }
 
-/** FR-011: everything this phone carries, and delete for what it created. */
+/**
+ * FR-011: everything this phone carries, and delete for what it created.
+ * FR-015: each own observation shows what this phone knows about where it
+ * went (BR-015), and nothing more.
+ */
 export default function MyData() {
   const t = useStrings();
   const lang = useLang();
   const [observations, setObservations] = useState<Observation[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [status, setStatus] = useState<Map<string, Propagation>>(new Map());
   const [uploadNote, setUploadNote] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [confirming, setConfirming] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     const stored = await loadObservations();
+    const current = compute(stored, Math.floor(Date.now() / 1000));
     setObservations(stored);
-    setIncidents(compute(stored, Math.floor(Date.now() / 1000)));
+    setIncidents(current);
+    setStatus(propagationFor(stored, current));
   }, []);
 
   useFocusEffect(
@@ -39,17 +50,35 @@ export default function MyData() {
     }, [reload]),
   );
 
-  const remove = (id: string): void => {
-    Alert.alert(t.deleteAction, t.deleteNote, [
-      { text: t.back, style: "cancel" },
-      {
-        text: t.deleteAction,
-        style: "destructive",
-        onPress: () => {
-          void deleteOwnObservation(id).then(reload);
-        },
-      },
-    ]);
+  const upload = async (): Promise<void> => {
+    setUploading(true);
+    try {
+      const result = await uploadPending();
+      setUploadNote(
+        !result.attempted
+          ? t.uploadOffline
+          : result.error !== null
+            ? t.loadError + " " + result.error
+            : String(result.uploaded) +
+              " " +
+              t.uploadedCount +
+              ", " +
+              String(result.pending) +
+              " " +
+              t.pendingCount,
+      );
+      await reload();
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Confirmation is inline, not Alert.alert: React Native Web has no Alert,
+  // so a dialog-based delete silently did nothing on the web build.
+  const remove = async (id: string): Promise<void> => {
+    setConfirming(null);
+    await deleteOwnObservation(id);
+    await reload();
   };
 
   const sorted = [...observations].sort((a, b) => b.created_at - a.created_at);
@@ -62,108 +91,125 @@ export default function MyData() {
         {plural(incidents.length, t.incidentOne, t.incidentMany)}
       </Text>
 
-      <Pressable
-        style={styles.upload}
-        onPress={() => {
-          void (async () => {
-            const result = await uploadPending();
-            setUploadNote(
-              !result.attempted
-                ? t.uploadOffline
-                : result.error !== null
-                  ? t.loadError + " " + result.error
-                  : String(result.uploaded) +
-                    " " +
-                    t.uploadedCount +
-                    ", " +
-                    String(result.pending) +
-                    " " +
-                    t.pendingCount,
-            );
-            await reload();
-          })();
-        }}
-      >
-        <Text style={styles.uploadText}>{t.uploadNow}</Text>
-      </Pressable>
+      <Button
+        label={t.uploadNow}
+        onPress={() => void upload()}
+        busy={uploading}
+        busyLabel={t.saving}
+      />
       {uploadNote ? <Text style={styles.muted}>{uploadNote}</Text> : null}
 
-      <Link href="/" style={styles.link}>
-        {t.newObservation}
-      </Link>
-
-      <Link href="/dashboard" style={styles.link}>
-        {t.dashboard}
-      </Link>
+      <View style={styles.links}>
+        <Link href="/" style={styles.link}>
+          {t.newObservation}
+        </Link>
+        <Link href="/dashboard" style={styles.link}>
+          {t.dashboard}
+        </Link>
+      </View>
 
       {sorted.length === 0 ? (
         <Text style={styles.muted}>{t.empty}</Text>
       ) : null}
 
-      {sorted.map((o) => (
-        <View key={o.id} style={styles.card}>
-          <View style={styles.cardHead}>
-            <Text style={styles.cardTitle}>
-              {o.category
-                ? CATEGORY_LABELS[lang][o.category]
-                : (o.action ?? o.type)}
-            </Text>
-            <Text style={o.own ? styles.badgeMine : styles.badge}>
-              {o.own ? t.mine : t.carried}
-            </Text>
-          </View>
-          <Text style={styles.muted}>{when(o.created_at)}</Text>
-          {o.note ? <Text style={styles.note}>{o.note}</Text> : null}
-          {o.area_text ? (
-            <Text style={styles.muted}>{o.area_text}</Text>
-          ) : null}
-          {typeof o.people === "number" ? (
-            <Text style={styles.muted}>
-              {t.peopleAffectedShort}: {o.people}
-            </Text>
-          ) : null}
-          {o.own ? (
-            <Pressable onPress={() => remove(o.id)} style={styles.delete}>
-              <Text style={styles.deleteText}>{t.deleteAction}</Text>
-            </Pressable>
-          ) : null}
-        </View>
-      ))}
+      {sorted.map((o) => {
+        const own = status.get(o.id);
+        return (
+          <View key={o.id} style={styles.card}>
+            <View style={styles.cardHead}>
+              <Text style={styles.cardTitle}>
+                {o.category
+                  ? CATEGORY_LABELS[lang][o.category]
+                  : o.action === "RESOLVE"
+                    ? t.statusResolved
+                    : o.action === "ACK"
+                      ? t.statusAcknowledged
+                      : o.type}
+              </Text>
+              <Text style={own ? styles.mine : styles.carried}>
+                {own ? t.mine : t.carried}
+              </Text>
+            </View>
+            <Text style={styles.muted}>{when(o.created_at)}</Text>
+            {o.note ? <Text style={styles.note}>{o.note}</Text> : null}
+            {o.area_text ? (
+              <Text style={styles.muted}>{o.area_text}</Text>
+            ) : null}
+            {typeof o.people === "number" ? (
+              <Text style={styles.muted}>
+                {t.peopleAffectedShort}: {o.people}
+              </Text>
+            ) : null}
 
-      <Text style={styles.footnote}>{t.deleteNote}</Text>
+            {own ? <StatusSteps status={own} footer={false} /> : null}
+
+            {own && confirming !== o.id ? (
+              <View style={styles.row}>
+                <Button
+                  label={t.deleteAction}
+                  variant="dangerSecondary"
+                  onPress={() => setConfirming(o.id)}
+                />
+              </View>
+            ) : null}
+            {own && confirming === o.id ? (
+              <View style={styles.confirm}>
+                <Text style={styles.note}>{t.deleteNote}</Text>
+                <View style={styles.row}>
+                  <Button
+                    label={t.deleteAction}
+                    variant="dangerSecondary"
+                    onPress={() => void remove(o.id)}
+                  />
+                  <Button
+                    label={t.cancel}
+                    variant="secondary"
+                    onPress={() => setConfirming(null)}
+                  />
+                </View>
+              </View>
+            ) : null}
+          </View>
+        );
+      })}
+
+      {/* BR-015 footer, once for the whole list rather than on every card. */}
+      {status.size > 0 ? (
+        <Text style={styles.muted}>{t.stepFooter}</Text>
+      ) : null}
+      <Text style={styles.muted}>{t.deleteNote}</Text>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 16, gap: 12, paddingBottom: 48 },
-  summary: { fontSize: 18, fontWeight: "700" },
-  link: { fontSize: 16, color: "#1566c0", paddingVertical: 4 },
-  upload: {
-    backgroundColor: "#1566c0",
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: "center",
+  page: { padding: space[4], gap: space[3], paddingBottom: space[7] },
+  summary: {
+    fontSize: size.h3,
+    fontWeight: "700",
+    color: color.textPrimary,
+    ...tabularNums,
   },
-  uploadText: { color: "#ffffff", fontWeight: "700", fontSize: 15 },
+  links: { flexDirection: "row", flexWrap: "wrap", gap: space[4] },
+  link: { fontSize: size.body, color: color.accent, paddingVertical: space[2] },
   card: {
+    backgroundColor: color.surface,
     borderWidth: 1,
-    borderColor: "#d8dde3",
-    borderRadius: 10,
-    padding: 12,
-    gap: 4,
+    borderColor: color.borderSubtle,
+    borderRadius: radius.card,
+    padding: space[3],
+    gap: space[2],
   },
   cardHead: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  cardTitle: { fontSize: 16, fontWeight: "700" },
-  badge: { fontSize: 12, color: "#5a6673" },
-  badgeMine: { fontSize: 12, color: "#1566c0", fontWeight: "700" },
-  note: { fontSize: 15 },
-  muted: { fontSize: 13, color: "#5a6673" },
-  delete: { paddingVertical: 8 },
-  deleteText: { color: "#b3261e", fontWeight: "700" },
-  footnote: { fontSize: 12, color: "#5a6673", marginTop: 8 },
+  cardTitle: { fontSize: size.body, fontWeight: "700", color: color.textPrimary },
+  mine: { fontSize: size.caption, fontWeight: "700", color: color.accent },
+  carried: { fontSize: size.caption, color: color.textSecondary },
+  note: { fontSize: size.body, color: color.textPrimary },
+  muted: { fontSize: size.caption, color: color.textSecondary },
+  row: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
+  confirm: { gap: space[2] },
 });

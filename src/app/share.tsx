@@ -17,7 +17,7 @@ import { Notice } from "@/components/Notice";
 import { QrFrame } from "@/components/QrFrame";
 import { QrScanner } from "@/components/QrScanner";
 import { fill, useStrings } from "@/i18n";
-import { loadObservations } from "@/storage/observations";
+import { loadObservations, markPassedOn } from "@/storage/observations";
 import { ackedBy, recordReceipt } from "@/storage/qrReceipts";
 import { color, size, space, tabularNums } from "@/theme/tokens";
 
@@ -108,6 +108,8 @@ export default function Share() {
       return;
     }
     await recordReceipt(receipt.deviceId, ids);
+    // R3: the reporter's status moves only on evidence like this receipt.
+    await markPassedOn(ids, receipt.role);
     setMode("show");
     // BR-015: the receipt's role is trusted, not verified, and says so.
     setNote(

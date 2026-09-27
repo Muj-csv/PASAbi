@@ -7,7 +7,12 @@ import { CAPACITY_STATION } from "./rules";
 import { applyPolicy } from "./StorePolicy";
 import { SyncSession, type SyncContext } from "./SyncProtocol";
 import type { Category, Observation } from "./types";
-import { bytesToUuid, idsPerSummaryChunk, uuidToBytes } from "./wire";
+import {
+  bytesToUuid,
+  idsPerSummaryChunk,
+  uuidToBytes,
+  type Role,
+} from "./wire";
 
 const NOW = 1759000000;
 
@@ -31,10 +36,13 @@ function observation(n: number, over: Partial<Observation> = {}): Observation {
 /** A device: a store plus the context a SyncSession needs. */
 class Device {
   observations: Observation[];
+  /** Every onSent report: the IDs in a batch and the peer's claimed role. */
+  readonly sent: { ids: string[]; peerRole: Role }[] = [];
 
   constructor(
     readonly id: string,
     initial: Observation[],
+    readonly role: Role = "resident",
   ) {
     this.observations = [...initial];
   }
@@ -42,7 +50,8 @@ class Device {
   context(): SyncContext {
     return {
       deviceId: this.id,
-      role: "resident",
+      role: this.role,
+      onSent: (ids, peerRole) => this.sent.push({ ids, peerRole }),
       now: () => NOW,
       observations: () => this.observations,
       apply: (incoming) => {
@@ -179,6 +188,22 @@ describe("FR-005 encounter sync", () => {
     expect(copy).not.toHaveProperty("hops");
     // The sender's own copy is untouched.
     expect(a.observations[0].own).toBe(true);
+  });
+
+  it("BR-015: onSent reports exactly what went out, and the peer's role", async () => {
+    const network = new MockNetwork();
+    const a = new Device("dev-a", [
+      observation(1, { device_id: "dev-a" }),
+      observation(2, { device_id: "dev-a", category: "MEDICAL" }),
+    ]);
+    const station = new Device("dev-s", [], "station");
+
+    await encounter(network, a, station);
+
+    expect(a.sent.flatMap((s) => s.ids).sort()).toEqual([uuid(1), uuid(2)]);
+    expect(a.sent.every((s) => s.peerRole === "station")).toBe(true);
+    // The station had nothing to send, so it reports nothing.
+    expect(station.sent).toEqual([]);
   });
 
   it("sends nothing when both devices already agree", async () => {

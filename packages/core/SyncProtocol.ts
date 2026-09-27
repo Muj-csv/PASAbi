@@ -34,6 +34,12 @@ export interface SyncContext {
    */
   apply(incoming: Observation[]): void;
   freeCapacity(): number;
+  /**
+   * BR-015 (R3): called after each batch actually goes out, with the IDs in
+   * it and the role the peer claimed in its HELLO, so the store can mark
+   * propagation status. Optional; core never touches the store itself.
+   */
+  onSent?(ids: string[], peerRole: Role): void;
   maxPayloadBytes?: number;
   budgetMs?: number;
   /** Injectable so tests do not depend on wall-clock time. */
@@ -130,6 +136,8 @@ export class SyncSession {
   /** True while the batch loop is running, so a peer BYE cannot cut it off. */
   private sending = false;
   private readonly peerIds: string[] = [];
+  /** What the peer's HELLO claimed; trusted, not verified (BR-015). */
+  private peerRole: Role = "resident";
   private chunksExpected: number | null = null;
   private chunksSeen = 0;
   private startedMs: number;
@@ -236,6 +244,10 @@ export class SyncSession {
       }
       await this.transmit(encodeBatch(batch));
       this.stats.observationsSent += batch.length;
+      this.ctx.onSent?.(
+        batch.map((o) => o.id),
+        this.peerRole,
+      );
     }
 
     this.sending = false;
@@ -273,6 +285,7 @@ export class SyncSession {
         return;
       }
       this.phase = "greeted";
+      this.peerRole = message.hello.role === "station" ? "station" : "resident";
       await this.sendHello();
       await this.sendSummary();
       return;

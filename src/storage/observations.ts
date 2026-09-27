@@ -4,9 +4,11 @@ import {
   applyPolicy,
   canCreate,
   CAPACITY_RESIDENT,
+  markPropagated,
   mergeReceived,
   statusCreatedAt,
   type Observation,
+  type Role,
   type StatusAction,
 } from "@pasabi/core";
 
@@ -135,6 +137,22 @@ export function receiveObservations(incoming: unknown[]): Promise<number> {
     const before = new Set(existing.map((o) => o.id));
     const kept = await persist(mergeReceived(existing, incoming, now), now);
     return kept.filter((o) => !before.has(o.id)).length;
+  });
+}
+
+/**
+ * BR-015 (R3): these observations left this phone, by a scanned receipt or
+ * a completed sync send. Marks own observations passed on (and reached a
+ * station when the peer said it was one); flags only go false to true.
+ */
+export function markPassedOn(
+  ids: string[],
+  peerRole: Role,
+): Promise<Observation[]> {
+  return serialize(async () => {
+    const now = nowSeconds();
+    const existing = await loadObservations();
+    return persist(markPropagated(existing, ids, peerRole), now);
   });
 }
 
