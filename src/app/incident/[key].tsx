@@ -5,7 +5,9 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   compute,
   evidenceOf,
+  gapsFor,
   type Evidence,
+  type Gaps,
   type Incident,
   type StatusAction,
 } from "@pasabi/core";
@@ -14,6 +16,7 @@ import { Button } from "@/components/Button";
 import { EvidenceLine } from "@/components/EvidenceLine";
 import { FreshnessText } from "@/components/FreshnessText";
 import { areaOf } from "@/components/IncidentCard";
+import { KnownUnknownList } from "@/components/KnownUnknownList";
 import { Notice } from "@/components/Notice";
 import { TimelineRow } from "@/components/TimelineRow";
 import {
@@ -52,14 +55,18 @@ export default function IncidentDetail() {
   const [loaded, setLoaded] = useState(false);
   const [incident, setIncident] = useState<Incident | null>(null);
   const [evidence, setEvidence] = useState<Evidence | null>(null);
+  const [gaps, setGaps] = useState<Gaps | null>(null);
   const [busy, setBusy] = useState(false);
 
   const reload = useCallback(async () => {
     const observations = await loadObservations();
     const now = nowSeconds();
-    const found = compute(observations, now).find((i) => i.key === key) ?? null;
+    const incidents = compute(observations, now);
+    const found = incidents.find((i) => i.key === key) ?? null;
     setIncident(found);
     setEvidence(found ? evidenceOf(found, observations, now) : null);
+    // ARCHITECTURE 3a: gaps for the incident being viewed only.
+    setGaps(found ? gapsFor(found, incidents, observations) : null);
     setLoaded(true);
   }, [key]);
 
@@ -156,7 +163,14 @@ export default function IncidentDetail() {
         ) : null}
       </View>
 
-      {/* 5. Why ranked here (4, known / not yet reported, lands in R4) */}
+      {/* 4. Known / not yet reported (BR-013) */}
+      {gaps ? (
+        <View style={styles.card}>
+          <KnownUnknownList gaps={gaps} />
+        </View>
+      ) : null}
+
+      {/* 5. Why ranked here */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t.whyRanked}</Text>
         {terms.map((term) => (

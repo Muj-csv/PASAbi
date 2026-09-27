@@ -31,7 +31,7 @@ const en = {
   locationNone: "No location. Name the purok or landmark instead.",
   submit: "Record observation",
   saving: "Saving",
-  saved: "Recorded. It passes on when you meet another phone.",
+  saved: "Recorded.",
   rateLimited: "Six observations recorded this hour. Try again later.",
   myData: "My data",
   back: "Back",
@@ -126,6 +126,58 @@ const en = {
   incidentChanged: "This incident changed. Back to the board.",
   chooseCategoryFirst: "Choose what is happening first.",
   pinTooShort: "Enter at least 4 digits.",
+
+  // QR bundle transfer (R2, DESIGN_BRIEF section 12)
+  shareTitle: "Pass on by QR",
+  shareHint: "Let the other phone scan this. Keep it steady and turn brightness up.",
+  frameCounter: "Frame {i} of {n} · Page {p} of {P}",
+  nextPage: "Next page",
+  pause: "Pause",
+  play: "Play",
+  previousFrame: "Previous frame",
+  nextFrame: "Next frame",
+  scanReceipt: "Scan their receipt",
+  swapHint: "To get their reports too, swap: they show, you scan.",
+  scanTheirPhoneFirst: "Scan their phone first (optional)",
+  skippingKnown: "Skipping what that phone already has.",
+  nothingToShare: "Nothing to pass on yet.",
+  receiptRecorded: "Receipt scanned: that phone received this page.",
+  receiptStation: "It says it is a station.",
+  receiptWrong: "That receipt is for a different page.",
+  cancel: "Cancel",
+  scanTitle: "Receive by QR",
+  showIdFirst: "Show this to the sharer first (optional)",
+  scanPointAt: "Point the camera at the other phone's QR code.",
+  scanProgress: "{k} of {n} frames",
+  scanDone: "Received {N} ({M} new)",
+  showReceipt: "Show this receipt to the sharer",
+  receiveAnother: "Receive another",
+  wrongBundle: "That's a different code. Keep scanning this one.",
+  scanFailed: "Those frames didn't read correctly. Keep scanning.",
+  allowCamera: "Allow camera",
+  cameraDenied:
+    "PASAbi needs the camera to receive by QR. Allow it in Settings › Expo Go › Camera.",
+  cameraUnavailable:
+    "Camera scanning isn't available here. Use PASAbi on a phone to scan.",
+
+  // Reporter status (R3, BR-015, DESIGN_BRIEF section 3a)
+  stepSaved: "Saved on this phone",
+  stepPassed: "Passed to another phone",
+  stepStation: "Reached a station",
+  stepUploaded: "Uploaded from this phone",
+  stepGroupedOne: "Grouped with a report from 1 other phone",
+  stepGrouped: "Grouped with reports from {n} other phones",
+  stepFooter:
+    "This shows only what this phone knows. It does not mean responders have seen it.",
+
+  // Known / not yet reported (R4, BR-013, DESIGN_BRIEF section 12)
+  knownHeading: "Reported nearby",
+  unknownHeading: "Not yet reported nearby",
+  unknownItem: "{category}: no report yet",
+  peopleUnknown: "People affected: not reported",
+  knownEmpty: "Nothing related reported nearby yet.",
+  gapsShow: "What is known nearby",
+  gapsHide: "Hide what is known nearby",
 };
 
 export type Strings = typeof en;
@@ -150,7 +202,7 @@ const fil: Strings = {
   locationNone: "Walang lokasyon. Ilagay ang purok o palatandaan.",
   submit: "Itala ang ulat",
   saving: "Itinatala",
-  saved: "Naitala. Ipapasa ito kapag may makasalubong na telepono.",
+  saved: "Naitala.",
   rateLimited: "Anim na ulat na sa oras na ito. Subukan mamaya.",
   myData: "Aking datos",
   back: "Balik",
@@ -244,6 +296,60 @@ const fil: Strings = {
   incidentChanged: "Nagbago ang insidenteng ito. Bumalik sa board.",
   chooseCategoryFirst: "Piliin muna kung ano ang nangyayari.",
   pinTooShort: "Maglagay ng hindi bababa sa 4 na numero.",
+
+  // QR, drafts for a native speaker to review (DESIGN_BRIEF section 12).
+  shareTitle: "Ipasa gamit ang QR",
+  shareHint:
+    "Ipa-scan sa kabilang telepono. Huwag galawin at lakasan ang liwanag ng screen.",
+  frameCounter: "Frame {i} ng {n} · Pahina {p} ng {P}",
+  nextPage: "Susunod na pahina",
+  pause: "I-pause",
+  play: "Ituloy",
+  previousFrame: "Nakaraang frame",
+  nextFrame: "Susunod na frame",
+  scanReceipt: "I-scan ang resibo nila",
+  swapHint:
+    "Para makuha rin ang ulat nila, magpalit: sila ang magpapakita, ikaw ang mag-i-scan.",
+  scanTheirPhoneFirst: "I-scan muna ang telepono nila (opsyonal)",
+  skippingKnown: "Nilaktawan ang mayroon na sa teleponong iyon.",
+  nothingToShare: "Wala pang maipapasa.",
+  receiptRecorded: "Na-scan ang resibo: natanggap ng teleponong iyon ang pahinang ito.",
+  receiptStation: "Sinasabi nitong istasyon ito.",
+  receiptWrong: "Para sa ibang pahina ang resibong iyan.",
+  cancel: "Kanselahin",
+  scanTitle: "Tumanggap gamit ang QR",
+  showIdFirst: "Ipakita muna ito sa magpapasa (opsyonal)",
+  scanPointAt: "Itutok ang camera sa QR code ng kabilang telepono.",
+  scanProgress: "{k} sa {n} frame",
+  scanDone: "Natanggap ang {N} ({M} bago)",
+  showReceipt: "Ipakita ang resibong ito sa nagpasa",
+  receiveAnother: "Tumanggap ulit",
+  wrongBundle: "Ibang code iyan. Ituloy ang pag-scan sa naunang code.",
+  scanFailed: "Hindi nabasa nang tama. Ituloy ang pag-scan.",
+  allowCamera: "Payagan ang camera",
+  cameraDenied:
+    "Kailangan ng PASAbi ang camera para makatanggap gamit ang QR. Payagan ito sa Settings › Expo Go › Camera.",
+  cameraUnavailable:
+    "Walang camera scanning dito. Gamitin ang PASAbi sa telepono para mag-scan.",
+
+  // Drafts for a native speaker to review (DESIGN_BRIEF section 12).
+  stepSaved: "Nakatala sa teleponong ito",
+  stepPassed: "Naipasa sa ibang telepono",
+  stepStation: "Nakarating sa istasyon",
+  stepUploaded: "Na-upload mula sa teleponong ito",
+  stepGroupedOne: "Kasama ng ulat mula sa 1 pang telepono",
+  stepGrouped: "Kasama ng mga ulat mula sa {n} pang telepono",
+  stepFooter:
+    "Ito lang ang alam ng teleponong ito. Hindi ibig sabihing nakita na ito ng mga responder.",
+
+  // Drafts for a native speaker to review (DESIGN_BRIEF section 12).
+  knownHeading: "Naiulat sa malapit",
+  unknownHeading: "Wala pang ulat sa malapit",
+  unknownItem: "{category}: wala pang ulat",
+  peopleUnknown: "Bilang ng apektado: hindi naiulat",
+  knownEmpty: "Wala pang kaugnay na ulat sa malapit.",
+  gapsShow: "Ano ang alam sa malapit",
+  gapsHide: "Itago ang alam sa malapit",
 };
 
 export const CATEGORY_LABELS: Record<Lang, Record<Category, string>> = {

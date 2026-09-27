@@ -1,5 +1,5 @@
 import * as Location from "expo-location";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,9 +11,17 @@ import {
   View,
 } from "react-native";
 
-import { CATEGORIES, SAFE_CHECKIN, type Category } from "@pasabi/core";
+import {
+  CATEGORIES,
+  compute,
+  propagationFor,
+  SAFE_CHECKIN,
+  type Category,
+  type Propagation,
+} from "@pasabi/core";
 
 import { Button } from "@/components/Button";
+import { StatusSteps } from "@/components/StatusSteps";
 import { CATEGORY_LABELS, useLang, useStrings } from "@/i18n";
 import { getDeviceId, newObservationId } from "@/storage/device";
 import { addObservation, canCreateNow } from "@/storage/observations";
@@ -83,6 +91,7 @@ export default function NewObservation() {
   const t = useStrings();
   const lang = useLang();
   const { state: fixState, fix } = useLocation();
+  const router = useRouter();
 
   const scroll = useRef<ScrollView>(null);
   const areaY = useRef(0);
@@ -93,6 +102,7 @@ export default function NewObservation() {
   const [areaText, setAreaText] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<Message>(null);
+  const [savedStatus, setSavedStatus] = useState<Propagation | null>(null);
   const [problem, setProblem] = useState<Problem>(null);
   const [needArea, setNeedArea] = useState(false);
 
@@ -116,6 +126,7 @@ export default function NewObservation() {
    */
   const submit = async (): Promise<void> => {
     setMessage(null);
+    setSavedStatus(null);
     if (category === null) {
       setProblem("category");
       scroll.current?.scrollTo({ y: 0, animated: true });
@@ -141,8 +152,9 @@ export default function NewObservation() {
       }
       const seconds = Math.floor(Date.now() / 1000);
       const parsedPeople = Number.parseInt(people, 10);
-      await addObservation({
-        id: newObservationId(),
+      const id = newObservationId();
+      const kept = await addObservation({
+        id,
         type: "REPORT",
         category,
         device_id: deviceId,
@@ -161,7 +173,10 @@ export default function NewObservation() {
       setCategory(null);
       setPeople("");
       setNote("");
-      setMessage({ text: t.saved, tone: "info" });
+      // FR-015: say only what this phone knows, starting with "saved here".
+      setSavedStatus(
+        propagationFor(kept, compute(kept, seconds)).get(id) ?? null,
+      );
     } finally {
       setBusy(false);
     }
@@ -283,6 +298,27 @@ export default function NewObservation() {
         </Text>
       ) : null}
 
+      {savedStatus ? (
+        <View style={styles.statusPanel} accessibilityLiveRegion="polite">
+          <Text style={styles.message}>{t.saved}</Text>
+          <StatusSteps status={savedStatus} />
+        </View>
+      ) : null}
+
+      {/* FR-004: prominent pass-on and receive actions, by QR this round. */}
+      <View style={styles.qrRow}>
+        <Button
+          label={t.shareTitle}
+          variant="secondary"
+          onPress={() => router.push("/share")}
+        />
+        <Button
+          label={t.scanTitle}
+          variant="secondary"
+          onPress={() => router.push("/scan")}
+        />
+      </View>
+
       <Link href="/my-data" style={styles.link}>
         {t.myData}
       </Link>
@@ -340,4 +376,13 @@ const styles = StyleSheet.create({
   // Recorded is not "help is coming": plain text, never green (BR-017).
   message: { fontSize: size.body, color: color.textPrimary, fontWeight: "600" },
   link: { fontSize: size.body, color: color.accent, paddingVertical: space[2] },
+  qrRow: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
+  statusPanel: {
+    backgroundColor: color.surface,
+    borderWidth: 1,
+    borderColor: color.borderSubtle,
+    borderRadius: radius.card,
+    padding: space[3],
+    gap: space[2],
+  },
 });

@@ -1,0 +1,33 @@
+{
+  "name": "A flood with a road block nearby: one known, the rest not yet reported",
+  "why": "BR-013. FLOOD 31+32 (people 6). ROAD_BLOCKED 33 is 200 m from member 31, so it is known. MEDICAL 34 is 22 m away but RESOLVED by 35, so it does not count. SHELTER 36 is about 990 m away, so it does not count. Nothing TRAPPED exists. For the road block itself, MEDICAL stays unknown because it is resolved, and no people count means people affected is not reported.",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000031", "type": "REPORT", "category": "FLOOD", "device_id": "3f9a1c2e-7b44-4d0e-9a51-6c2d8e1f0a37", "lat": 14.5995, "lon": 120.9842, "created_at": 1758998800 },
+    { "id": "00000000-0000-4000-8000-000000000032", "type": "REPORT", "category": "FLOOD", "device_id": "b07d55e1-2c9f-4a63-8e10-d4f7a2b96c05", "lat": 14.5996, "lon": 120.9842, "people": 6, "created_at": 1758999100 },
+    { "id": "00000000-0000-4000-8000-000000000033", "type": "REPORT", "category": "ROAD_BLOCKED", "device_id": "c4e8a0f3-91d2-4b7e-a6c8-0e5f3d2b1a94", "lat": 14.6013, "lon": 120.9842, "created_at": 1758999400 },
+    { "id": "00000000-0000-4000-8000-000000000034", "type": "REPORT", "category": "MEDICAL", "device_id": "71c3e9b8-4a0d-4f25-b3e6-8d9c2a1f7e40", "lat": 14.5993, "lon": 120.9842, "created_at": 1758997000 },
+    { "id": "00000000-0000-4000-8000-000000000035", "type": "STATUS", "action": "RESOLVE", "device_id": "c4e8a0f3-91d2-4b7e-a6c8-0e5f3d2b1a94", "refs": ["00000000-0000-4000-8000-000000000034"], "created_at": 1758998000 },
+    { "id": "00000000-0000-4000-8000-000000000036", "type": "REPORT", "category": "SHELTER", "device_id": "5e2b04a9-6c13-4e8f-9b70-2d6a1c8e3f55", "lat": 14.6085, "lon": 120.9842, "created_at": 1758999500 }
+  ],
+  "expected": [
+    {
+      "key": "00000000-0000-4000-8000-000000000031",
+      "gaps": {
+        "known": [
+          { "category": "ROAD_BLOCKED", "key": "00000000-0000-4000-8000-000000000033", "sourceCount": 1 }
+        ],
+        "unknown": ["TRAPPED", "MEDICAL", "SHELTER"],
+        "peopleUnknown": false
+      }
+    },
+    {
+      "key": "00000000-0000-4000-8000-000000000033",
+      "gaps": {
+        "known": [],
+        "unknown": ["TRAPPED", "MEDICAL"],
+        "peopleUnknown": true
+      }
+    }
+  ]
+}

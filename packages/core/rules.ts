@@ -132,3 +132,45 @@ export const STALE_MIN_AGE_SECONDS = 3 * 60 * 60;
  * device_id. Four collide too often (about 7 % among 100 devices).
  */
 export const SOURCE_LABEL_CHARS = 6;
+
+// --------------------------------------- QR bundle transfer (R2, ADR-008)
+
+/**
+ * D-027: payload characters per frame, after deflate + base64 (was 700).
+ * 60 observations fit in about 18 frames at QR version 18. The RS spike
+ * confirms or lowers this; its fallback is 400.
+ */
+export const QR_FRAME_CHARS = 500;
+
+/** D-025: observations per page, most urgent first. Spike fallback: 20. */
+export const QR_MAX_OBSERVATIONS = 60;
+
+/** Auto-advance on the showing phone. */
+export const QR_FRAME_INTERVAL_MS = 400;
+
+/** D-025: receivers whose acknowledgements a sender remembers. */
+export const QR_ACK_MEMORY_RECEIVERS = 20;
+
+// ------------------------------------- Information gaps (BR-013, R4)
+
+/**
+ * D-023: "nearby" for related incidents, measured member to member, not
+ * centroid to centroid (3.5 % of benchmark incidents span more than 300 m).
+ */
+export const GAP_RADIUS_METRES = 300;
+
+/**
+ * BR-013: for each category, the related problems worth asking about.
+ * Each is either reported nearby (known) or not yet reported (unknown).
+ */
+export const GAP_QUESTIONS: Record<Category, readonly Category[]> = {
+  FLOOD: ["TRAPPED", "MEDICAL", "ROAD_BLOCKED", "SHELTER"],
+  TRAPPED: ["MEDICAL", "ROAD_BLOCKED"],
+  MEDICAL: ["TRAPPED", "ROAD_BLOCKED"],
+  STRUCTURAL: ["TRAPPED", "MEDICAL"],
+  ROAD_BLOCKED: ["TRAPPED", "MEDICAL"],
+  MISSING_PERSON: ["TRAPPED", "MEDICAL"],
+  WATER_FOOD: ["SHELTER", "MEDICAL"],
+  SHELTER: ["WATER_FOOD", "MEDICAL"],
+  SAFE_CHECKIN: [],
+};

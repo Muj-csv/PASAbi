@@ -14,7 +14,8 @@ interface Fixture {
   name: string;
   now: number;
   observations: Observation[];
-  expected: { key: string; evidence: Evidence }[];
+  /** Each entry checks evidence, gaps (Gaps.test.ts), or both. */
+  expected: { key: string; evidence?: Evidence }[];
 }
 
 function load<T>(dir: string): { file: string; data: T }[] {
@@ -38,6 +39,7 @@ describe("evidence vectors (hand-written from BR-011 and BR-012)", () => {
     it(file + " : " + data.name, () => {
       const incidents = compute(data.observations, data.now);
       for (const { key, evidence } of data.expected) {
+        if (evidence === undefined) continue;
         const incident = incidents.find((i) => i.key === key);
         expect(incident, file + " has incident " + key).toBeDefined();
         if (!incident) continue;
