@@ -80,3 +80,11 @@ Devlog for FirstCommit. One entry per build phase.
 - **Only the reporter's own copy moves.** A phone carrying someone else's report doesn't get a status for it, because that status belongs to the phone that made it. The flags are local-only like `uploaded`, so R0's `toWire` already keeps them off the wire; a test proves they reach neither a batch nor a server row.
 - **The old success message was quietly overclaiming.** "Recorded. It passes on when you meet another phone" promised automatic sending that QR doesn't do. It's now just "Recorded.", followed by the status steps and the footer saying this is only what this phone knows.
 - **A bug found by touching the screen.** My data confirmed deletes with `Alert.alert`, which React Native Web doesn't implement, so delete silently did nothing on the web build. It's now an inline confirm, checked working in the browser.
+
+## Phase R4 — Known and not yet reported (2026-09-27)
+
+- **"Nearby" is measured member to member, and a fixture proves why.** The plan's first draft compared incident centres. ARGUS found 3.5 % of benchmark incidents are wider than the 300 m radius, so one fixture builds a 434 m flood chain with a trapped report 278 m from its far end but about 495 m from its centre. Member to member finds it; centre to centre would have listed "Trapped: no report yet" for people who had been reported.
+- **Wording is the feature.** An unknown is always a missing report ("Trapped: no report yet"), never an absence ("no one trapped"). The difference is the whole point of BR-013: silence in a disaster is missing information, not good news. Unknowns use the amber uncertainty colour, never red.
+- **Resolved and old reports don't count as known.** A resolved medical case next door, or a shelter report from eight hours earlier, would make the picture look more complete than it is; both have a fixture.
+- **Cost decides where it runs.** Gaps are computed only for the incident being viewed: on the detail screen, and on the dashboard only for the card you open. A whole board would be O(incidents²) on every change (110 ms on the benchmark).
+- **Dropped an unused parameter.** The plan's signature took `now`, but nothing here depends on the current time, only on `lastSeen` values, so `gapsFor` doesn't take it.

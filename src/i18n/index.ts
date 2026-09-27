@@ -169,6 +169,15 @@ const en = {
   stepGrouped: "Grouped with reports from {n} other phones",
   stepFooter:
     "This shows only what this phone knows. It does not mean responders have seen it.",
+
+  // Known / not yet reported (R4, BR-013, DESIGN_BRIEF section 12)
+  knownHeading: "Reported nearby",
+  unknownHeading: "Not yet reported nearby",
+  unknownItem: "{category}: no report yet",
+  peopleUnknown: "People affected: not reported",
+  knownEmpty: "Nothing related reported nearby yet.",
+  gapsShow: "What is known nearby",
+  gapsHide: "Hide what is known nearby",
 };
 
 export type Strings = typeof en;
@@ -332,6 +341,15 @@ const fil: Strings = {
   stepGrouped: "Kasama ng mga ulat mula sa {n} pang telepono",
   stepFooter:
     "Ito lang ang alam ng teleponong ito. Hindi ibig sabihing nakita na ito ng mga responder.",
+
+  // Drafts for a native speaker to review (DESIGN_BRIEF section 12).
+  knownHeading: "Naiulat sa malapit",
+  unknownHeading: "Wala pang ulat sa malapit",
+  unknownItem: "{category}: wala pang ulat",
+  peopleUnknown: "Bilang ng apektado: hindi naiulat",
+  knownEmpty: "Wala pang kaugnay na ulat sa malapit.",
+  gapsShow: "Ano ang alam sa malapit",
+  gapsHide: "Itago ang alam sa malapit",
 };
 
 export const CATEGORY_LABELS: Record<Lang, Record<Category, string>> = {

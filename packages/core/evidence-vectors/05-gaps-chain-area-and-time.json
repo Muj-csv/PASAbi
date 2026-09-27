@@ -1,0 +1,28 @@
+{
+  "name": "Nearness is member to member, area text stands in without GPS, and time still applies",
+  "why": "BR-013. FLOOD 41-44 chain 144.6 m apart each (D-010), spanning 434 m. TRAPPED 45 is 278 m from member 44 but about 495 m from the centroid, so member-to-member finds it and centroid-to-centroid would not (ARGUS finding 4). ROAD_BLOCKED 46 is 1.1 km from the nearest member: unknown. MEDICAL 47 has no GPS, so area text decides: 'Purok 9 ' and 'purok 9' normalize equal, so it is known. SHELTER 48 sits on member 41 but 8 h before the flood's latest report, outside T = 6 h: unknown. No people count on the flood.",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000041", "type": "REPORT", "category": "FLOOD", "device_id": "3f9a1c2e-7b44-4d0e-9a51-6c2d8e1f0a37", "lat": 14.5000, "lon": 120.98, "area_text": "Purok 9 ", "created_at": 1758998500 },
+    { "id": "00000000-0000-4000-8000-000000000042", "type": "REPORT", "category": "FLOOD", "device_id": "b07d55e1-2c9f-4a63-8e10-d4f7a2b96c05", "lat": 14.5013, "lon": 120.98, "created_at": 1758998600 },
+    { "id": "00000000-0000-4000-8000-000000000043", "type": "REPORT", "category": "FLOOD", "device_id": "3f9a1c2e-7b44-4d0e-9a51-6c2d8e1f0a37", "lat": 14.5026, "lon": 120.98, "created_at": 1758998700 },
+    { "id": "00000000-0000-4000-8000-000000000044", "type": "REPORT", "category": "FLOOD", "device_id": "b07d55e1-2c9f-4a63-8e10-d4f7a2b96c05", "lat": 14.5039, "lon": 120.98, "created_at": 1758998800 },
+    { "id": "00000000-0000-4000-8000-000000000045", "type": "REPORT", "category": "TRAPPED", "device_id": "c4e8a0f3-91d2-4b7e-a6c8-0e5f3d2b1a94", "lat": 14.5064, "lon": 120.98, "created_at": 1758999000 },
+    { "id": "00000000-0000-4000-8000-000000000046", "type": "REPORT", "category": "ROAD_BLOCKED", "device_id": "71c3e9b8-4a0d-4f25-b3e6-8d9c2a1f7e40", "lat": 14.5139, "lon": 120.98, "created_at": 1758999100 },
+    { "id": "00000000-0000-4000-8000-000000000047", "type": "REPORT", "category": "MEDICAL", "device_id": "5e2b04a9-6c13-4e8f-9b70-2d6a1c8e3f55", "area_text": "purok 9", "created_at": 1758999200 },
+    { "id": "00000000-0000-4000-8000-000000000048", "type": "REPORT", "category": "SHELTER", "device_id": "9d41f7c6-0b28-4a95-8e3d-7f1c6b2a9e08", "lat": 14.5000, "lon": 120.98, "created_at": 1758970000 }
+  ],
+  "expected": [
+    {
+      "key": "00000000-0000-4000-8000-000000000041",
+      "gaps": {
+        "known": [
+          { "category": "TRAPPED", "key": "00000000-0000-4000-8000-000000000045", "sourceCount": 1 },
+          { "category": "MEDICAL", "key": "00000000-0000-4000-8000-000000000047", "sourceCount": 1 }
+        ],
+        "unknown": ["ROAD_BLOCKED", "SHELTER"],
+        "peopleUnknown": true
+      }
+    }
+  ]
+}

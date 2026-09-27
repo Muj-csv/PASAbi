@@ -150,3 +150,27 @@ export const QR_FRAME_INTERVAL_MS = 400;
 
 /** D-025: receivers whose acknowledgements a sender remembers. */
 export const QR_ACK_MEMORY_RECEIVERS = 20;
+
+// ------------------------------------- Information gaps (BR-013, R4)
+
+/**
+ * D-023: "nearby" for related incidents, measured member to member, not
+ * centroid to centroid (3.5 % of benchmark incidents span more than 300 m).
+ */
+export const GAP_RADIUS_METRES = 300;
+
+/**
+ * BR-013: for each category, the related problems worth asking about.
+ * Each is either reported nearby (known) or not yet reported (unknown).
+ */
+export const GAP_QUESTIONS: Record<Category, readonly Category[]> = {
+  FLOOD: ["TRAPPED", "MEDICAL", "ROAD_BLOCKED", "SHELTER"],
+  TRAPPED: ["MEDICAL", "ROAD_BLOCKED"],
+  MEDICAL: ["TRAPPED", "ROAD_BLOCKED"],
+  STRUCTURAL: ["TRAPPED", "MEDICAL"],
+  ROAD_BLOCKED: ["TRAPPED", "MEDICAL"],
+  MISSING_PERSON: ["TRAPPED", "MEDICAL"],
+  WATER_FOOD: ["SHELTER", "MEDICAL"],
+  SHELTER: ["WATER_FOOD", "MEDICAL"],
+  SAFE_CHECKIN: [],
+};

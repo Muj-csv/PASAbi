@@ -8,6 +8,7 @@ import {
   compute,
   evidenceOf,
   fromServerRow,
+  gapsFor,
   SAFE_CHECKIN,
   safeCheckinCounts,
   snapshotOf,
@@ -16,11 +17,13 @@ import {
   type Evidence,
   type Incident,
   type IncidentChange,
+  type Observation,
   type SafeCheckinCounts,
 } from "@pasabi/core";
 
 import { Button } from "@/components/Button";
 import { IncidentCard } from "@/components/IncidentCard";
+import { KnownUnknownList } from "@/components/KnownUnknownList";
 import { Notice } from "@/components/Notice";
 import {
   CATEGORY_LABELS,
@@ -82,7 +85,10 @@ export default function Dashboard() {
   const t = useStrings();
   const lang = useLang();
 
+  const [observations, setObservations] = useState<Observation[]>([]);
   const [observationCount, setObservationCount] = useState(0);
+  /** The one card whose known / not-yet-reported list is open. */
+  const [gapsOpen, setGapsOpen] = useState<string | null>(null);
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [evidence, setEvidence] = useState<Map<string, Evidence>>(new Map());
   const [safe, setSafe] = useState<SafeCheckinCounts>({});
@@ -117,6 +123,7 @@ export default function Dashboard() {
               cutoff,
             );
 
+      setObservations(observations);
       setObservationCount(observations.length);
       setIncidents(current);
       setEvidence(
@@ -237,6 +244,21 @@ export default function Dashboard() {
               · {t.scorePeople} {b.people} · {t.scoreUnacknowledged}{" "}
               {b.unacknowledged} · {t.scoreStaleness} {b.staleness}
             </Text>
+            {/* FR-016, computed only for the card that is opened (ARCHITECTURE 3a). */}
+            <View style={styles.row}>
+              <Button
+                label={gapsOpen === incident.key ? t.gapsHide : t.gapsShow}
+                variant="secondary"
+                onPress={() =>
+                  setGapsOpen((k) => (k === incident.key ? null : incident.key))
+                }
+              />
+            </View>
+            {gapsOpen === incident.key ? (
+              <KnownUnknownList
+                gaps={gapsFor(incident, incidents, observations)}
+              />
+            ) : null}
           </IncidentCard>
         );
       })}
