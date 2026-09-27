@@ -12,6 +12,7 @@ import { setStoreCapacity } from "./observations";
 
 const STATION_KEY = "pasabi.station.v1";
 const SNAPSHOT_KEY = "pasabi.snapshot.v1";
+const EXPECTED_KEY = "pasabi.expectedAreas.v1";
 
 export interface StationSettings {
   enabled: boolean;
@@ -92,4 +93,27 @@ export async function loadSnapshot(): Promise<StationSnapshot | null> {
 
 export async function saveSnapshot(snapshot: StationSnapshot): Promise<void> {
   await AsyncStorage.setItem(SNAPSHOT_KEY, JSON.stringify(snapshot));
+}
+
+// ---------------------------------------- FR-017 expected areas (R5)
+
+/**
+ * The puroks this station expects to hear from, so one that goes silent
+ * shows as "no reports", never as safe. Local to this phone; not shared.
+ */
+export async function loadExpectedAreas(): Promise<string[]> {
+  const raw = await AsyncStorage.getItem(EXPECTED_KEY);
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.filter((a): a is string => typeof a === "string")
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveExpectedAreas(areas: string[]): Promise<void> {
+  await AsyncStorage.setItem(EXPECTED_KEY, JSON.stringify(areas));
 }

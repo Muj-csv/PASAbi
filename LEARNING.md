@@ -88,3 +88,11 @@ Devlog for FirstCommit. One entry per build phase.
 - **Resolved and old reports don't count as known.** A resolved medical case next door, or a shelter report from eight hours earlier, would make the picture look more complete than it is; both have a fixture.
 - **Cost decides where it runs.** Gaps are computed only for the incident being viewed: on the detail screen, and on the dashboard only for the card you open. A whole board would be O(incidents²) on every change (110 ms on the benchmark).
 - **Dropped an unused parameter.** The plan's signature took `now`, but nothing here depends on the current time, only on `lastSeen` values, so `gapsFor` doesn't take it.
+
+## Phase R5 — Coverage per area (2026-09-27)
+
+- **Silence has to be drawn, or it reads as safety.** A purok with no reports simply doesn't appear on a list of incidents, and an operator scanning the board can take its absence as good news. Coverage makes the gap visible: a purok the station expects to hear from and hasn't shows "No reports — this does not mean it is safe", sorted to the top, thinnest information first.
+- **High coverage is blue, not green.** Many phones reporting from an area means someone is there, not that the area is fine. Green stays reserved for resolved incidents and explicit safe check-ins.
+- **Every observation type counts, and each boundary is pinned.** Check-ins and flood reports alike show that people are present. The fixture puts one area exactly at the 3-hour stale line, one phone just outside the 3-hour device window, and one purok spelled "PUROK  1" that must count with "Purok 1".
+- **What has no location has no area.** A station's acknowledge or resolve carries no place of its own, so it is skipped rather than guessed; attributing it to the referenced reports' area is possible later if the field test shows it matters.
+- **The expected-puroks list stays on the station.** It is the station's own knowledge of its barangay, kept locally and never sent, so the dashboard shows coverage without the "no reports" rows.

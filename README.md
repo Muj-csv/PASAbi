@@ -38,6 +38,7 @@ At the barangay hall or evacuation centre, a **station** device shows the whole 
 | Station mode: situation board, acknowledge / resolve, "what changed" | Done |
 | Honest status for the reporter: saved on this phone → passed to another phone → reached a station → uploaded, and never "responders received it" | Done (set by QR receipts; radio sync hook ready for later) |
 | What is known and what is not yet reported nearby, per incident ("Trapped: no report yet", never "no one trapped") on the detail screen and dashboard | Done |
+| Coverage per area on the board and dashboard (high, limited, no recent reports), and expected puroks with no reports shown as "no reports — this does not mean it is safe" | Done |
 | Evidence on every incident: reports vs sources, how fresh it is, a timeline of reports and actions (board, detail, dashboard) | Done |
 | Upload to the cloud when a device has internet | Done (manual trigger; automatic on network change is later) |
 | Responder web dashboard (ranked list, category filter, since-last-sync) | Done (map deferred) |
