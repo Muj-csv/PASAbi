@@ -1,6 +1,6 @@
 import * as Location from "expo-location";
 import { Link } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -13,16 +13,27 @@ import {
 
 import { CATEGORIES, SAFE_CHECKIN, type Category } from "@pasabi/core";
 
+import { Button } from "@/components/Button";
 import { CATEGORY_LABELS, useLang, useStrings } from "@/i18n";
 import { getDeviceId, newObservationId } from "@/storage/device";
 import { addObservation, canCreateNow } from "@/storage/observations";
+import { color, radius, size, space, TOUCH_TARGET } from "@/theme/tokens";
 
 const NOTE_MAX = 140;
 /** FR-001: if there is no fix within 30 s, area text is required instead. */
 const FIX_TIMEOUT_MS = 30000;
 
+/** DESIGN_BRIEF section 3: an even 2-column grid, "We are safe" below it. */
+const REPORT_CATEGORIES = CATEGORIES.filter((c) => c !== SAFE_CHECKIN);
+const CATEGORY_ROWS: Category[][] = [];
+for (let i = 0; i < REPORT_CATEGORIES.length; i += 2) {
+  CATEGORY_ROWS.push(REPORT_CATEGORIES.slice(i, i + 2));
+}
+
 type Fix = { lat: number; lon: number; accuracy_m?: number };
 type FixState = "locating" | "found" | "none";
+type Problem = "category" | "area" | null;
+type Message = { text: string; tone: "info" | "error" } | null;
 
 function useLocation(): { state: FixState; fix: Fix | null } {
   const [state, setState] = useState<FixState>("locating");
@@ -73,44 +84,59 @@ export default function NewObservation() {
   const lang = useLang();
   const { state: fixState, fix } = useLocation();
 
+  const scroll = useRef<ScrollView>(null);
+  const areaY = useRef(0);
+
   const [category, setCategory] = useState<Category | null>(null);
   const [people, setPeople] = useState("");
   const [note, setNote] = useState("");
   const [areaText, setAreaText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<Message>(null);
+  const [problem, setProblem] = useState<Problem>(null);
   const [needArea, setNeedArea] = useState(false);
 
   // R-7: a check-in is counted per area, so it always needs one. Without a
   // GPS fix, area text is the only thing that can group an observation.
   // Keyed on whether a fix actually exists, not on needArea alone, so a fix
-  // arriving late clears the requirement instead of leaving submit stuck.
+  // arriving late clears the requirement instead of leaving it stuck.
   const areaRequired =
     category === SAFE_CHECKIN ||
     (fix === null && (fixState === "none" || needArea));
-  const areaMissing = areaRequired && areaText.trim().length === 0;
-  const canSubmit = category !== null && !areaMissing && !busy;
 
+  const choose = (c: Category): void => {
+    setCategory(c);
+    if (problem === "category") setProblem(null);
+  };
+
+  /**
+   * The button is always enabled (DESIGN_BRIEF section 8): a tap with
+   * something missing names it inline and scrolls to it, instead of a grey
+   * button that never says why.
+   */
   const submit = async (): Promise<void> => {
-    if (category === null || areaMissing) return;
-
-    // Field visibility cannot cover the window where location is still
-    // resolving: areaRequired is false there, so submit is enabled, and an
-    // observation saved in that window would carry neither a fix nor an area
-    // and could never group with anything. Validate the real condition, at
-    // the moment it actually matters.
-    if (fix === null && areaText.trim().length === 0) {
-      setNeedArea(true);
-      setMessage(t.areaNeededToSave);
+    setMessage(null);
+    if (category === null) {
+      setProblem("category");
+      scroll.current?.scrollTo({ y: 0, animated: true });
       return;
     }
+    // Also covers the window where location is still resolving: a report
+    // saved then would carry neither a fix nor an area and could never
+    // group with anything.
+    if ((areaRequired || fix === null) && areaText.trim().length === 0) {
+      setNeedArea(true);
+      setProblem("area");
+      scroll.current?.scrollTo({ y: areaY.current, animated: true });
+      return;
+    }
+    setProblem(null);
 
     setBusy(true);
-    setMessage(null);
     try {
       const deviceId = await getDeviceId();
       if (!(await canCreateNow(deviceId))) {
-        setMessage(t.rateLimited);
+        setMessage({ text: t.rateLimited, tone: "error" });
         return;
       }
       const seconds = Math.floor(Date.now() / 1000);
@@ -135,34 +161,53 @@ export default function NewObservation() {
       setCategory(null);
       setPeople("");
       setNote("");
-      setMessage(t.saved);
+      setMessage({ text: t.saved, tone: "info" });
     } finally {
       setBusy(false);
     }
   };
 
+  const areaHint =
+    category === SAFE_CHECKIN
+      ? t.areaRequiredCheckin
+      : problem === "area"
+        ? t.areaNeededToSave
+        : t.areaRequiredNoGps;
+
+  const chip = (c: Category, wide = false) => (
+    <Pressable
+      key={c}
+      onPress={() => choose(c)}
+      style={[styles.chip, wide && styles.chipWide, category === c && styles.chipOn]}
+      accessibilityRole="button"
+      accessibilityState={{ selected: category === c }}
+    >
+      <Text style={[styles.chipText, category === c && styles.chipTextOn]}>
+        {CATEGORY_LABELS[lang][c]}
+      </Text>
+    </Pressable>
+  );
+
   return (
-    <ScrollView contentContainerStyle={styles.page}>
+    <ScrollView ref={scroll} contentContainerStyle={styles.page}>
       <Text style={styles.prompt}>{t.categoryPrompt}</Text>
+      {problem === "category" ? (
+        <Text style={styles.problem} accessibilityRole="alert">
+          {t.chooseCategoryFirst}
+        </Text>
+      ) : null}
 
       <View style={styles.grid}>
-        {CATEGORIES.map((c) => (
-          <Pressable
-            key={c}
-            onPress={() => setCategory(c)}
-            style={[styles.chip, category === c && styles.chipOn]}
-            accessibilityRole="button"
-            accessibilityState={{ selected: category === c }}
-          >
-            <Text style={[styles.chipText, category === c && styles.chipTextOn]}>
-              {CATEGORY_LABELS[lang][c]}
-            </Text>
-          </Pressable>
+        {CATEGORY_ROWS.map((row) => (
+          <View key={row.join()} style={styles.gridRow}>
+            {row.map((c) => chip(c))}
+          </View>
         ))}
       </View>
+      <View style={styles.safeRow}>{chip(SAFE_CHECKIN, true)}</View>
 
       <View style={styles.locationRow}>
-        {fixState === "locating" ? <ActivityIndicator /> : null}
+        {fixState === "locating" ? <ActivityIndicator color={color.accent} /> : null}
         <Text style={styles.muted}>
           {fixState === "locating"
             ? t.locating
@@ -173,18 +218,26 @@ export default function NewObservation() {
       </View>
 
       {areaRequired ? (
-        <View style={styles.field}>
+        <View
+          style={styles.field}
+          onLayout={(e) => {
+            areaY.current = e.nativeEvent.layout.y;
+          }}
+        >
           <Text style={styles.label}>{t.areaLabel}</Text>
           <TextInput
             value={areaText}
-            onChangeText={setAreaText}
-            style={styles.input}
+            onChangeText={(v) => {
+              setAreaText(v);
+              if (problem === "area") setProblem(null);
+            }}
+            style={[styles.input, problem === "area" && styles.inputProblem]}
             placeholder="Purok 3"
+            placeholderTextColor={color.textSecondary}
+            accessibilityLabel={t.areaLabel}
           />
-          <Text style={styles.hint}>
-            {category === SAFE_CHECKIN
-              ? t.areaRequiredCheckin
-              : t.areaRequiredNoGps}
+          <Text style={problem === "area" ? styles.problem : styles.hint}>
+            {areaHint}
           </Text>
         </View>
       ) : null}
@@ -196,6 +249,7 @@ export default function NewObservation() {
           onChangeText={(v) => setPeople(v.replace(/[^0-9]/g, ""))}
           keyboardType="number-pad"
           style={styles.input}
+          accessibilityLabel={t.peopleAffected}
         />
       </View>
 
@@ -206,22 +260,28 @@ export default function NewObservation() {
           onChangeText={(v) => setNote(v.slice(0, NOTE_MAX))}
           style={[styles.input, styles.noteInput]}
           multiline
+          accessibilityLabel={t.note}
         />
-        <Text style={styles.hint}>
+        <Text style={styles.muted}>
           {NOTE_MAX - note.length} {t.noteCounter}
         </Text>
       </View>
 
-      <Pressable
+      <Button
+        label={t.submit}
         onPress={() => void submit()}
-        disabled={!canSubmit}
-        style={[styles.submit, !canSubmit && styles.submitOff]}
-        accessibilityRole="button"
-      >
-        <Text style={styles.submitText}>{busy ? t.saving : t.submit}</Text>
-      </Pressable>
+        busy={busy}
+        busyLabel={t.saving}
+      />
 
-      {message ? <Text style={styles.message}>{message}</Text> : null}
+      {message ? (
+        <Text
+          style={message.tone === "error" ? styles.problem : styles.message}
+          accessibilityRole={message.tone === "error" ? "alert" : undefined}
+        >
+          {message.text}
+        </Text>
+      ) : null}
 
       <Link href="/my-data" style={styles.link}>
         {t.myData}
@@ -235,42 +295,49 @@ export default function NewObservation() {
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 16, gap: 16, paddingBottom: 48 },
-  prompt: { fontSize: 20, fontWeight: "700" },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  page: { padding: space[4], gap: space[4], paddingBottom: space[7] },
+  prompt: { fontSize: size.h3, fontWeight: "700", color: color.textPrimary },
+  grid: { gap: space[2] },
+  gridRow: { flexDirection: "row", gap: space[2] },
+  safeRow: { marginTop: space[2] },
   chip: {
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    borderRadius: 12,
+    flex: 1,
+    minHeight: TOUCH_TARGET + space[3],
+    justifyContent: "center",
+    paddingVertical: space[3],
+    paddingHorizontal: space[2],
+    borderRadius: radius.control,
     borderWidth: 2,
-    borderColor: "#c3cad2",
-    minWidth: 140,
-    flexGrow: 1,
+    borderColor: color.border,
+    backgroundColor: color.surface,
   },
-  chipOn: { borderColor: "#1566c0", backgroundColor: "#e8f1fc" },
-  chipText: { fontSize: 17, fontWeight: "600", textAlign: "center" },
-  chipTextOn: { color: "#0f4c92" },
-  locationRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  field: { gap: 6 },
-  label: { fontSize: 15, fontWeight: "600" },
+  chipWide: { flex: 0 },
+  chipOn: { borderColor: color.accent, backgroundColor: color.surfaceHover },
+  chipText: {
+    fontSize: size.body,
+    fontWeight: "600",
+    textAlign: "center",
+    color: color.textPrimary,
+  },
+  chipTextOn: { color: color.accentHover },
+  locationRow: { flexDirection: "row", alignItems: "center", gap: space[2] },
+  field: { gap: space[1] },
+  label: { fontSize: size.body, fontWeight: "600", color: color.textPrimary },
   input: {
     borderWidth: 1,
-    borderColor: "#c3cad2",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 17,
+    borderColor: color.border,
+    borderRadius: radius.control,
+    backgroundColor: color.surface,
+    padding: space[3],
+    fontSize: size.body,
+    color: color.textPrimary,
   },
+  inputProblem: { borderColor: color.danger, borderWidth: 2 },
   noteInput: { minHeight: 88, textAlignVertical: "top" },
-  hint: { fontSize: 13, color: "#5a6673" },
-  muted: { fontSize: 14, color: "#5a6673" },
-  submit: {
-    backgroundColor: "#1566c0",
-    borderRadius: 12,
-    paddingVertical: 18,
-    alignItems: "center",
-  },
-  submitOff: { backgroundColor: "#9bb4d0" },
-  submitText: { color: "#ffffff", fontSize: 18, fontWeight: "700" },
-  message: { fontSize: 15, color: "#1c6b3c", fontWeight: "600" },
-  link: { fontSize: 16, color: "#1566c0", paddingVertical: 8 },
+  hint: { fontSize: size.caption, color: color.warning },
+  problem: { fontSize: size.body, color: color.danger, fontWeight: "600" },
+  muted: { fontSize: size.caption, color: color.textSecondary },
+  // Recorded is not "help is coming": plain text, never green (BR-017).
+  message: { fontSize: size.body, color: color.textPrimary, fontWeight: "600" },
+  link: { fontSize: size.body, color: color.accent, paddingVertical: space[2] },
 });

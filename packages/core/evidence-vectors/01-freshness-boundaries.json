@@ -1,0 +1,75 @@
+{
+  "name": "Freshness boundaries, one second either side and exactly on each",
+  "why": "BR-011 / D-023: fresh if age < 3600, stale if age >= 10800, else aging. Six single FLOOD reports about 1.1 km apart, so each is its own incident. Ages 3599, 3600, 3601, 10799, 10800, 10801 seconds.",
+  "now": 1759000000,
+  "observations": [
+    { "id": "00000000-0000-4000-8000-000000000001", "type": "REPORT", "category": "FLOOD", "device_id": "3f9a1c2e-7b44-4d0e-9a51-6c2d8e1f0a37", "lat": 14.51, "lon": 120.98, "created_at": 1758996401 },
+    { "id": "00000000-0000-4000-8000-000000000002", "type": "REPORT", "category": "FLOOD", "device_id": "3f9a1c2e-7b44-4d0e-9a51-6c2d8e1f0a37", "lat": 14.52, "lon": 120.98, "created_at": 1758996400 },
+    { "id": "00000000-0000-4000-8000-000000000003", "type": "REPORT", "category": "FLOOD", "device_id": "3f9a1c2e-7b44-4d0e-9a51-6c2d8e1f0a37", "lat": 14.53, "lon": 120.98, "created_at": 1758996399 },
+    { "id": "00000000-0000-4000-8000-000000000004", "type": "REPORT", "category": "FLOOD", "device_id": "3f9a1c2e-7b44-4d0e-9a51-6c2d8e1f0a37", "lat": 14.54, "lon": 120.98, "created_at": 1758989201 },
+    { "id": "00000000-0000-4000-8000-000000000005", "type": "REPORT", "category": "FLOOD", "device_id": "3f9a1c2e-7b44-4d0e-9a51-6c2d8e1f0a37", "lat": 14.55, "lon": 120.98, "created_at": 1758989200 },
+    { "id": "00000000-0000-4000-8000-000000000006", "type": "REPORT", "category": "FLOOD", "device_id": "3f9a1c2e-7b44-4d0e-9a51-6c2d8e1f0a37", "lat": 14.56, "lon": 120.98, "created_at": 1758989199 }
+  ],
+  "expected": [
+    {
+      "key": "00000000-0000-4000-8000-000000000001",
+      "evidence": {
+        "reportCount": 1, "sourceCount": 1,
+        "firstSeen": 1758996401, "lastSeen": 1758996401, "latestAgeSeconds": 3599, "freshness": "fresh",
+        "timeline": [
+          { "id": "00000000-0000-4000-8000-000000000001", "type": "REPORT", "category": "FLOOD", "source": "3f9a1c", "created_at": 1758996401 }
+        ]
+      }
+    },
+    {
+      "key": "00000000-0000-4000-8000-000000000002",
+      "evidence": {
+        "reportCount": 1, "sourceCount": 1,
+        "firstSeen": 1758996400, "lastSeen": 1758996400, "latestAgeSeconds": 3600, "freshness": "aging",
+        "timeline": [
+          { "id": "00000000-0000-4000-8000-000000000002", "type": "REPORT", "category": "FLOOD", "source": "3f9a1c", "created_at": 1758996400 }
+        ]
+      }
+    },
+    {
+      "key": "00000000-0000-4000-8000-000000000003",
+      "evidence": {
+        "reportCount": 1, "sourceCount": 1,
+        "firstSeen": 1758996399, "lastSeen": 1758996399, "latestAgeSeconds": 3601, "freshness": "aging",
+        "timeline": [
+          { "id": "00000000-0000-4000-8000-000000000003", "type": "REPORT", "category": "FLOOD", "source": "3f9a1c", "created_at": 1758996399 }
+        ]
+      }
+    },
+    {
+      "key": "00000000-0000-4000-8000-000000000004",
+      "evidence": {
+        "reportCount": 1, "sourceCount": 1,
+        "firstSeen": 1758989201, "lastSeen": 1758989201, "latestAgeSeconds": 10799, "freshness": "aging",
+        "timeline": [
+          { "id": "00000000-0000-4000-8000-000000000004", "type": "REPORT", "category": "FLOOD", "source": "3f9a1c", "created_at": 1758989201 }
+        ]
+      }
+    },
+    {
+      "key": "00000000-0000-4000-8000-000000000005",
+      "evidence": {
+        "reportCount": 1, "sourceCount": 1,
+        "firstSeen": 1758989200, "lastSeen": 1758989200, "latestAgeSeconds": 10800, "freshness": "stale",
+        "timeline": [
+          { "id": "00000000-0000-4000-8000-000000000005", "type": "REPORT", "category": "FLOOD", "source": "3f9a1c", "created_at": 1758989200 }
+        ]
+      }
+    },
+    {
+      "key": "00000000-0000-4000-8000-000000000006",
+      "evidence": {
+        "reportCount": 1, "sourceCount": 1,
+        "firstSeen": 1758989199, "lastSeen": 1758989199, "latestAgeSeconds": 10801, "freshness": "stale",
+        "timeline": [
+          { "id": "00000000-0000-4000-8000-000000000006", "type": "REPORT", "category": "FLOOD", "source": "3f9a1c", "created_at": 1758989199 }
+        ]
+      }
+    }
+  ]
+}

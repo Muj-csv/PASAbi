@@ -1,7 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSyncExternalStore } from "react";
 
-import type { Category } from "@pasabi/core";
+import type {
+  Category,
+  CorroborationLevel,
+  IncidentChange,
+  IncidentStatus,
+} from "@pasabi/core";
 
 export type Lang = "en" | "fil";
 
@@ -54,10 +59,13 @@ const en = {
   nothingChanged: "Nothing has changed since your last visit.",
   refresh: "Refresh",
   filterAll: "All categories",
-  notConfigured:
-    "No database configured. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.",
-  loadError: "Could not reach the database.",
-  loading: "Loading",
+  dashNotConnected:
+    "The responder database isn't connected on this deployment yet.",
+  dashDevDetail:
+    "For developers: set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.",
+  dashEmpty: "Nothing uploaded yet.",
+  loadError: "Can't reach the database.",
+  loading: "Loading uploaded reports…",
   corroborationCaveat:
     "Corroboration counts distinct devices, not people. One person carrying several phones can inflate it. Stations can resolve false incidents.",
   uploadNow: "Upload now",
@@ -102,6 +110,22 @@ const en = {
   scoreStaleness: "Age",
   scoreTotal: "Total",
   scoreFloored: "Floored at 0. Resolved incidents always sort last.",
+
+  // Evidence and freshness (R1, DESIGN_BRIEF section 12)
+  reportOne: "report",
+  reportMany: "reports",
+  sourceOne: "source",
+  sourceMany: "sources",
+  lastReported: "Last reported {t} ago",
+  staleLine: "Last known {t} ago — may have changed",
+  staleBadge: "STALE",
+  staleCount: "{n} stale",
+  timeline: "Timeline",
+  timelineReport: "Report",
+  phone: "phone",
+  incidentChanged: "This incident changed. Back to the board.",
+  chooseCategoryFirst: "Choose what is happening first.",
+  pinTooShort: "Enter at least 4 digits.",
 };
 
 export type Strings = typeof en;
@@ -154,10 +178,13 @@ const fil: Strings = {
   nothingChanged: "Walang nagbago mula noong huli kang bumisita.",
   refresh: "I-refresh",
   filterAll: "Lahat ng kategorya",
-  notConfigured:
-    "Walang database. Itakda ang EXPO_PUBLIC_SUPABASE_URL at EXPO_PUBLIC_SUPABASE_ANON_KEY.",
+  dashNotConnected:
+    "Hindi pa nakakonekta ang database ng responder sa deployment na ito.",
+  dashDevDetail:
+    "Para sa developer: itakda ang EXPO_PUBLIC_SUPABASE_URL at EXPO_PUBLIC_SUPABASE_ANON_KEY.",
+  dashEmpty: "Wala pang na-upload.",
   loadError: "Hindi maabot ang database.",
-  loading: "Naglo-load",
+  loading: "Nilo-load ang mga na-upload na ulat…",
   corroborationCaveat:
     "Binibilang ang magkakaibang device, hindi tao. Ang may maraming telepono ay maaaring magpalaki nito. Maaaring tapusin ng istasyon ang maling insidente.",
   uploadNow: "I-upload na",
@@ -201,6 +228,22 @@ const fil: Strings = {
   scoreStaleness: "Tagal",
   scoreTotal: "Kabuuan",
   scoreFloored: "Naka-floor sa 0. Ang tapos na ay laging nasa dulo.",
+
+  // Drafts for a native speaker to review (DESIGN_BRIEF section 12).
+  reportOne: "ulat",
+  reportMany: "ulat",
+  sourceOne: "pinagmulan",
+  sourceMany: "pinagmulan",
+  lastReported: "Huling ulat: {t} na ang nakalipas",
+  staleLine: "Huling alam: {t} na ang nakalipas — maaaring nagbago na",
+  staleBadge: "LUMA NA",
+  staleCount: "{n} luma na",
+  timeline: "Kasaysayan",
+  timelineReport: "Ulat",
+  phone: "telepono",
+  incidentChanged: "Nagbago ang insidenteng ito. Bumalik sa board.",
+  chooseCategoryFirst: "Piliin muna kung ano ang nangyayari.",
+  pinTooShort: "Maglagay ng hindi bababa sa 4 na numero.",
 };
 
 export const CATEGORY_LABELS: Record<Lang, Record<Category, string>> = {
@@ -275,4 +318,44 @@ export function useStrings(): Strings {
  */
 export function plural(count: number, one: string, many: string): string {
   return String(count) + " " + (count === 1 ? one : many);
+}
+
+/** Fills "{t}"-style slots in a string from the tables above. */
+export function fill(
+  template: string,
+  values: Record<string, string | number>,
+): string {
+  return template.replace(/\{(\w+)\}/g, (slot, name: string) =>
+    name in values ? String(values[name]) : slot,
+  );
+}
+
+/** "<1 min", "12 min", "3 h", "2 d". The units read the same in Filipino. */
+export function formatAge(seconds: number): string {
+  if (seconds < 60) return "<1 min";
+  if (seconds < 3600) return String(Math.floor(seconds / 60)) + " min";
+  if (seconds < 86400) return String(Math.floor(seconds / 3600)) + " h";
+  return String(Math.floor(seconds / 86400)) + " d";
+}
+
+export function corroborationLabel(
+  level: CorroborationLevel,
+  t: Strings,
+): string {
+  if (level === "strongly_corroborated") return t.stronglyCorroborated;
+  if (level === "corroborated") return t.corroborated;
+  return t.single;
+}
+
+export function statusLabel(status: IncidentStatus, t: Strings): string {
+  if (status === "resolved") return t.statusResolved;
+  if (status === "acknowledged") return t.statusAcknowledged;
+  return t.statusOpen;
+}
+
+export function changeLabel(flag: IncidentChange, t: Strings): string {
+  if (flag === "new") return t.changeNew;
+  if (flag === "escalated") return t.changeEscalated;
+  if (flag === "newly_corroborated") return t.changeCorroborated;
+  return t.changeResolved;
 }

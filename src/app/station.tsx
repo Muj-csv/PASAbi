@@ -1,25 +1,22 @@
 import { Link, useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   changesSince,
   compute,
+  evidenceOf,
   safeCheckinCounts,
   snapshotOf,
+  type Evidence,
   type Incident,
   type IncidentChange,
   type SafeCheckinCounts,
 } from "@pasabi/core";
 
-import { CATEGORY_LABELS, plural, useLang, useStrings } from "@/i18n";
+import { Button } from "@/components/Button";
+import { IncidentCard } from "@/components/IncidentCard";
+import { fill, plural, useStrings } from "@/i18n";
 import { loadObservations } from "@/storage/observations";
 import {
   disableStation,
@@ -28,8 +25,9 @@ import {
   loadStation,
   saveSnapshot,
 } from "@/storage/station";
+import { color, radius, size, space, tabularNums } from "@/theme/tokens";
 
-type Strings = ReturnType<typeof useStrings>;
+const PIN_MIN = 4;
 
 function nowSeconds(): number {
   return Math.floor(Date.now() / 1000);
@@ -39,45 +37,17 @@ function shortTime(epochSeconds: number): string {
   return new Date(epochSeconds * 1000).toLocaleString();
 }
 
-function flagLabel(flag: IncidentChange, t: Strings): string {
-  if (flag === "new") return t.changeNew;
-  if (flag === "escalated") return t.changeEscalated;
-  if (flag === "newly_corroborated") return t.changeCorroborated;
-  return t.changeResolved;
-}
-
-function flagColor(flag: IncidentChange): { backgroundColor: string } {
-  if (flag === "new") return { backgroundColor: "#1566c0" };
-  if (flag === "escalated") return { backgroundColor: "#b3261e" };
-  if (flag === "newly_corroborated") return { backgroundColor: "#8a6d1f" };
-  return { backgroundColor: "#1c6b3c" };
-}
-
-function corroborationLabel(incident: Incident, t: Strings): string {
-  if (incident.corroboration === "strongly_corroborated") {
-    return t.stronglyCorroborated;
-  }
-  if (incident.corroboration === "corroborated") return t.corroborated;
-  return t.single;
-}
-
-function statusLabel(incident: Incident, t: Strings): string {
-  if (incident.status === "resolved") return t.statusResolved;
-  if (incident.status === "acknowledged") return t.statusAcknowledged;
-  return t.statusOpen;
-}
-
-/** FR-006 to FR-008: the board a barangay operator actually works from. */
+/** FR-006 to FR-008, FR-014: the board a barangay operator works from. */
 export default function Station() {
   const t = useStrings();
-  const lang = useLang();
   const router = useRouter();
 
   const [unlocked, setUnlocked] = useState(false);
   const [pin, setPin] = useState("");
-  const [pinError, setPinError] = useState(false);
+  const [pinError, setPinError] = useState<string | null>(null);
 
   const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [evidence, setEvidence] = useState<Map<string, Evidence>>(new Map());
   const [safe, setSafe] = useState<SafeCheckinCounts>({});
   const [changes, setChanges] = useState<Map<string, IncidentChange[]>>(
     new Map(),
@@ -85,13 +55,19 @@ export default function Station() {
   const [seenAt, setSeenAt] = useState<number | null>(null);
 
   const reload = useCallback(async () => {
-    const observations = await loadObservations();
+    const stored = await loadObservations();
     const now = nowSeconds();
-    const current = compute(observations, now);
+    const current = compute(stored, now);
     const snapshot = await loadSnapshot();
 
     setIncidents(current);
-    setSafe(safeCheckinCounts(observations));
+    // ponytail: evidenceOf scans every observation per incident, O(n x m)
+    // per reload. Trivial at field sizes; index statuses by ref if a full
+    // 3,000-observation station board ever feels slow.
+    setEvidence(
+      new Map(current.map((i) => [i.key, evidenceOf(i, stored, now)])),
+    );
+    setSafe(safeCheckinCounts(stored));
     setChanges(changesSince(snapshot, current));
     setSeenAt(snapshot ? snapshot.takenAt : null);
   }, []);
@@ -107,8 +83,13 @@ export default function Station() {
   );
 
   const unlock = async (): Promise<void> => {
+    // Say what is wrong instead of greying the button out (DESIGN_BRIEF 8).
+    if (pin.length < PIN_MIN) {
+      setPinError(t.pinTooShort);
+      return;
+    }
     const ok = await enableStation(pin);
-    setPinError(!ok);
+    setPinError(ok ? null : t.stationWrongPin);
     if (ok) {
       setPin("");
       setUnlocked(true);
@@ -130,27 +111,22 @@ export default function Station() {
   if (!unlocked) {
     return (
       <ScrollView contentContainerStyle={styles.page}>
-        <Text style={styles.h1}>{t.stationMode}</Text>
+        <Text style={styles.h2}>{t.stationMode}</Text>
         <Text style={styles.muted}>{t.stationLocked}</Text>
         <TextInput
           value={pin}
           onChangeText={(v) => {
             setPin(v.replace(/[^0-9]/g, "").slice(0, 8));
-            setPinError(false);
+            setPinError(null);
           }}
           keyboardType="number-pad"
           secureTextEntry
           style={styles.input}
+          accessibilityLabel={t.stationLocked}
         />
         <Text style={styles.hint}>{t.stationPinHint}</Text>
-        {pinError ? <Text style={styles.error}>{t.stationWrongPin}</Text> : null}
-        <Pressable
-          style={[styles.primary, pin.length < 4 && styles.primaryOff]}
-          disabled={pin.length < 4}
-          onPress={() => void unlock()}
-        >
-          <Text style={styles.primaryText}>{t.stationUnlock}</Text>
-        </Pressable>
+        {pinError ? <Text style={styles.error}>{pinError}</Text> : null}
+        <Button label={t.stationUnlock} onPress={() => void unlock()} />
         <Link href="/" style={styles.link}>
           {t.newObservation}
         </Link>
@@ -158,26 +134,31 @@ export default function Station() {
     );
   }
 
+  const staleCount = [...evidence.values()].filter(
+    (e) => e.freshness === "stale",
+  ).length;
   const safeAreas = Object.entries(safe).sort((a, b) =>
     a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0,
   );
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
-      <Text style={styles.h1}>{t.board}</Text>
-      <Text style={styles.muted}>
+      <Text style={styles.h2}>{t.board}</Text>
+      <Text style={styles.summary}>
         {plural(incidents.length, t.incidentOne, t.incidentMany)}
-        {seenAt === null ? "" : " · " + t.seenAt + " " + shortTime(seenAt)}
+        {staleCount > 0 ? " · " + fill(t.staleCount, { n: staleCount }) : ""}
       </Text>
-      {seenAt === null ? <Text style={styles.hint}>{t.seenNever}</Text> : null}
+      <Text style={styles.muted}>
+        {seenAt === null ? t.seenNever : t.seenAt + " " + shortTime(seenAt)}
+      </Text>
 
       <View style={styles.row}>
-        <Pressable style={styles.primary} onPress={() => void markSeen()}>
-          <Text style={styles.primaryText}>{t.markSeen}</Text>
-        </Pressable>
-        <Pressable style={styles.ghost} onPress={() => void leave()}>
-          <Text style={styles.ghostText}>{t.stationExit}</Text>
-        </Pressable>
+        <Button label={t.markSeen} onPress={() => void markSeen()} />
+        <Button
+          label={t.stationExit}
+          variant="secondary"
+          onPress={() => void leave()}
+        />
       </View>
 
       {incidents.length === 0 ? (
@@ -185,70 +166,29 @@ export default function Station() {
       ) : null}
 
       {incidents.map((incident) => {
-        const flags = changes.get(incident.key) ?? [];
+        const e = evidence.get(incident.key);
+        if (!e) return null;
         return (
-          <Pressable
+          <IncidentCard
             key={incident.key}
-            style={[styles.card, incident.status === "resolved" && styles.faded]}
+            incident={incident}
+            evidence={e}
+            flags={changes.get(incident.key) ?? []}
             onPress={() =>
               router.push({
                 pathname: "/incident/[key]",
                 params: { key: incident.key },
               })
             }
-          >
-            <View style={styles.cardHead}>
-              <Text style={styles.cardTitle}>
-                {CATEGORY_LABELS[lang][incident.category]}
-              </Text>
-              <Text style={styles.score}>{incident.score}</Text>
-            </View>
-
-            {flags.length > 0 ? (
-              <View style={styles.flagRow}>
-                {flags.map((flag) => (
-                  <Text key={flag} style={[styles.flag, flagColor(flag)]}>
-                    {flagLabel(flag, t)}
-                  </Text>
-                ))}
-              </View>
-            ) : null}
-
-            <Text style={styles.line}>
-              {corroborationLabel(incident, t)} ·{" "}
-              {plural(incident.independentReporters, t.reporterOne, t.reporterMany)}
-              {incident.peopleAffected > 0
-                ? " · " + t.scorePeople + " " + String(incident.peopleAffected)
-                : ""}
-            </Text>
-
-            <Text style={styles.muted}>
-              {incident.areaText ??
-                (incident.centroid
-                  ? incident.centroid.lat.toFixed(4) +
-                    ", " +
-                    incident.centroid.lon.toFixed(4)
-                  : "")}
-              {incident.spatialExtentM > 0
-                ? " · " + t.extent + " " + String(incident.spatialExtentM) + " m"
-                : ""}
-            </Text>
-
-            <Text style={styles.muted}>
-              {t.firstSeen} {shortTime(incident.firstSeen)} · {t.lastSeen}{" "}
-              {shortTime(incident.lastSeen)}
-            </Text>
-
-            <Text style={styles.status}>{statusLabel(incident, t)}</Text>
-          </Pressable>
+          />
         );
       })}
 
       {safeAreas.length > 0 ? (
-        <View style={styles.safeCard}>
-          <Text style={styles.cardTitle}>{t.safePanel}</Text>
+        <View style={styles.panel}>
+          <Text style={styles.panelTitle}>{t.safePanel}</Text>
           {safeAreas.map(([area, count]) => (
-            <Text key={area} style={styles.line}>
+            <Text key={area} style={styles.safeLine}>
               {area}: {count}
             </Text>
           ))}
@@ -259,70 +199,46 @@ export default function Station() {
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 16, gap: 12, paddingBottom: 48 },
-  h1: { fontSize: 22, fontWeight: "700" },
-  muted: { fontSize: 13, color: "#5a6673" },
-  hint: { fontSize: 13, color: "#8a6d1f" },
-  error: { fontSize: 14, color: "#b3261e", fontWeight: "600" },
-  row: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+  page: {
+    padding: space[4],
+    gap: space[3],
+    paddingBottom: space[7],
+  },
+  h2: { fontSize: size.h2, fontWeight: "700", color: color.textPrimary },
+  summary: {
+    fontSize: size.body,
+    fontWeight: "600",
+    color: color.textPrimary,
+    ...tabularNums,
+  },
+  muted: { fontSize: size.caption, color: color.textSecondary },
+  hint: { fontSize: size.caption, color: color.warning },
+  error: { fontSize: size.body, color: color.danger, fontWeight: "600" },
+  row: { flexDirection: "row", gap: space[2], flexWrap: "wrap" },
   input: {
     borderWidth: 1,
-    borderColor: "#c3cad2",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 20,
+    borderColor: color.border,
+    borderRadius: radius.control,
+    backgroundColor: color.surface,
+    padding: space[3],
+    fontSize: size.h3,
     letterSpacing: 6,
+    color: color.textPrimary,
   },
-  primary: {
-    backgroundColor: "#1566c0",
-    borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    alignItems: "center",
-  },
-  primaryOff: { backgroundColor: "#9bb4d0" },
-  primaryText: { color: "#ffffff", fontWeight: "700", fontSize: 16 },
-  ghost: {
-    backgroundColor: "#e8ecf1",
-    borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-  },
-  ghostText: { color: "#333b45", fontWeight: "700" },
-  card: {
+  panel: {
+    backgroundColor: color.surface,
     borderWidth: 1,
-    borderColor: "#d8dde3",
-    borderRadius: 10,
-    padding: 12,
-    gap: 4,
+    borderColor: color.borderSubtle,
+    borderRadius: radius.card,
+    padding: space[3],
+    gap: space[1],
   },
-  faded: { opacity: 0.55 },
-  cardHead: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  cardTitle: { fontSize: 17, fontWeight: "700" },
-  score: { fontSize: 20, fontWeight: "700", color: "#0f4c92" },
-  flagRow: { flexDirection: "row", gap: 6, flexWrap: "wrap" },
-  flag: {
-    color: "#ffffff",
-    fontSize: 11,
+  panelTitle: {
+    fontSize: size.body,
     fontWeight: "700",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    overflow: "hidden",
+    color: color.textPrimary,
   },
-  line: { fontSize: 14 },
-  status: { fontSize: 13, fontWeight: "600", color: "#333b45" },
-  safeCard: {
-    borderWidth: 1,
-    borderColor: "#cfe3d4",
-    backgroundColor: "#f2f8f4",
-    borderRadius: 10,
-    padding: 12,
-    gap: 3,
-  },
-  link: { fontSize: 16, color: "#1566c0", paddingVertical: 8 },
+  // Green is reserved for resolved and explicit safe check-ins (BR-017).
+  safeLine: { fontSize: size.body, color: color.success, ...tabularNums },
+  link: { fontSize: size.body, color: color.accent, paddingVertical: space[2] },
 });

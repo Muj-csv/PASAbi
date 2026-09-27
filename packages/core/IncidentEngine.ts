@@ -209,6 +209,21 @@ function corroborationOf(reporters: number): CorroborationLevel {
 }
 
 /**
+ * BR-007: a STATUS applies to the incident containing any ID it references.
+ * Exported so the evidence timeline (Evidence.ts) matches statuses exactly
+ * as the status badge does, and the two can never disagree.
+ */
+export function statusRefersTo(
+  status: Observation,
+  observationIds: ReadonlySet<string>,
+): boolean {
+  return (
+    status.refs !== undefined &&
+    status.refs.some((ref) => observationIds.has(ref))
+  );
+}
+
+/**
  * ARCHITECTURE section 3 step 4. Resolved when a RESOLVE was created after
  * the group's latest REPORT, which is what makes a newer report reopen it
  * (BR-007). A stale RESOLVE does not imply an ACK.
@@ -221,7 +236,7 @@ function statusOf(
   let resolved = false;
   let acknowledged = false;
   for (const s of statuses) {
-    if (!s.refs || !s.refs.some((ref) => observationIds.has(ref))) continue;
+    if (!statusRefersTo(s, observationIds)) continue;
     if (s.action === "RESOLVE") {
       if (s.created_at > lastSeen) resolved = true;
     } else if (s.action === "ACK") {
