@@ -12,6 +12,9 @@ import {
 } from "@pasabi/core";
 import { MockNetwork } from "@pasabi/transport";
 
+import { StatusBand } from "@/components/StatusBand";
+import { color, radius, size, space } from "@/theme/tokens";
+
 /**
  * PHASE-2 task 3: simulated encounters in the browser.
  *
@@ -158,7 +161,9 @@ export default function Sim() {
   const converged = keys.every((k) => k === keys[0]);
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
+    <View style={styles.root}>
+      <StatusBand mode="sim" label="Simulation · proof of protocol, not radios" />
+      <ScrollView contentContainerStyle={styles.page}>
       <Text style={styles.h1}>Encounter simulation</Text>
       <Text style={styles.muted}>
         The real SyncProtocol over the mock transport. A browser has no peer
@@ -212,36 +217,37 @@ export default function Sim() {
           {line}
         </Text>
       ))}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 16, gap: 12, paddingBottom: 48 },
-  h1: { fontSize: 22, fontWeight: "700" },
-  h2: { fontSize: 16, fontWeight: "700", marginTop: 8 },
-  muted: { fontSize: 13, color: "#5a6673" },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  root: { flex: 1, backgroundColor: color.paper },
+  page: { padding: space[4], gap: space[3], paddingBottom: space[7] },
+  h1: { fontSize: size.title.fontSize, fontWeight: "700", color: color.ink },
+  h2: { fontSize: size.heading.fontSize, fontWeight: "700", marginTop: space[2], color: color.ink },
+  muted: { fontSize: size.caption, color: color.ink2 },
+  row: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
   btn: {
-    backgroundColor: "#1566c0",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    backgroundColor: color.ballpen,
+    borderRadius: radius.control,
+    paddingVertical: space[3],
+    paddingHorizontal: space[4],
   },
-  btnText: { color: "#ffffff", fontWeight: "700" },
-  btnGhost: { backgroundColor: "#e8ecf1" },
-  btnGhostText: { color: "#333b45", fontWeight: "700" },
-  ok: { fontSize: 15, fontWeight: "700", color: "#1c6b3c" },
-  pending: { fontSize: 15, fontWeight: "700", color: "#8a6d1f" },
+  btnText: { color: color.onFill, fontWeight: "700" },
+  btnGhost: { backgroundColor: color.surface },
+  btnGhostText: { color: color.ink, fontWeight: "700" },
+  ok: { fontSize: size.bodySmall, fontWeight: "700", color: color.ink },
+  pending: { fontSize: size.bodySmall, fontWeight: "700", color: color.ink2 },
   card: {
-    borderWidth: 1,
-    borderColor: "#d8dde3",
-    borderRadius: 10,
-    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: color.rule,
+    paddingTop: space[3],
     gap: 3,
   },
-  cardTitle: { fontSize: 16, fontWeight: "700" },
-  incident: { fontSize: 13 },
-  keys: { fontSize: 11, color: "#5a6673", marginTop: 4 },
-  logLine: { fontSize: 12, color: "#333b45" },
+  cardTitle: { fontSize: size.heading.fontSize, fontWeight: "700", color: color.ink },
+  incident: { fontSize: size.caption, color: color.ink },
+  keys: { fontSize: 11, color: color.ink2, marginTop: space[1] },
+  logLine: { fontSize: 12, color: color.ink2 },
 });

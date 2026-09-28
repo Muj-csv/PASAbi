@@ -5,9 +5,12 @@ import type { Gaps } from "@pasabi/core";
 import { CATEGORY_LABELS, fill, plural, useLang, useStrings } from "@/i18n";
 import { color, size, space, tabularNums } from "@/theme/tokens";
 
+import { Pictogram } from "./pictograms";
+
 /**
- * FR-016, DESIGN_BRIEF sections 5 and 10. Known items get a check; unknown
- * items get "?" and warning colour, and are always worded as a missing
+ * FR-016, DESIGN_BRIEF section 12 (`GapList`). Known items get a filled dot
+ * (never a check mark: a check reads as "verified"); unknown items get "?"
+ * in ink, never a warning hue. Unknowns are always worded as a missing
  * report ("Trapped: no report yet"), never as an absence (BR-013, BR-017).
  */
 export function KnownUnknownList({ gaps }: { gaps: Gaps }) {
@@ -27,10 +30,11 @@ export function KnownUnknownList({ gaps }: { gaps: Gaps }) {
       ) : (
         gaps.known.map((k) => (
           <View key={k.category} style={styles.row}>
-            <Text style={styles.mark}>✓</Text>
+            <Text style={styles.mark}>●</Text>
+            <Pictogram category={k.category} size={18} color={color.ink} />
             <Text style={styles.known}>
               {CATEGORY_LABELS[lang][k.category]} ·{" "}
-              {plural(k.sourceCount, t.sourceOne, t.sourceMany)}
+              {plural(k.sourceCount, t.phone, t.phones)}
             </Text>
           </View>
         ))
@@ -55,26 +59,25 @@ export function KnownUnknownList({ gaps }: { gaps: Gaps }) {
 
 const styles = StyleSheet.create({
   wrap: { gap: space[1] },
-  heading: { fontSize: size.body, fontWeight: "700", color: color.textPrimary },
-  unknownHeading: { marginTop: space[2], color: color.warning },
-  row: { flexDirection: "row", gap: space[2], alignItems: "baseline" },
+  heading: { fontSize: size.body, fontWeight: "700", color: color.ink },
+  unknownHeading: { marginTop: space[2] },
+  row: { flexDirection: "row", gap: space[2], alignItems: "center" },
   mark: {
-    width: space[4],
+    width: space[3],
     fontSize: size.body,
     fontWeight: "700",
-    color: color.textPrimary,
+    color: color.ink,
   },
   known: {
     fontSize: size.body,
-    color: color.textPrimary,
+    color: color.ink,
     flexShrink: 1,
     ...tabularNums,
   },
   unknown: {
     fontSize: size.body,
-    color: color.warning,
-    fontWeight: "600",
+    color: color.ink2,
     flexShrink: 1,
   },
-  empty: { fontSize: size.body, color: color.textSecondary },
+  empty: { fontSize: size.body, color: color.ink2 },
 });

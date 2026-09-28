@@ -11,18 +11,12 @@ import {
   useLang,
   useStrings,
 } from "@/i18n";
-import { color, radius, size, space, tabularNums } from "@/theme/tokens";
+import { color, freshnessStyle, layout, size, space } from "@/theme/tokens";
 
-import { Badge, type BadgeTone } from "./Badge";
 import { EvidenceLine, evidenceText } from "./EvidenceLine";
-import { FreshnessText, freshnessText } from "./FreshnessText";
-
-const FLAG_TONE: Record<IncidentChange, BadgeTone> = {
-  new: "accent",
-  escalated: "danger",
-  newly_corroborated: "warning",
-  resolved: "success",
-};
+import { freshnessText, FreshnessText } from "./FreshnessText";
+import { Pictogram } from "./pictograms";
+import { Stamp } from "./Stamp";
 
 /** Area text when there is one, otherwise the centroid (FR-006). */
 export function areaOf(incident: Incident): string {
@@ -36,20 +30,24 @@ export function areaOf(incident: Incident): string {
 }
 
 /**
- * DESIGN_BRIEF section 3, card anatomy. Shared by the station board and the
- * dashboard so the two cannot drift. One touch target when `onPress` is set;
- * no coloured stripe, because colour alone never carries meaning.
+ * A ledger row (DESIGN_BRIEF section 12, `LedgerRow`), shared by the station
+ * board and the dashboard so the two cannot drift. Radius 0, hairline below,
+ * ink follows freshness. No headline score: rank order already says how the
+ * engine sorted it, and "Why ranked here" on the detail screen explains it.
  */
 export function IncidentCard({
   incident,
   evidence,
   flags = [],
+  rank = null,
   onPress,
   children,
 }: {
   incident: Incident;
   evidence: Evidence;
   flags?: IncidentChange[];
+  /** 1-based rank among open incidents; omit or null for resolved rows. */
+  rank?: number | null;
   onPress?: () => void;
   children?: ReactNode;
 }) {
@@ -58,49 +56,76 @@ export function IncidentCard({
 
   const category = CATEGORY_LABELS[lang][incident.category];
   const area = areaOf(incident);
-  const extent =
-    incident.spatialExtentM > 0
-      ? t.extent + " " + String(incident.spatialExtentM) + " m"
-      : "";
-  const title = [category, area, extent].filter(Boolean).join(" · ");
   const corroboration = corroborationLabel(incident.corroboration, t);
   const status = statusLabel(incident.status, t);
+  const resolved = incident.status === "resolved";
+  const rowInk = resolved ? color.ink3 : color.ink;
+  const rowSub = resolved ? color.ink3 : freshnessStyle(evidence.freshness).sub;
+  const rankInk =
+    evidence.freshness === "stale" || resolved ? color.ink3 : color.ballpen;
+  const rankText = resolved || rank === null ? "—" : String(rank).padStart(2, "0");
+  const changeText = flags.map((f) => changeLabel(f, t)).join(" · ");
 
   const spoken = [
-    title,
+    [category, area].filter(Boolean).join(", "),
     evidenceText(evidence, t, corroboration),
     freshnessText(evidence, t),
     status,
-    ...flags.map((f) => changeLabel(f, t)),
-    String(incident.score),
-  ].join(". ");
+    changeText,
+  ]
+    .filter(Boolean)
+    .join(". ");
 
   const body = (
     <>
-      <View style={styles.head}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.score}>{incident.score}</Text>
+      <Text style={[styles.rank, { color: rankInk }]}>{rankText}</Text>
+
+      <View style={styles.content}>
+        <View style={styles.headRow}>
+          <View style={styles.catRow}>
+            <Pictogram category={incident.category} size={22} color={rowInk} />
+            <Text numberOfLines={1} style={[styles.category, { color: rowInk }]}>
+              {category}
+            </Text>
+          </View>
+          {area ? (
+            <Text numberOfLines={1} style={[styles.place, { color: rowSub }]}>
+              {area}
+            </Text>
+          ) : null}
+        </View>
+
+        <EvidenceLine
+          evidence={evidence}
+          people={incident.peopleAffected}
+          color={rowSub}
+        />
+
+        <View style={styles.statusRow}>
+          <Text style={styles.status}>{status}</Text>
+          {incident.status === "acknowledged" ? (
+            <Stamp label={t.statusAcknowledged} ink="coralInk" seed={incident.key} />
+          ) : null}
+          {resolved ? (
+            <Stamp label={t.statusResolved} ink="faded" seed={incident.key} />
+          ) : null}
+        </View>
+
+        {children}
       </View>
-      <EvidenceLine evidence={evidence} corroboration={corroboration} />
-      <FreshnessText evidence={evidence} />
-      <View style={styles.statusRow}>
-        <Text style={styles.status}>{status}</Text>
-        {flags.map((flag) => (
-          <Badge key={flag} label={changeLabel(flag, t)} tone={FLAG_TONE[flag]} />
-        ))}
+
+      <View style={styles.right}>
+        <FreshnessText evidence={evidence} />
+        {changeText ? <Text style={styles.change}>{changeText}</Text> : null}
       </View>
-      {children}
     </>
   );
 
-  const cardStyle = [
-    styles.card,
-    incident.status === "resolved" && styles.faded,
-  ];
+  const tinted = changeText.length > 0 && styles.rowChanged;
 
   if (!onPress) {
     return (
-      <View style={cardStyle} accessible accessibilityLabel={spoken}>
+      <View style={[styles.row, tinted]} accessible accessibilityLabel={spoken}>
         {body}
       </View>
     );
@@ -108,7 +133,7 @@ export function IncidentCard({
   return (
     <Pressable
       onPress={onPress}
-      style={cardStyle}
+      style={({ pressed }) => [styles.row, tinted, pressed && styles.rowPressed]}
       accessibilityRole="button"
       accessibilityLabel={spoken}
     >
@@ -118,42 +143,34 @@ export function IncidentCard({
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: color.surface,
-    borderWidth: 1,
-    borderColor: color.borderSubtle,
-    borderRadius: radius.card,
-    padding: space[3],
-    gap: space[1],
-  },
-  faded: { opacity: 0.55 },
-  head: {
+  row: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    minHeight: layout.rowMinHeight,
+    paddingVertical: space[3],
+    paddingRight: layout.sideMargin,
+    paddingLeft: space[2],
+    gap: space[3],
+    borderBottomWidth: 1,
+    borderBottomColor: color.rule,
+    backgroundColor: color.paper,
     alignItems: "flex-start",
-    gap: space[2],
   },
-  title: {
-    fontSize: size.h3,
-    fontWeight: "700",
-    color: color.textPrimary,
-    flexShrink: 1,
+  rowChanged: { backgroundColor: color.ballpenTint },
+  rowPressed: { backgroundColor: color.surface },
+  rank: {
+    width: layout.rankGutter,
+    textAlign: "center",
+    fontFamily: "Doto_800ExtraBold",
+    fontSize: 20,
+    lineHeight: 25,
   },
-  score: {
-    fontSize: size.h3,
-    fontWeight: "700",
-    color: color.textPrimary,
-    ...tabularNums,
-  },
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: space[2],
-  },
-  status: {
-    fontSize: size.caption,
-    fontWeight: "600",
-    color: color.textSecondary,
-  },
+  content: { flex: 1, gap: space[1] / 2 },
+  headRow: { flexDirection: "row", alignItems: "baseline", flexWrap: "wrap", gap: space[2] },
+  catRow: { flexDirection: "row", alignItems: "center", gap: space[2] },
+  category: { fontSize: size.heading.fontSize, fontWeight: "600", color: color.ink },
+  place: { fontSize: size.body, color: color.ink2, flexShrink: 1 },
+  statusRow: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: space[2] },
+  status: { fontSize: size.caption, fontWeight: "600", color: color.ink2 },
+  right: { alignItems: "flex-end", gap: space[1] },
+  change: { fontSize: size.caption, fontWeight: "700", color: color.ballpen },
 });

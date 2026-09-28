@@ -21,11 +21,13 @@ import {
 } from "@pasabi/core";
 
 import { Button } from "@/components/Button";
+import { Pictogram } from "@/components/pictograms";
+import { StatusBand } from "@/components/StatusBand";
 import { StatusSteps } from "@/components/StatusSteps";
 import { CATEGORY_LABELS, useLang, useStrings } from "@/i18n";
 import { getDeviceId, newObservationId } from "@/storage/device";
 import { addObservation, canCreateNow } from "@/storage/observations";
-import { color, radius, size, space, TOUCH_TARGET } from "@/theme/tokens";
+import { color, layout, radius, size, space } from "@/theme/tokens";
 
 const NOTE_MAX = 140;
 /** FR-001: if there is no fix within 30 s, area text is required instead. */
@@ -102,6 +104,7 @@ export default function NewObservation() {
   const [areaText, setAreaText] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<Message>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
   const [savedStatus, setSavedStatus] = useState<Propagation | null>(null);
   const [problem, setProblem] = useState<Problem>(null);
   const [needArea, setNeedArea] = useState(false);
@@ -127,6 +130,7 @@ export default function NewObservation() {
   const submit = async (): Promise<void> => {
     setMessage(null);
     setSavedStatus(null);
+    setSavedId(null);
     if (category === null) {
       setProblem("category");
       scroll.current?.scrollTo({ y: 0, animated: true });
@@ -174,6 +178,7 @@ export default function NewObservation() {
       setPeople("");
       setNote("");
       // FR-015: say only what this phone knows, starting with "saved here".
+      setSavedId(id);
       setSavedStatus(
         propagationFor(kept, compute(kept, seconds)).get(id) ?? null,
       );
@@ -197,6 +202,7 @@ export default function NewObservation() {
       accessibilityRole="button"
       accessibilityState={{ selected: category === c }}
     >
+      <Pictogram category={c} size={26} color={category === c ? color.onCoral : color.ink} />
       <Text style={[styles.chipText, category === c && styles.chipTextOn]}>
         {CATEGORY_LABELS[lang][c]}
       </Text>
@@ -204,184 +210,189 @@ export default function NewObservation() {
   );
 
   return (
-    <ScrollView ref={scroll} contentContainerStyle={styles.page}>
-      <Text style={styles.prompt}>{t.categoryPrompt}</Text>
-      {problem === "category" ? (
-        <Text style={styles.problem} accessibilityRole="alert">
-          {t.chooseCategoryFirst}
-        </Text>
-      ) : null}
+    <View style={styles.page}>
+      <StatusBand mode="resident" label={t.bandResident} />
+      <ScrollView ref={scroll} contentContainerStyle={styles.form}>
+        <Text style={styles.prompt}>{t.categoryPrompt}</Text>
+        {problem === "category" ? (
+          <Text style={styles.problem} accessibilityRole="alert">
+            {t.chooseCategoryFirst}
+          </Text>
+        ) : null}
 
-      <View style={styles.grid}>
-        {CATEGORY_ROWS.map((row) => (
-          <View key={row.join()} style={styles.gridRow}>
-            {row.map((c) => chip(c))}
-          </View>
-        ))}
-      </View>
-      <View style={styles.safeRow}>{chip(SAFE_CHECKIN, true)}</View>
+        <View style={styles.grid}>
+          {CATEGORY_ROWS.map((row) => (
+            <View key={row.join()} style={styles.gridRow}>
+              {row.map((c) => chip(c))}
+            </View>
+          ))}
+        </View>
+        <View style={styles.safeRow}>{chip(SAFE_CHECKIN, true)}</View>
 
-      <View style={styles.locationRow}>
-        {fixState === "locating" ? <ActivityIndicator color={color.accent} /> : null}
-        <Text style={styles.muted}>
-          {fixState === "locating"
-            ? t.locating
-            : fixState === "found"
-              ? t.locationFound
-              : t.locationNone}
-        </Text>
-      </View>
-
-      {areaRequired ? (
-        <View
-          style={styles.field}
-          onLayout={(e) => {
-            areaY.current = e.nativeEvent.layout.y;
-          }}
-        >
-          <Text style={styles.label}>{t.areaLabel}</Text>
-          <TextInput
-            value={areaText}
-            onChangeText={(v) => {
-              setAreaText(v);
-              if (problem === "area") setProblem(null);
-            }}
-            style={[styles.input, problem === "area" && styles.inputProblem]}
-            placeholder="Purok 3"
-            placeholderTextColor={color.textSecondary}
-            accessibilityLabel={t.areaLabel}
-          />
-          <Text style={problem === "area" ? styles.problem : styles.hint}>
-            {areaHint}
+        <View style={styles.locationRow}>
+          {fixState === "locating" ? <ActivityIndicator color={color.ballpen} /> : null}
+          <Text style={styles.muted}>
+            {fixState === "locating"
+              ? t.locating
+              : fixState === "found"
+                ? t.locationFound
+                : t.locationNone}
           </Text>
         </View>
-      ) : null}
 
-      <View style={styles.field}>
-        <Text style={styles.label}>{t.peopleAffected}</Text>
-        <TextInput
-          value={people}
-          onChangeText={(v) => setPeople(v.replace(/[^0-9]/g, ""))}
-          keyboardType="number-pad"
-          style={styles.input}
-          accessibilityLabel={t.peopleAffected}
-        />
-      </View>
+        {areaRequired ? (
+          <View
+            style={styles.field}
+            onLayout={(e) => {
+              areaY.current = e.nativeEvent.layout.y;
+            }}
+          >
+            <Text style={styles.label}>{t.areaLabel}</Text>
+            <TextInput
+              value={areaText}
+              onChangeText={(v) => {
+                setAreaText(v);
+                if (problem === "area") setProblem(null);
+              }}
+              style={[styles.input, problem === "area" && styles.inputProblem]}
+              placeholder="Purok 3"
+              placeholderTextColor={color.ink2}
+              accessibilityLabel={t.areaLabel}
+            />
+            <Text style={problem === "area" ? styles.problem : styles.hint}>
+              {areaHint}
+            </Text>
+          </View>
+        ) : null}
 
-      <View style={styles.field}>
-        <Text style={styles.label}>{t.note}</Text>
-        <TextInput
-          value={note}
-          onChangeText={(v) => setNote(v.slice(0, NOTE_MAX))}
-          style={[styles.input, styles.noteInput]}
-          multiline
-          accessibilityLabel={t.note}
-        />
-        <Text style={styles.muted}>
-          {NOTE_MAX - note.length} {t.noteCounter}
-        </Text>
-      </View>
-
-      <Button
-        label={t.submit}
-        onPress={() => void submit()}
-        busy={busy}
-        busyLabel={t.saving}
-      />
-
-      {message ? (
-        <Text
-          style={message.tone === "error" ? styles.problem : styles.message}
-          accessibilityRole={message.tone === "error" ? "alert" : undefined}
-        >
-          {message.text}
-        </Text>
-      ) : null}
-
-      {savedStatus ? (
-        <View style={styles.statusPanel} accessibilityLiveRegion="polite">
-          <Text style={styles.message}>{t.saved}</Text>
-          <StatusSteps status={savedStatus} />
+        <View style={styles.field}>
+          <Text style={styles.label}>{t.peopleAffected}</Text>
+          <TextInput
+            value={people}
+            onChangeText={(v) => setPeople(v.replace(/[^0-9]/g, ""))}
+            keyboardType="number-pad"
+            style={styles.input}
+            accessibilityLabel={t.peopleAffected}
+          />
         </View>
-      ) : null}
 
-      {/* FR-004: prominent pass-on and receive actions, by QR this round. */}
-      <View style={styles.qrRow}>
+        <View style={styles.field}>
+          <Text style={styles.label}>{t.note}</Text>
+          <TextInput
+            value={note}
+            onChangeText={(v) => setNote(v.slice(0, NOTE_MAX))}
+            style={[styles.input, styles.noteInput]}
+            multiline
+            accessibilityLabel={t.note}
+          />
+          <Text style={styles.muted}>
+            {NOTE_MAX - note.length} {t.noteCounter}
+          </Text>
+        </View>
+
         <Button
-          label={t.shareTitle}
-          variant="secondary"
-          onPress={() => router.push("/share")}
+          label={t.submit}
+          onPress={() => void submit()}
+          busy={busy}
+          busyLabel={t.saving}
         />
-        <Button
-          label={t.scanTitle}
-          variant="secondary"
-          onPress={() => router.push("/scan")}
-        />
-      </View>
 
-      <Link href="/my-data" style={styles.link}>
-        {t.myData}
-      </Link>
+        {message ? (
+          <Text
+            style={styles.problem}
+            accessibilityRole={message.tone === "error" ? "alert" : undefined}
+          >
+            {message.text}
+          </Text>
+        ) : null}
 
-      <Link href="/station" style={styles.link}>
-        {t.stationMode}
-      </Link>
-    </ScrollView>
+        {savedStatus && savedId ? (
+          <View style={styles.statusPanel} accessibilityLiveRegion="polite">
+            <Text style={styles.message}>{t.saved}</Text>
+            <StatusSteps status={savedStatus} seed={savedId} />
+          </View>
+        ) : null}
+
+        {/* FR-004: prominent pass-on and receive actions, by QR this round. */}
+        <View style={styles.qrRow}>
+          <Button
+            label={t.shareTitle}
+            variant="secondary"
+            onPress={() => router.push("/share")}
+          />
+          <Button
+            label={t.scanTitle}
+            variant="secondary"
+            onPress={() => router.push("/scan")}
+          />
+        </View>
+
+        <Link href="/my-data" style={styles.link}>
+          {t.myData}
+        </Link>
+
+        <Link href="/station" style={styles.link}>
+          {t.stationMode}
+        </Link>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { padding: space[4], gap: space[4], paddingBottom: space[7] },
-  prompt: { fontSize: size.h3, fontWeight: "700", color: color.textPrimary },
+  page: { flex: 1, backgroundColor: color.paper },
+  form: { padding: space[4], gap: space[4], paddingBottom: space[7] },
+  prompt: { fontSize: size.title.fontSize, fontWeight: "700", color: color.ink },
   grid: { gap: space[2] },
   gridRow: { flexDirection: "row", gap: space[2] },
   safeRow: { marginTop: space[2] },
   chip: {
     flex: 1,
-    minHeight: TOUCH_TARGET + space[3],
+    minHeight: layout.categoryButtonMin,
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "center",
+    gap: space[2],
     paddingVertical: space[3],
     paddingHorizontal: space[2],
     borderRadius: radius.control,
-    borderWidth: 2,
-    borderColor: color.border,
-    backgroundColor: color.surface,
+    borderWidth: 1,
+    borderColor: color.ink,
+    backgroundColor: color.paper,
   },
   chipWide: { flex: 0 },
-  chipOn: { borderColor: color.accent, backgroundColor: color.surfaceHover },
+  chipOn: { borderColor: color.coral, backgroundColor: color.coral },
   chipText: {
     fontSize: size.body,
     fontWeight: "600",
     textAlign: "center",
-    color: color.textPrimary,
+    color: color.ink,
   },
-  chipTextOn: { color: color.accentHover },
+  chipTextOn: { color: color.onCoral },
   locationRow: { flexDirection: "row", alignItems: "center", gap: space[2] },
   field: { gap: space[1] },
-  label: { fontSize: size.body, fontWeight: "600", color: color.textPrimary },
+  label: { fontSize: size.body, fontWeight: "600", color: color.ink },
   input: {
     borderWidth: 1,
-    borderColor: color.border,
+    borderColor: color.ink,
     borderRadius: radius.control,
-    backgroundColor: color.surface,
+    backgroundColor: color.paper,
     padding: space[3],
     fontSize: size.body,
-    color: color.textPrimary,
+    color: color.ink,
   },
-  inputProblem: { borderColor: color.danger, borderWidth: 2 },
+  inputProblem: { borderColor: color.coralInk, borderWidth: 2 },
   noteInput: { minHeight: 88, textAlignVertical: "top" },
-  hint: { fontSize: size.caption, color: color.warning },
-  problem: { fontSize: size.body, color: color.danger, fontWeight: "600" },
-  muted: { fontSize: size.caption, color: color.textSecondary },
-  // Recorded is not "help is coming": plain text, never green (BR-017).
-  message: { fontSize: size.body, color: color.textPrimary, fontWeight: "600" },
-  link: { fontSize: size.body, color: color.accent, paddingVertical: space[2] },
+  hint: { fontSize: size.caption, color: color.ink2 },
+  problem: { fontSize: size.body, color: color.ink, fontWeight: "700" },
+  muted: { fontSize: size.caption, color: color.ink2 },
+  // Recorded is not "help is coming": plain text, never a colour (BR-017).
+  message: { fontSize: size.body, color: color.ink, fontWeight: "600" },
+  link: { fontSize: size.body, color: color.ballpen, paddingVertical: space[2] },
   qrRow: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
   statusPanel: {
     backgroundColor: color.surface,
-    borderWidth: 1,
-    borderColor: color.borderSubtle,
-    borderRadius: radius.card,
+    borderRadius: radius.control,
     padding: space[3],
     gap: space[2],
   },

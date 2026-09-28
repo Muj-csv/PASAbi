@@ -16,9 +16,11 @@ import { Button } from "@/components/Button";
 import { Notice } from "@/components/Notice";
 import { QrFrame } from "@/components/QrFrame";
 import { QrScanner } from "@/components/QrScanner";
+import { StatusBand } from "@/components/StatusBand";
 import { fill, useStrings } from "@/i18n";
 import { loadObservations, markPassedOn } from "@/storage/observations";
 import { ackedBy, recordReceipt } from "@/storage/qrReceipts";
+import { loadStation } from "@/storage/station";
 import { color, size, space, tabularNums } from "@/theme/tokens";
 
 type Mode = "show" | "scanId" | "scanReceipt";
@@ -44,6 +46,7 @@ export default function Share() {
   const [frameIndex, setFrameIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [note, setNote] = useState<string | null>(null);
+  const [station, setStation] = useState(false);
   /** bundleId -> the observation IDs that page carried, to match receipts. */
   const sent = useRef(new Map<string, string[]>());
 
@@ -52,6 +55,7 @@ export default function Share() {
       void (async () => {
         setObservations(await loadObservations());
         setNow(Math.floor(Date.now() / 1000));
+        setStation((await loadStation()).enabled);
       })();
     }, []),
   );
@@ -125,25 +129,31 @@ export default function Share() {
 
   if (observations === null) return null;
 
+  const band = <StatusBand mode={station ? "station" : "resident"} label={t.shareTitle} />;
+  // Coral is the resident "handoff" page (DESIGN_BRIEF section 4, rule 2);
+  // station keeps a plain page so the ballpen band stays the only mode cue.
+  const fg = station ? color.ink : color.onCoral;
+  const pageStyle = [styles.page, station && styles.pageStation];
+
   if (mode !== "show") {
     return (
-      <ScrollView contentContainerStyle={styles.page}>
-        <Text style={styles.h2}>
-          {mode === "scanId" ? t.scanTheirPhoneFirst : t.scanReceipt}
-        </Text>
-        <Text style={styles.hint}>{t.scanPointAt}</Text>
-        <QrScanner
-          onCode={(text) =>
-            void (mode === "scanId" ? onIdFrame(text) : onReceipt(text))
-          }
-        />
-        {note ? <Text style={styles.note}>{note}</Text> : null}
-        <Button
-          label={t.cancel}
-          variant="secondary"
-          onPress={() => setMode("show")}
-        />
-      </ScrollView>
+      <View style={pageStyle}>
+        {band}
+        <ScrollView contentContainerStyle={styles.form}>
+          <Text style={[styles.hint, { color: fg }]}>{t.scanPointAt}</Text>
+          <QrScanner
+            onCode={(text) =>
+              void (mode === "scanId" ? onIdFrame(text) : onReceipt(text))
+            }
+          />
+          {note ? <Text style={[styles.note, { color: fg }]}>{note}</Text> : null}
+          <Button
+            label={t.cancel}
+            variant="quiet"
+            onPress={() => setMode("show")}
+          />
+        </ScrollView>
+      </View>
     );
   }
 
@@ -155,81 +165,84 @@ export default function Share() {
   });
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <Text style={styles.h2}>{t.shareTitle}</Text>
-
-      {bundle === null ? (
-        <Notice message={t.nothingToShare} />
-      ) : (
-        <>
-          <Text style={styles.hint}>{t.shareHint}</Text>
-          <Button
-            label={t.scanTheirPhoneFirst}
-            variant="secondary"
-            onPress={() => {
-              setNote(null);
-              setMode("scanId");
-            }}
-          />
-          <QrFrame
-            value={bundle.frames[frameIndex % frameCount]}
-            label={counter}
-          />
-          <Text style={styles.counter}>{counter}</Text>
-          <View style={styles.row}>
+    <View style={pageStyle}>
+      {band}
+      <ScrollView contentContainerStyle={styles.form}>
+        {bundle === null ? (
+          <Notice message={t.nothingToShare} />
+        ) : (
+          <>
+            <Text style={[styles.hint, { color: fg }]}>{t.shareHint}</Text>
             <Button
-              label={t.previousFrame}
-              variant="secondary"
-              onPress={() => step(-1)}
-            />
-            <Button
-              label={playing ? t.pause : t.play}
-              variant="secondary"
-              onPress={() => setPlaying((p) => !p)}
-            />
-            <Button
-              label={t.nextFrame}
-              variant="secondary"
-              onPress={() => step(1)}
-            />
-          </View>
-          <Button
-            label={t.scanReceipt}
-            onPress={() => {
-              setNote(null);
-              setMode("scanReceipt");
-            }}
-          />
-          {pageIndex + 1 < pages.length ? (
-            <Button
-              label={t.nextPage}
-              variant="secondary"
+              label={t.scanTheirPhoneFirst}
+              variant="quiet"
               onPress={() => {
-                setPageIndex((p) => p + 1);
-                setFrameIndex(0);
-                setPlaying(true);
                 setNote(null);
+                setMode("scanId");
               }}
             />
-          ) : null}
-        </>
-      )}
+            <QrFrame
+              value={bundle.frames[frameIndex % frameCount]}
+              label={counter}
+            />
+            <Text style={[styles.counter, { color: fg }]}>{counter}</Text>
+            <View style={styles.row}>
+              <Button
+                label={t.previousFrame}
+                variant="secondary"
+                onPress={() => step(-1)}
+              />
+              <Button
+                label={playing ? t.pause : t.play}
+                variant="secondary"
+                onPress={() => setPlaying((p) => !p)}
+              />
+              <Button
+                label={t.nextFrame}
+                variant="secondary"
+                onPress={() => step(1)}
+              />
+            </View>
+            <Button
+              label={t.scanReceipt}
+              onPress={() => {
+                setNote(null);
+                setMode("scanReceipt");
+              }}
+            />
+            {pageIndex + 1 < pages.length ? (
+              <Button
+                label={t.nextPage}
+                variant="secondary"
+                onPress={() => {
+                  setPageIndex((p) => p + 1);
+                  setFrameIndex(0);
+                  setPlaying(true);
+                  setNote(null);
+                }}
+              />
+            ) : null}
+          </>
+        )}
 
-      {note ? <Text style={styles.note}>{note}</Text> : null}
-      <Text style={styles.muted}>{t.swapHint}</Text>
-    </ScrollView>
+        {note ? <Text style={[styles.note, { color: fg }]}>{note}</Text> : null}
+        <Text style={[styles.muted, { color: fg, opacity: 0.8 }]}>{t.swapHint}</Text>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { padding: space[4], gap: space[3], paddingBottom: space[7] },
-  h2: { fontSize: size.h2, fontWeight: "700", color: color.textPrimary },
-  hint: { fontSize: size.body, color: color.textPrimary },
+  page: { flex: 1, backgroundColor: color.coral },
+  pageStation: { backgroundColor: color.paper },
+  form: { padding: space[4], gap: space[3], paddingBottom: space[7] },
+  hint: { fontSize: size.body, color: color.onCoral },
   counter: {
-    fontSize: size.h3,
-    fontWeight: "700",
+    fontFamily: "Doto_800ExtraBold",
+    fontSize: 20,
+    lineHeight: 25,
     textAlign: "center",
-    color: color.textPrimary,
+    color: color.onCoral,
     ...tabularNums,
   },
   row: {
@@ -238,6 +251,6 @@ const styles = StyleSheet.create({
     gap: space[2],
     justifyContent: "center",
   },
-  note: { fontSize: size.body, fontWeight: "600", color: color.textPrimary },
-  muted: { fontSize: size.caption, color: color.textSecondary },
+  note: { fontSize: size.body, fontWeight: "700", color: color.onCoral },
+  muted: { fontSize: size.caption, color: color.ink },
 });

@@ -6,15 +6,23 @@ import { fill, formatAge, plural, useStrings, type Strings } from "@/i18n";
 import { color, size, space, tabularNums } from "@/theme/tokens";
 
 /**
- * DESIGN_BRIEF sections 5 and 10. High coverage is blue, never green: many
- * reports say someone is there, not that the area is fine. Every thin level
- * is amber, and "no reports" always says it does not mean safe (BR-017).
+ * DESIGN_BRIEF section 12, `CoverageRow`. High coverage is ballpen, never
+ * green: many phones say someone is there, not that the area is fine.
+ * "No reports" is the ISO 22324 no-information grey, bold, so it never
+ * reads as fainter (and safer) than a thin level.
  */
 function levelText(level: CoverageLevel, t: Strings): string {
   if (level === "high") return t.coverageHigh;
   if (level === "limited") return t.coverageLimited;
   if (level === "stale") return t.coverageStale;
   return t.coverageNone;
+}
+
+function dots(level: CoverageLevel): string {
+  if (level === "high") return "●●●";
+  if (level === "limited") return "●●○";
+  if (level === "stale") return "○○○";
+  return "?";
 }
 
 export function CoverageRow({ row, now }: { row: AreaCoverage; now: number }) {
@@ -38,14 +46,16 @@ export function CoverageRow({ row, now }: { row: AreaCoverage; now: number }) {
       accessibilityLabel={[name, level, detail].filter(Boolean).join(". ")}
     >
       <View style={styles.head}>
-        <Text style={[styles.name, row.area === null && styles.unnamed]}>
-          {name}
-        </Text>
+        <View style={styles.headLeft}>
+          <Text style={styles.dots}>{dots(row.level)}</Text>
+          <Text style={[styles.name, row.area === null && styles.unnamed]}>
+            {name}
+          </Text>
+        </View>
         <Text
           style={[
-            styles.level,
-            row.level === "high" ? styles.high : styles.thin,
-            row.level === "none" && styles.none,
+            styles.chip,
+            row.level === "none" ? styles.chipNoData : styles.chipPlain,
           ]}
         >
           {level}
@@ -60,24 +70,35 @@ const styles = StyleSheet.create({
   row: {
     paddingVertical: space[2],
     borderTopWidth: 1,
-    borderTopColor: color.borderSubtle,
+    borderTopColor: color.rule,
     gap: 2,
   },
   head: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
+    alignItems: "center",
     gap: space[2],
   },
-  name: { fontSize: size.body, fontWeight: "600", color: color.textPrimary },
+  headLeft: { flexDirection: "row", alignItems: "center", gap: space[2], flexShrink: 1 },
+  dots: { fontSize: size.heading.fontSize, color: color.ink, ...tabularNums },
+  name: { fontSize: size.body, fontWeight: "600", color: color.ink },
   unnamed: { fontStyle: "italic", fontWeight: "400" },
-  level: { fontSize: size.body, flexShrink: 1 },
-  high: { color: color.accent, fontWeight: "600" },
-  thin: { color: color.warning, fontWeight: "600" },
-  none: { fontWeight: "700" },
+  chip: {
+    fontSize: size.caption,
+    fontWeight: "700",
+    paddingHorizontal: space[2],
+    paddingVertical: 2,
+  },
+  chipPlain: { color: color.ink2 },
+  chipNoData: {
+    color: color.ink,
+    backgroundColor: color.nodata,
+    overflow: "hidden",
+  },
   detail: {
     fontSize: size.caption,
-    color: color.textSecondary,
+    color: color.ink2,
     ...tabularNums,
   },
 });

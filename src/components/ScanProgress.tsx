@@ -2,14 +2,15 @@ import { useEffect, useRef } from "react";
 import { AccessibilityInfo, StyleSheet, Text, View } from "react-native";
 
 import { fill, useStrings } from "@/i18n";
-import { color, radius, size, space, tabularNums } from "@/theme/tokens";
+import { color, size, space, tabularNums } from "@/theme/tokens";
 
 const ANNOUNCE_EVERY_MS = 2000;
 
 /**
- * DESIGN_BRIEF section 10: "12 of 29 frames", readable at a glance while
+ * DESIGN_BRIEF section 12: "12 of 29 frames", readable at a glance while
  * both people hold their phones up, and announced to VoiceOver at most
- * every two seconds so it doesn't talk over itself.
+ * every two seconds so it doesn't talk over itself. Ballpen fill on a
+ * white track, matching R5's receive-progress bar.
  */
 export function ScanProgress({
   received,
@@ -45,15 +46,17 @@ const styles = StyleSheet.create({
   wrap: { gap: space[1] },
   track: {
     height: space[3],
-    borderRadius: radius.badge,
-    backgroundColor: color.surfaceRaised,
+    borderRadius: 4,
+    backgroundColor: color.paper,
+    borderWidth: 1,
+    borderColor: color.rule,
     overflow: "hidden",
   },
-  bar: { height: "100%", backgroundColor: color.accent },
+  bar: { height: "100%", backgroundColor: color.ballpen },
   text: {
-    fontSize: size.h3,
+    fontSize: size.heading.fontSize,
     fontWeight: "700",
-    color: color.textPrimary,
+    color: color.ink,
     ...tabularNums,
   },
 });

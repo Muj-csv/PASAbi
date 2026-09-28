@@ -16,6 +16,18 @@ const en = {
   appName: "Pasabi",
   tagline: "When the towers fall, the barangay passes it on.",
   newObservation: "New observation",
+
+  // Status band and freshness words (DESIGN_BRIEF section 12)
+  bandResident: "Reports stay on this phone",
+  freshAging: "aging",
+  freshOld: "old",
+  oldNote: "May have changed.",
+
+  // Short stamp captions (Stamp component; StatusSteps keeps the full sentence)
+  stampSaved: "Saved",
+  stampPassed: "Passed on",
+  stampStation: "At station",
+  stampUploaded: "Uploaded",
   categoryPrompt: "What is happening?",
   peopleAffected: "People affected (optional)",
   /** The same field read back rather than filled in, so no "(optional)". */
@@ -116,7 +128,9 @@ const en = {
   reportMany: "reports",
   sourceOne: "source",
   sourceMany: "sources",
+  evidencePeople: "{n} people",
   lastReported: "Last reported {t} ago",
+  lastKnownShort: "Last known {t} ago",
   staleLine: "Last known {t} ago — may have changed",
   staleBadge: "STALE",
   staleCount: "{n} stale",
@@ -205,6 +219,16 @@ const fil: Strings = {
   appName: "Pasabi",
   tagline: "Kapag bumagsak ang signal, ang barangay ang magpapasa.",
   newObservation: "Bagong ulat",
+
+  bandResident: "Nasa phone na lang ang mga ulat",
+  freshAging: "lumilipas",
+  freshOld: "luma",
+  oldNote: "Baka nagbago na.",
+
+  stampSaved: "Naka-save",
+  stampPassed: "Naipasa",
+  stampStation: "Nasa istasyon",
+  stampUploaded: "Na-upload",
   categoryPrompt: "Ano ang nangyayari?",
   peopleAffected: "Bilang ng apektado (opsyonal)",
   peopleAffectedShort: "Bilang ng apektado",
@@ -305,7 +329,9 @@ const fil: Strings = {
   reportMany: "ulat",
   sourceOne: "pinagmulan",
   sourceMany: "pinagmulan",
+  evidencePeople: "{n} tao",
   lastReported: "Huling ulat: {t} na ang nakalipas",
+  lastKnownShort: "Huling alam: {t} na ang nakalipas",
   staleLine: "Huling alam: {t} na ang nakalipas — maaaring nagbago na",
   staleBadge: "LUMA NA",
   staleCount: "{n} luma na",

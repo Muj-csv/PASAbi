@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/Button";
 import { CoverageRow } from "@/components/CoverageRow";
 import { IncidentCard } from "@/components/IncidentCard";
+import { StatusBand } from "@/components/StatusBand";
 import { fill, plural, useStrings } from "@/i18n";
 import { loadObservations } from "@/storage/observations";
 import {
@@ -151,27 +152,29 @@ export default function Station() {
 
   if (!unlocked) {
     return (
-      <ScrollView contentContainerStyle={styles.page}>
-        <Text style={styles.h2}>{t.stationMode}</Text>
-        <Text style={styles.muted}>{t.stationLocked}</Text>
-        <TextInput
-          value={pin}
-          onChangeText={(v) => {
-            setPin(v.replace(/[^0-9]/g, "").slice(0, 8));
-            setPinError(null);
-          }}
-          keyboardType="number-pad"
-          secureTextEntry
-          style={styles.input}
-          accessibilityLabel={t.stationLocked}
-        />
-        <Text style={styles.hint}>{t.stationPinHint}</Text>
-        {pinError ? <Text style={styles.error}>{pinError}</Text> : null}
-        <Button label={t.stationUnlock} onPress={() => void unlock()} />
-        <Link href="/" style={styles.link}>
-          {t.newObservation}
-        </Link>
-      </ScrollView>
+      <View style={styles.page}>
+        <StatusBand mode="station" label={t.stationMode} />
+        <ScrollView contentContainerStyle={styles.form}>
+          <Text style={styles.muted}>{t.stationLocked}</Text>
+          <TextInput
+            value={pin}
+            onChangeText={(v) => {
+              setPin(v.replace(/[^0-9]/g, "").slice(0, 8));
+              setPinError(null);
+            }}
+            keyboardType="number-pad"
+            secureTextEntry
+            style={styles.pinInput}
+            accessibilityLabel={t.stationLocked}
+          />
+          <Text style={styles.hint}>{t.stationPinHint}</Text>
+          {pinError ? <Text style={styles.error}>{pinError}</Text> : null}
+          <Button label={t.stationUnlock} onPress={() => void unlock()} />
+          <Link href="/" style={styles.link}>
+            {t.newObservation}
+          </Link>
+        </ScrollView>
+      </View>
     );
   }
 
@@ -184,146 +187,157 @@ export default function Station() {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <Text style={styles.h2}>{t.board}</Text>
-      <Text style={styles.summary}>
-        {plural(incidents.length, t.incidentOne, t.incidentMany)}
-        {staleCount > 0 ? " · " + fill(t.staleCount, { n: staleCount }) : ""}
-        {thinCount === 1
-          ? " · " + t.thinCoverageOne
-          : thinCount > 1
-            ? " · " + fill(t.thinCoverageMany, { n: thinCount })
-            : ""}
-      </Text>
-      <Text style={styles.muted}>
-        {seenAt === null ? t.seenNever : t.seenAt + " " + shortTime(seenAt)}
-      </Text>
+    <View style={styles.page}>
+      <StatusBand mode="station" label={t.board} />
+      <ScrollView contentContainerStyle={styles.form}>
+        <Text style={styles.summary}>
+          {plural(incidents.length, t.incidentOne, t.incidentMany)}
+          {staleCount > 0 ? " · " + fill(t.staleCount, { n: staleCount }) : ""}
+          {thinCount === 1
+            ? " · " + t.thinCoverageOne
+            : thinCount > 1
+              ? " · " + fill(t.thinCoverageMany, { n: thinCount })
+              : ""}
+        </Text>
+        <Text style={styles.muted}>
+          {seenAt === null ? t.seenNever : t.seenAt + " " + shortTime(seenAt)}
+        </Text>
 
-      <View style={styles.row}>
-        <Button label={t.markSeen} onPress={() => void markSeen()} />
-        <Button
-          label={t.stationExit}
-          variant="secondary"
-          onPress={() => void leave()}
-        />
-      </View>
-      <View style={styles.row}>
-        <Button
-          label={t.scanTitle}
-          variant="secondary"
-          onPress={() => router.push("/scan")}
-        />
-        <Button
-          label={t.shareTitle}
-          variant="secondary"
-          onPress={() => router.push("/share")}
-        />
-      </View>
-
-      {incidents.length === 0 ? (
-        <Text style={styles.muted}>{t.noIncidents}</Text>
-      ) : null}
-
-      {incidents.map((incident) => {
-        const e = evidence.get(incident.key);
-        if (!e) return null;
-        return (
-          <IncidentCard
-            key={incident.key}
-            incident={incident}
-            evidence={e}
-            flags={changes.get(incident.key) ?? []}
-            onPress={() =>
-              router.push({
-                pathname: "/incident/[key]",
-                params: { key: incident.key },
-              })
-            }
-          />
-        );
-      })}
-
-      {/* FR-017, after the incidents: the operator's first question is
-          what to act on; the second is where the picture is thin. */}
-      <View style={styles.panel}>
-        <Text style={styles.panelTitle}>{t.coverageHeading}</Text>
-        {coverage.length === 0 ? (
-          <Text style={styles.muted}>{t.coverageEmpty}</Text>
-        ) : (
-          coverage.map((row) => (
-            <CoverageRow key={row.area ?? "\u0000"} row={row} now={now} />
-          ))
-        )}
-      </View>
-
-      <View style={styles.panel}>
-        <Text style={styles.panelTitle}>{t.expectedHeading}</Text>
-        <Text style={styles.muted}>{t.expectedHint}</Text>
         <View style={styles.row}>
-          <TextInput
-            value={newArea}
-            onChangeText={setNewArea}
-            onSubmitEditing={() => void addExpected()}
-            placeholder="Purok 5"
-            placeholderTextColor={color.textSecondary}
-            style={[styles.input, styles.areaInput]}
-            accessibilityLabel={t.expectedHeading}
-          />
-          <Button label={t.addArea} onPress={() => void addExpected()} />
+          <Button label={t.markSeen} variant="secondary" onPress={() => void markSeen()} />
+          <Button label={t.stationExit} variant="quiet" onPress={() => void leave()} />
         </View>
-        {expectedNote ? <Text style={styles.hint}>{expectedNote}</Text> : null}
         <View style={styles.row}>
-          {expected.map((area) => (
-            <Button
-              key={area}
-              label={fill(t.removeArea, { area })}
-              variant="secondary"
-              onPress={() => void removeExpected(area)}
-            />
-          ))}
+          <Button
+            label={t.scanTitle}
+            variant="secondary"
+            onPress={() => router.push("/scan")}
+          />
+          <Button
+            label={t.shareTitle}
+            variant="secondary"
+            onPress={() => router.push("/share")}
+          />
         </View>
-      </View>
 
-      {safeAreas.length > 0 ? (
+        {incidents.length === 0 ? (
+          <Text style={styles.muted}>{t.noIncidents}</Text>
+        ) : null}
+
+        <View style={styles.ledger}>
+          {incidents.map((incident, index) => {
+            const e = evidence.get(incident.key);
+            if (!e) return null;
+            return (
+              <IncidentCard
+                key={incident.key}
+                incident={incident}
+                evidence={e}
+                flags={changes.get(incident.key) ?? []}
+                rank={index + 1}
+                onPress={() =>
+                  router.push({
+                    pathname: "/incident/[key]",
+                    params: { key: incident.key },
+                  })
+                }
+              />
+            );
+          })}
+        </View>
+
+        {/* FR-017, after the incidents: the operator's first question is
+            what to act on; the second is where the picture is thin. */}
         <View style={styles.panel}>
-          <Text style={styles.panelTitle}>{t.safePanel}</Text>
-          {safeAreas.map(([area, count]) => (
-            <Text key={area} style={styles.safeLine}>
-              {area}: {count}
-            </Text>
-          ))}
+          <Text style={styles.panelTitle}>{t.coverageHeading}</Text>
+          {coverage.length === 0 ? (
+            <Text style={styles.muted}>{t.coverageEmpty}</Text>
+          ) : (
+            coverage.map((row) => (
+              <CoverageRow key={row.area ?? " "} row={row} now={now} />
+            ))
+          )}
         </View>
-      ) : null}
-    </ScrollView>
+
+        <View style={styles.panel}>
+          <Text style={styles.panelTitle}>{t.expectedHeading}</Text>
+          <Text style={styles.muted}>{t.expectedHint}</Text>
+          <View style={styles.row}>
+            <TextInput
+              value={newArea}
+              onChangeText={setNewArea}
+              onSubmitEditing={() => void addExpected()}
+              placeholder="Purok 5"
+              placeholderTextColor={color.ink2}
+              style={[styles.input, styles.areaInput]}
+              accessibilityLabel={t.expectedHeading}
+            />
+            <Button label={t.addArea} variant="secondary" onPress={() => void addExpected()} />
+          </View>
+          {expectedNote ? <Text style={styles.hint}>{expectedNote}</Text> : null}
+          <View style={styles.row}>
+            {expected.map((area) => (
+              <Button
+                key={area}
+                label={fill(t.removeArea, { area })}
+                variant="quiet"
+                onPress={() => void removeExpected(area)}
+              />
+            ))}
+          </View>
+        </View>
+
+        {safeAreas.length > 0 ? (
+          <View style={styles.panel}>
+            <Text style={styles.panelTitle}>{t.safePanel}</Text>
+            {safeAreas.map(([area, count]) => (
+              <Text key={area} style={styles.safeLine}>
+                {area}: {count}
+              </Text>
+            ))}
+          </View>
+        ) : null}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  page: {
+  page: { flex: 1, backgroundColor: color.paper },
+  form: {
     padding: space[4],
     gap: space[3],
     paddingBottom: space[7],
   },
-  h2: { fontSize: size.h2, fontWeight: "700", color: color.textPrimary },
   summary: {
     fontSize: size.body,
     fontWeight: "600",
-    color: color.textPrimary,
+    color: color.ink,
     ...tabularNums,
   },
-  muted: { fontSize: size.caption, color: color.textSecondary },
-  hint: { fontSize: size.caption, color: color.warning },
-  error: { fontSize: size.body, color: color.danger, fontWeight: "600" },
+  muted: { fontSize: size.caption, color: color.ink2 },
+  hint: { fontSize: size.caption, color: color.ink2 },
+  error: { fontSize: size.body, color: color.ink, fontWeight: "700" },
   row: { flexDirection: "row", gap: space[2], flexWrap: "wrap" },
+  ledger: { marginHorizontal: -space[4] },
   input: {
     borderWidth: 1,
-    borderColor: color.border,
+    borderColor: color.ink,
     borderRadius: radius.control,
-    backgroundColor: color.surface,
+    backgroundColor: color.paper,
+    padding: space[3],
+    fontSize: size.body,
+    color: color.ink,
+  },
+  pinInput: {
+    borderWidth: 1,
+    borderColor: color.ink,
+    borderRadius: radius.control,
+    backgroundColor: color.paper,
     padding: space[3],
     fontSize: size.h3,
     letterSpacing: 6,
-    color: color.textPrimary,
+    color: color.ink,
   },
   areaInput: {
     flexGrow: 1,
@@ -332,19 +346,17 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
   },
   panel: {
-    backgroundColor: color.surface,
-    borderWidth: 1,
-    borderColor: color.borderSubtle,
-    borderRadius: radius.card,
-    padding: space[3],
     gap: space[1],
+    paddingTop: space[3],
+    borderTopWidth: 1,
+    borderTopColor: color.rule,
   },
   panelTitle: {
     fontSize: size.body,
     fontWeight: "700",
-    color: color.textPrimary,
+    color: color.ink,
   },
-  // Green is reserved for resolved and explicit safe check-ins (BR-017).
-  safeLine: { fontSize: size.body, color: color.success, ...tabularNums },
-  link: { fontSize: size.body, color: color.accent, paddingVertical: space[2] },
+  // No colour for "safe": plain ink, per the forbidden list (BR-017).
+  safeLine: { fontSize: size.body, color: color.ink, ...tabularNums },
+  link: { fontSize: size.body, color: color.ballpen, paddingVertical: space[2] },
 });

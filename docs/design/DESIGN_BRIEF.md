@@ -1,5 +1,13 @@
 # DESIGN_BRIEF — PASAbi (Relay alignment screens)
 
+> **Superseded 2026-09-28.** `src/theme/tokens.ts` now implements a different,
+> later design package ("logbook + stamp": coral + ballpen, Doto numerals,
+> ledger rows, stamps) applied as a re-skin of the existing routes — no new
+> screens or navigation. This file's colour/type values in `src/theme/tokens.ts`
+> no longer match; kept here for history and for the parts of the brief
+> (layout intent, copy, state matrix) that are still accurate. See
+> `src/theme/tokens.ts`'s header comment for the current source of truth.
+
 Status: Locked — 2026-09-27 (plan only; nothing new rendered yet)
 Updated: 2026-09-27 · Owner: Ian Patrick Flores · Values: `docs/design/tokens.json` → mirrored by hand in `src/theme/tokens.ts`
 Upstream: `docs/PRD.md` v0.5.1 · `docs/ARCHITECTURE.md` · `docs/IMPLEMENTATION_UPDATE.md` (phases R1–R5) · `docs/VALIDATION.md`

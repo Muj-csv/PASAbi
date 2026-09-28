@@ -4,8 +4,8 @@ import QRCode from "react-native-qrcode-svg";
 import { color, radius, space } from "@/theme/tokens";
 
 /**
- * DESIGN_BRIEF sections 3 and 10: as large as fits, min(width - 32, max),
- * on a white card. Modules are always qrDark on qrLight, never themed.
+ * DESIGN_BRIEF section 12: as large as fits, min(width - 32, max), on a
+ * white card. Modules are always qrDark on qrLight, never themed.
  *
  * ponytail: the quiet zone is 6 % of the size, not an exact 4 modules,
  * because the module count depends on the payload. That is about 5 modules
@@ -47,8 +47,8 @@ const styles = StyleSheet.create({
   card: {
     alignSelf: "center",
     backgroundColor: color.qrLight,
-    borderRadius: radius.card,
+    borderRadius: radius.block,
     borderWidth: 1,
-    borderColor: color.borderSubtle,
+    borderColor: color.rule,
   },
 });
