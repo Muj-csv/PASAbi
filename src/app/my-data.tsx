@@ -11,6 +11,7 @@ import {
 } from "@pasabi/core";
 
 import { Button } from "@/components/Button";
+import { StatusBand } from "@/components/StatusBand";
 import { StatusSteps } from "@/components/StatusSteps";
 import { CATEGORY_LABELS, plural, useLang, useStrings } from "@/i18n";
 import { deleteOwnObservation, loadObservations } from "@/storage/observations";
@@ -84,119 +85,121 @@ export default function MyData() {
   const sorted = [...observations].sort((a, b) => b.created_at - a.created_at);
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <Text style={styles.summary}>
-        {t.carrying}{" "}
-        {plural(observations.length, t.observationOne, t.observationMany)} ·{" "}
-        {plural(incidents.length, t.incidentOne, t.incidentMany)}
-      </Text>
+    <View style={styles.page}>
+      <StatusBand mode="resident" label={t.bandResident} />
+      <ScrollView contentContainerStyle={styles.form}>
+        <Text style={styles.summary}>
+          {t.carrying}{" "}
+          {plural(observations.length, t.observationOne, t.observationMany)} ·{" "}
+          {plural(incidents.length, t.incidentOne, t.incidentMany)}
+        </Text>
 
-      <Button
-        label={t.uploadNow}
-        onPress={() => void upload()}
-        busy={uploading}
-        busyLabel={t.saving}
-      />
-      {uploadNote ? <Text style={styles.muted}>{uploadNote}</Text> : null}
+        <Button
+          label={t.uploadNow}
+          onPress={() => void upload()}
+          busy={uploading}
+          busyLabel={t.saving}
+        />
+        {uploadNote ? <Text style={styles.muted}>{uploadNote}</Text> : null}
 
-      <View style={styles.links}>
-        <Link href="/" style={styles.link}>
-          {t.newObservation}
-        </Link>
-        <Link href="/dashboard" style={styles.link}>
-          {t.dashboard}
-        </Link>
-      </View>
+        <View style={styles.links}>
+          <Link href="/" style={styles.link}>
+            {t.newObservation}
+          </Link>
+          <Link href="/dashboard" style={styles.link}>
+            {t.dashboard}
+          </Link>
+        </View>
 
-      {sorted.length === 0 ? (
-        <Text style={styles.muted}>{t.empty}</Text>
-      ) : null}
+        {sorted.length === 0 ? (
+          <Text style={styles.muted}>{t.empty}</Text>
+        ) : null}
 
-      {sorted.map((o) => {
-        const own = status.get(o.id);
-        return (
-          <View key={o.id} style={styles.card}>
-            <View style={styles.cardHead}>
-              <Text style={styles.cardTitle}>
-                {o.category
-                  ? CATEGORY_LABELS[lang][o.category]
-                  : o.action === "RESOLVE"
-                    ? t.statusResolved
-                    : o.action === "ACK"
-                      ? t.statusAcknowledged
-                      : o.type}
-              </Text>
-              <Text style={own ? styles.mine : styles.carried}>
-                {own ? t.mine : t.carried}
-              </Text>
-            </View>
-            <Text style={styles.muted}>{when(o.created_at)}</Text>
-            {o.note ? <Text style={styles.note}>{o.note}</Text> : null}
-            {o.area_text ? (
-              <Text style={styles.muted}>{o.area_text}</Text>
-            ) : null}
-            {typeof o.people === "number" ? (
-              <Text style={styles.muted}>
-                {t.peopleAffectedShort}: {o.people}
-              </Text>
-            ) : null}
-
-            {own ? <StatusSteps status={own} footer={false} /> : null}
-
-            {own && confirming !== o.id ? (
-              <View style={styles.row}>
-                <Button
-                  label={t.deleteAction}
-                  variant="dangerSecondary"
-                  onPress={() => setConfirming(o.id)}
-                />
+        {sorted.map((o) => {
+          const own = status.get(o.id);
+          return (
+            <View key={o.id} style={styles.card}>
+              <View style={styles.cardHead}>
+                <Text style={styles.cardTitle}>
+                  {o.category
+                    ? CATEGORY_LABELS[lang][o.category]
+                    : o.action === "RESOLVE"
+                      ? t.statusResolved
+                      : o.action === "ACK"
+                        ? t.statusAcknowledged
+                        : o.type}
+                </Text>
+                <Text style={own ? styles.mine : styles.carried}>
+                  {own ? t.mine : t.carried}
+                </Text>
               </View>
-            ) : null}
-            {own && confirming === o.id ? (
-              <View style={styles.confirm}>
-                <Text style={styles.note}>{t.deleteNote}</Text>
+              <Text style={styles.muted}>{when(o.created_at)}</Text>
+              {o.note ? <Text style={styles.note}>{o.note}</Text> : null}
+              {o.area_text ? (
+                <Text style={styles.muted}>{o.area_text}</Text>
+              ) : null}
+              {typeof o.people === "number" ? (
+                <Text style={styles.muted}>
+                  {t.peopleAffectedShort}: {o.people}
+                </Text>
+              ) : null}
+
+              {own ? <StatusSteps status={own} seed={o.id} footer={false} /> : null}
+
+              {own && confirming !== o.id ? (
                 <View style={styles.row}>
                   <Button
                     label={t.deleteAction}
-                    variant="dangerSecondary"
-                    onPress={() => void remove(o.id)}
-                  />
-                  <Button
-                    label={t.cancel}
-                    variant="secondary"
-                    onPress={() => setConfirming(null)}
+                    variant="ink"
+                    onPress={() => setConfirming(o.id)}
                   />
                 </View>
-              </View>
-            ) : null}
-          </View>
-        );
-      })}
+              ) : null}
+              {own && confirming === o.id ? (
+                <View style={styles.confirm}>
+                  <Text style={styles.note}>{t.deleteNote}</Text>
+                  <View style={styles.row}>
+                    <Button
+                      label={t.deleteAction}
+                      variant="ink"
+                      onPress={() => void remove(o.id)}
+                    />
+                    <Button
+                      label={t.cancel}
+                      variant="quiet"
+                      onPress={() => setConfirming(null)}
+                    />
+                  </View>
+                </View>
+              ) : null}
+            </View>
+          );
+        })}
 
-      {/* BR-015 footer, once for the whole list rather than on every card. */}
-      {status.size > 0 ? (
-        <Text style={styles.muted}>{t.stepFooter}</Text>
-      ) : null}
-      <Text style={styles.muted}>{t.deleteNote}</Text>
-    </ScrollView>
+        {/* BR-015 footer, once for the whole list rather than on every card. */}
+        {status.size > 0 ? (
+          <Text style={styles.muted}>{t.stepFooter}</Text>
+        ) : null}
+        <Text style={styles.muted}>{t.deleteNote}</Text>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { padding: space[4], gap: space[3], paddingBottom: space[7] },
+  page: { flex: 1, backgroundColor: color.paper },
+  form: { padding: space[4], gap: space[3], paddingBottom: space[7] },
   summary: {
-    fontSize: size.h3,
+    fontSize: size.title.fontSize,
     fontWeight: "700",
-    color: color.textPrimary,
+    color: color.ink,
     ...tabularNums,
   },
   links: { flexDirection: "row", flexWrap: "wrap", gap: space[4] },
-  link: { fontSize: size.body, color: color.accent, paddingVertical: space[2] },
+  link: { fontSize: size.body, color: color.ballpen, paddingVertical: space[2] },
   card: {
     backgroundColor: color.surface,
-    borderWidth: 1,
-    borderColor: color.borderSubtle,
-    borderRadius: radius.card,
+    borderRadius: radius.control,
     padding: space[3],
     gap: space[2],
   },
@@ -205,11 +208,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  cardTitle: { fontSize: size.body, fontWeight: "700", color: color.textPrimary },
-  mine: { fontSize: size.caption, fontWeight: "700", color: color.accent },
-  carried: { fontSize: size.caption, color: color.textSecondary },
-  note: { fontSize: size.body, color: color.textPrimary },
-  muted: { fontSize: size.caption, color: color.textSecondary },
+  cardTitle: { fontSize: size.body, fontWeight: "700", color: color.ink },
+  mine: { fontSize: size.caption, fontWeight: "700", color: color.ballpen },
+  carried: { fontSize: size.caption, color: color.ink2 },
+  note: { fontSize: size.body, color: color.ink },
+  muted: { fontSize: size.caption, color: color.ink2 },
   row: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
   confirm: { gap: space[2] },
 });

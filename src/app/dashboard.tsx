@@ -28,6 +28,7 @@ import { CoverageRow } from "@/components/CoverageRow";
 import { IncidentCard } from "@/components/IncidentCard";
 import { KnownUnknownList } from "@/components/KnownUnknownList";
 import { Notice } from "@/components/Notice";
+import { StatusBand } from "@/components/StatusBand";
 import {
   CATEGORY_LABELS,
   changeLabel,
@@ -38,7 +39,6 @@ import {
 import { fetchObservations, isConfigured } from "@/storage/uplink";
 import {
   color,
-  radius,
   size,
   space,
   tabularNums,
@@ -54,8 +54,8 @@ import {
  * station board by construction.
  *
  * ponytail: no Leaflet map (deferred, PRD section 8), and no two-column
- * layout at >= 768 px yet (DESIGN_BRIEF section 3). The ranked list with
- * evidence and "since last visit" is what a responder reads first.
+ * layout at >= 1024 px yet (DESIGN_BRIEF section 12, W1). The ranked list
+ * with evidence and "since last visit" is what a responder reads first.
  */
 
 const LAST_VISIT_KEY = "pasabi.dashboard.lastVisit";
@@ -159,10 +159,12 @@ export default function Dashboard() {
 
   if (!isConfigured()) {
     return (
-      <ScrollView contentContainerStyle={styles.page}>
-        <Text style={styles.h2}>{t.dashboard}</Text>
-        <Notice message={t.dashNotConnected} detail={t.dashDevDetail} />
-      </ScrollView>
+      <View style={styles.page}>
+        <StatusBand mode="responder" label={t.dashboard} />
+        <ScrollView contentContainerStyle={styles.form}>
+          <Notice message={t.dashNotConnected} detail={t.dashDevDetail} />
+        </ScrollView>
+      </View>
     );
   }
 
@@ -174,143 +176,152 @@ export default function Dashboard() {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <Text style={styles.h2}>{t.dashboard}</Text>
-      <Text style={styles.muted}>{t.dashboardIntro}</Text>
+    <View style={styles.page}>
+      <StatusBand mode="responder" label={t.dashboard} />
+      <ScrollView contentContainerStyle={styles.form}>
+        <Text style={styles.muted}>{t.dashboardIntro}</Text>
 
-      <View style={styles.row}>
-        <Button label={t.refresh} onPress={() => void load()} />
-        <Text style={styles.count}>
-          {plural(incidents.length, t.incidentOne, t.incidentMany)} ·{" "}
-          {plural(observationCount, t.observationOne, t.observationMany)}
-        </Text>
-      </View>
+        <View style={styles.row}>
+          <Button label={t.refresh} variant="secondary" onPress={() => void load()} />
+          <Text style={styles.count}>
+            {plural(incidents.length, t.incidentOne, t.incidentMany)} ·{" "}
+            {plural(observationCount, t.observationOne, t.observationMany)}
+          </Text>
+        </View>
 
-      {status === "loading" ? (
-        <Text style={styles.muted}>{t.loading}</Text>
-      ) : null}
-      {status === "error" ? <Notice message={t.loadError} tone="error" /> : null}
-      {status === "ready" && observationCount === 0 ? (
-        <Notice message={t.dashEmpty} />
-      ) : null}
+        {status === "loading" ? (
+          <Text style={styles.muted}>{t.loading}</Text>
+        ) : null}
+        {status === "error" ? <Notice message={t.loadError} tone="error" /> : null}
+        {status === "ready" && observationCount === 0 ? (
+          <Notice message={t.dashEmpty} />
+        ) : null}
 
-      <View style={styles.panel}>
-        <Text style={styles.panelTitle}>{t.sinceLastSync}</Text>
-        {lastVisit === null || changed.length === 0 ? (
-          <Text style={styles.muted}>{t.nothingChanged}</Text>
-        ) : (
-          changed.map((incident) => (
-            <Text key={incident.key} style={styles.line}>
-              {CATEGORY_LABELS[lang][incident.category]} ·{" "}
-              {(changes.get(incident.key) ?? [])
-                .map((flag) => changeLabel(flag, t))
-                .join(", ")}
-            </Text>
-          ))
-        )}
-      </View>
+        <View style={styles.panel}>
+          <Text style={styles.panelTitle}>{t.sinceLastSync}</Text>
+          {lastVisit === null || changed.length === 0 ? (
+            <Text style={styles.muted}>{t.nothingChanged}</Text>
+          ) : (
+            changed.map((incident) => (
+              <Text key={incident.key} style={styles.line}>
+                {CATEGORY_LABELS[lang][incident.category]} ·{" "}
+                {(changes.get(incident.key) ?? [])
+                  .map((flag) => changeLabel(flag, t))
+                  .join(", ")}
+              </Text>
+            ))
+          )}
+        </View>
 
-      <View style={styles.row}>
-        <Pressable
-          style={[styles.chip, filter === null && styles.chipOn]}
-          onPress={() => setFilter(null)}
-          accessibilityRole="button"
-          accessibilityState={{ selected: filter === null }}
-        >
-          <Text style={styles.chipText}>{t.filterAll}</Text>
-        </Pressable>
-        {CATEGORIES.filter((c) => c !== SAFE_CHECKIN).map((c) => (
+        <View style={styles.row}>
           <Pressable
-            key={c}
-            style={[styles.chip, filter === c && styles.chipOn]}
-            onPress={() => setFilter(c)}
+            style={[styles.chip, filter === null && styles.chipOn]}
+            onPress={() => setFilter(null)}
             accessibilityRole="button"
-            accessibilityState={{ selected: filter === c }}
+            accessibilityState={{ selected: filter === null }}
           >
-            <Text style={styles.chipText}>{CATEGORY_LABELS[lang][c]}</Text>
+            <Text style={[styles.chipText, filter === null && styles.chipTextOn]}>
+              {t.filterAll}
+            </Text>
           </Pressable>
-        ))}
-      </View>
-
-      {shown.length === 0 && status === "ready" && observationCount > 0 ? (
-        <Text style={styles.muted}>{t.noIncidents}</Text>
-      ) : null}
-
-      {shown.map((incident) => {
-        const e = evidence.get(incident.key);
-        if (!e) return null;
-        const b = incident.breakdown;
-        return (
-          <IncidentCard
-            key={incident.key}
-            incident={incident}
-            evidence={e}
-            flags={changes.get(incident.key) ?? []}
-          >
-            <Text style={styles.breakdown}>
-              {t.scoreBase} {b.base} · {t.scoreCorroboration} {b.corroboration}{" "}
-              · {t.scorePeople} {b.people} · {t.scoreUnacknowledged}{" "}
-              {b.unacknowledged} · {t.scoreStaleness} {b.staleness}
-            </Text>
-            {/* FR-016, computed only for the card that is opened (ARCHITECTURE 3a). */}
-            <View style={styles.row}>
-              <Button
-                label={gapsOpen === incident.key ? t.gapsHide : t.gapsShow}
-                variant="secondary"
-                onPress={() =>
-                  setGapsOpen((k) => (k === incident.key ? null : incident.key))
-                }
-              />
-            </View>
-            {gapsOpen === incident.key ? (
-              <KnownUnknownList
-                gaps={gapsFor(incident, incidents, observations)}
-              />
-            ) : null}
-          </IncidentCard>
-        );
-      })}
-
-      {coverage.length > 0 ? (
-        <View style={styles.panel}>
-          <Text style={styles.panelTitle}>{t.coverageHeading}</Text>
-          {coverage.map((row) => (
-            <CoverageRow key={row.area ?? "\u0000"} row={row} now={loadedAt} />
+          {CATEGORIES.filter((c) => c !== SAFE_CHECKIN).map((c) => (
+            <Pressable
+              key={c}
+              style={[styles.chip, filter === c && styles.chipOn]}
+              onPress={() => setFilter(c)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: filter === c }}
+            >
+              <Text style={[styles.chipText, filter === c && styles.chipTextOn]}>
+                {CATEGORY_LABELS[lang][c]}
+              </Text>
+            </Pressable>
           ))}
         </View>
-      ) : null}
 
-      {safeAreas.length > 0 ? (
-        <View style={styles.panel}>
-          <Text style={styles.panelTitle}>{t.safePanel}</Text>
-          {safeAreas.map(([area, count]) => (
-            <Text key={area} style={styles.safeLine}>
-              {area}: {count}
-            </Text>
-          ))}
+        {shown.length === 0 && status === "ready" && observationCount > 0 ? (
+          <Text style={styles.muted}>{t.noIncidents}</Text>
+        ) : null}
+
+        <View style={styles.ledger}>
+          {shown.map((incident, index) => {
+            const e = evidence.get(incident.key);
+            if (!e) return null;
+            const b = incident.breakdown;
+            return (
+              <IncidentCard
+                key={incident.key}
+                incident={incident}
+                evidence={e}
+                flags={changes.get(incident.key) ?? []}
+                rank={index + 1}
+              >
+                <Text style={styles.breakdown}>
+                  {t.scoreBase} {b.base} · {t.scoreCorroboration} {b.corroboration}{" "}
+                  · {t.scorePeople} {b.people} · {t.scoreUnacknowledged}{" "}
+                  {b.unacknowledged} · {t.scoreStaleness} {b.staleness}
+                </Text>
+                {/* FR-016, computed only for the card that is opened (ARCHITECTURE 3a). */}
+                <View style={styles.row}>
+                  <Button
+                    label={gapsOpen === incident.key ? t.gapsHide : t.gapsShow}
+                    variant="quiet"
+                    onPress={() =>
+                      setGapsOpen((k) => (k === incident.key ? null : incident.key))
+                    }
+                  />
+                </View>
+                {gapsOpen === incident.key ? (
+                  <KnownUnknownList
+                    gaps={gapsFor(incident, incidents, observations)}
+                  />
+                ) : null}
+              </IncidentCard>
+            );
+          })}
         </View>
-      ) : null}
 
-      {/* PRD section 14, stated on the dashboard rather than buried in docs. */}
-      <Text style={styles.caveat}>{t.corroborationCaveat}</Text>
-    </ScrollView>
+        {coverage.length > 0 ? (
+          <View style={styles.panel}>
+            <Text style={styles.panelTitle}>{t.coverageHeading}</Text>
+            {coverage.map((row) => (
+              <CoverageRow key={row.area ?? " "} row={row} now={loadedAt} />
+            ))}
+          </View>
+        ) : null}
+
+        {safeAreas.length > 0 ? (
+          <View style={styles.panel}>
+            <Text style={styles.panelTitle}>{t.safePanel}</Text>
+            {safeAreas.map(([area, count]) => (
+              <Text key={area} style={styles.safeLine}>
+                {area}: {count}
+              </Text>
+            ))}
+          </View>
+        ) : null}
+
+        {/* PRD section 14, stated on the dashboard rather than buried in docs. */}
+        <Text style={styles.caveat}>{t.corroborationCaveat}</Text>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  page: {
+  page: { flex: 1, backgroundColor: color.paper },
+  form: {
     padding: space[4],
     gap: space[3],
     paddingBottom: space[7],
     maxWidth: 900,
   },
-  h2: { fontSize: size.h2, fontWeight: "700", color: color.textPrimary },
-  muted: { fontSize: size.caption, color: color.textSecondary },
-  count: { fontSize: size.caption, color: color.textSecondary, ...tabularNums },
-  line: { fontSize: size.body, color: color.textPrimary },
+  muted: { fontSize: size.caption, color: color.ink2 },
+  count: { fontSize: size.caption, color: color.ink2, ...tabularNums },
+  line: { fontSize: size.body, color: color.ink },
   breakdown: {
     fontSize: size.caption,
-    color: color.textSecondary,
+    color: color.ink2,
     ...tabularNums,
   },
   row: {
@@ -319,35 +330,34 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     alignItems: "center",
   },
+  ledger: { gap: 0 },
   chip: {
     minHeight: TOUCH_TARGET,
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: color.border,
-    borderRadius: 999,
+    borderColor: color.ink,
     paddingHorizontal: space[3],
-    backgroundColor: color.surface,
+    backgroundColor: color.paper,
   },
-  chipOn: { borderColor: color.accent, backgroundColor: color.surfaceHover },
-  chipText: { fontSize: size.caption, color: color.textPrimary },
+  chipOn: { borderColor: color.ink, backgroundColor: color.ink },
+  chipText: { fontSize: size.caption, color: color.ink },
+  chipTextOn: { color: color.onFill },
   panel: {
-    backgroundColor: color.surface,
-    borderWidth: 1,
-    borderColor: color.borderSubtle,
-    borderRadius: radius.card,
-    padding: space[3],
     gap: space[1],
+    paddingTop: space[3],
+    borderTopWidth: 1,
+    borderTopColor: color.rule,
   },
   panelTitle: {
     fontSize: size.body,
     fontWeight: "700",
-    color: color.textPrimary,
+    color: color.ink,
   },
-  // Green is reserved for resolved and explicit safe check-ins (BR-017).
-  safeLine: { fontSize: size.body, color: color.success, ...tabularNums },
+  // No colour for "safe": plain ink, per the forbidden list (BR-017).
+  safeLine: { fontSize: size.body, color: color.ink, ...tabularNums },
   caveat: {
     fontSize: size.caption,
-    color: color.textSecondary,
+    color: color.ink2,
     marginTop: space[2],
     fontStyle: "italic",
   },

@@ -4,15 +4,11 @@ import { color, radius, size, space } from "@/theme/tokens";
 
 type Tone = "info" | "warning" | "error";
 
-const EDGE: Record<Tone, string> = {
-  info: color.border,
-  warning: color.warning,
-  error: color.danger,
-};
-
 /**
- * DESIGN_BRIEF section 10: replaces raw error strings. `detail` is for
- * developer-facing text, kept small and secondary (section 8).
+ * DESIGN_BRIEF section 12: replaces raw error strings. There is no colour
+ * for "error": ink on surface, bold, with one sentence — the forbidden list
+ * bans red for uncertainty and there is no severity hue at all here.
+ * `detail` is for developer-facing text, kept small and secondary.
  */
 export function Notice({
   message,
@@ -24,13 +20,8 @@ export function Notice({
   tone?: Tone;
 }) {
   return (
-    <View
-      style={[styles.box, { borderColor: EDGE[tone] }]}
-      accessibilityRole={tone === "info" ? undefined : "alert"}
-    >
-      <Text style={[styles.message, tone === "error" && styles.error]}>
-        {message}
-      </Text>
+    <View style={styles.box} accessibilityRole={tone === "info" ? undefined : "alert"}>
+      <Text style={styles.message}>{message}</Text>
       {detail ? <Text style={styles.detail}>{detail}</Text> : null}
     </View>
   );
@@ -39,12 +30,10 @@ export function Notice({
 const styles = StyleSheet.create({
   box: {
     backgroundColor: color.surface,
-    borderWidth: 1,
-    borderRadius: radius.card,
+    borderRadius: radius.control,
     padding: space[3],
     gap: space[1],
   },
-  message: { fontSize: size.body, color: color.textPrimary, fontWeight: "600" },
-  error: { color: color.danger },
-  detail: { fontSize: size.caption, color: color.textSecondary },
+  message: { fontSize: size.body, color: color.ink, fontWeight: "600" },
+  detail: { fontSize: size.caption, color: color.ink2 },
 });

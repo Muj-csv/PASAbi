@@ -12,6 +12,7 @@ import { Button } from "@/components/Button";
 import { QrFrame } from "@/components/QrFrame";
 import { QrScanner } from "@/components/QrScanner";
 import { ScanProgress } from "@/components/ScanProgress";
+import { StatusBand } from "@/components/StatusBand";
 import { fill, useStrings } from "@/i18n";
 import { getDeviceId } from "@/storage/device";
 import { receiveObservations } from "@/storage/observations";
@@ -84,61 +85,68 @@ export default function Scan() {
 
   if (me === null) return null;
 
+  const band = <StatusBand mode={me.role === "station" ? "station" : "resident"} label={t.scanTitle} />;
+
   if (done !== null) {
     return (
-      <ScrollView contentContainerStyle={styles.page}>
-        <Text style={styles.h2}>{t.scanTitle}</Text>
-        <Text style={styles.done}>
-          {fill(t.scanDone, { N: done.received, M: done.added })}
-        </Text>
-        <Text style={styles.hint}>{t.showReceipt}</Text>
-        <QrFrame
-          value={encodeReceipt({
-            bundleId: done.bundleId,
-            role: me.role,
-            deviceId: me.deviceId,
-          })}
-          label={t.showReceipt}
-        />
-        <Button label={t.receiveAnother} onPress={reset} />
-        <Text style={styles.muted}>{t.swapHint}</Text>
-      </ScrollView>
+      <View style={styles.page}>
+        {band}
+        <ScrollView contentContainerStyle={styles.form}>
+          <Text style={styles.done}>
+            {fill(t.scanDone, { N: done.received, M: done.added })}
+          </Text>
+          <Text style={styles.hint}>{t.showReceipt}</Text>
+          <QrFrame
+            value={encodeReceipt({
+              bundleId: done.bundleId,
+              role: me.role,
+              deviceId: me.deviceId,
+            })}
+            label={t.showReceipt}
+          />
+          <Button label={t.receiveAnother} onPress={reset} />
+          <Text style={styles.muted}>{t.swapHint}</Text>
+        </ScrollView>
+      </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <Text style={styles.h2}>{t.scanTitle}</Text>
-      <View style={styles.idBlock}>
-        <QrFrame
-          value={encodeId(me.role, me.deviceId)}
-          maxSize={160}
-          label={t.showIdFirst}
-        />
-        <Text style={styles.muted}>{t.showIdFirst}</Text>
-      </View>
-      <Text style={styles.hint}>{t.scanPointAt}</Text>
-      <QrScanner onCode={(text) => void onCode(text)} />
-      {progress.total > 0 ? (
-        <ScanProgress received={progress.received} total={progress.total} />
-      ) : null}
-      {warning ? <Text style={styles.warning}>{warning}</Text> : null}
-      <Text style={styles.muted}>{t.swapHint}</Text>
-    </ScrollView>
+    <View style={styles.page}>
+      {band}
+      <ScrollView contentContainerStyle={styles.form}>
+        <View style={styles.idBlock}>
+          <QrFrame
+            value={encodeId(me.role, me.deviceId)}
+            maxSize={160}
+            label={t.showIdFirst}
+          />
+          <Text style={styles.muted}>{t.showIdFirst}</Text>
+        </View>
+        <Text style={styles.hint}>{t.scanPointAt}</Text>
+        <QrScanner onCode={(text) => void onCode(text)} />
+        {progress.total > 0 ? (
+          <ScanProgress received={progress.received} total={progress.total} />
+        ) : null}
+        {warning ? <Text style={styles.warning}>{warning}</Text> : null}
+        <Text style={styles.muted}>{t.swapHint}</Text>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { padding: space[4], gap: space[3], paddingBottom: space[7] },
-  h2: { fontSize: size.h2, fontWeight: "700", color: color.textPrimary },
-  hint: { fontSize: size.body, color: color.textPrimary },
+  page: { flex: 1, backgroundColor: color.paper },
+  form: { padding: space[4], gap: space[3], paddingBottom: space[7] },
+  hint: { fontSize: size.body, color: color.ink },
   idBlock: { alignItems: "center", gap: space[1] },
   done: {
-    fontSize: size.h3,
-    fontWeight: "700",
-    color: color.textPrimary,
+    fontFamily: "Doto_800ExtraBold",
+    fontSize: 44,
+    lineHeight: 48,
+    color: color.ink,
     ...tabularNums,
   },
-  warning: { fontSize: size.body, fontWeight: "600", color: color.warning },
-  muted: { fontSize: size.caption, color: color.textSecondary },
+  warning: { fontSize: size.body, fontWeight: "700", color: color.ink },
+  muted: { fontSize: size.caption, color: color.ink2 },
 });
