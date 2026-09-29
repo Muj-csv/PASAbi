@@ -1,205 +1,218 @@
-# DESIGN_BRIEF — PASAbi (Relay alignment screens)
+# PASAbi — Design Brief
 
-> **Superseded 2026-09-28.** `src/theme/tokens.ts` now implements a different,
-> later design package ("logbook + stamp": coral + ballpen, Doto numerals,
-> ledger rows, stamps) applied as a re-skin of the existing routes — no new
-> screens or navigation. This file's colour/type values in `src/theme/tokens.ts`
-> no longer match; kept here for history and for the parts of the brief
-> (layout intent, copy, state matrix) that are still accurate. See
-> `src/theme/tokens.ts`'s header comment for the current source of truth.
+Veronica · Locked Pipeline, Phases C–D · 2026-09-27
+**Status: Locked — anchor screen: S1 Ledger + S2 Incident (canvas v1, colour pass).** Locked because the team moved to integration. Change it only through `PIPELINE.md` → "Revisiting a locked phase".
+Code form of this file: `code/src/design/theme.ts`. If the two disagree, this file wins; fix the code.
 
-Status: Locked — 2026-09-27 (plan only; nothing new rendered yet)
-Updated: 2026-09-27 · Owner: Ian Patrick Flores · Values: `docs/design/tokens.json` → mirrored by hand in `src/theme/tokens.ts`
-Upstream: `docs/PRD.md` v0.5.1 · `docs/ARCHITECTURE.md` · `docs/IMPLEMENTATION_UPDATE.md` (phases R1–R5) · `docs/VALIDATION.md`
+> PASAbi is an emergency information instrument, not a dashboard. Reduce load, show uncertainty, keep evidence, make the next action obvious.
 
-> **For teammates and Claude:** read this file, then build against `src/theme/tokens.ts`. Three rules: (1) only theme tokens — no raw hex, no one-off font sizes or gaps; (2) every state in §11 exists for every screen you touch; (3) before calling a screen done, ask Claude (with AEGIS) to run the checks, or run the slop lint and render check listed in §14.
+## 0. Where each decision comes from
 
-> **Traces.** Values live only in `tokens.json`. **team** = the existing screens already used it on purpose · **delegated** = picked by AEGIS on 2026-09-27 because the lead asked for the skills to be run and gave no design direction; change any.
+| Source | Decision |
+|---|---|
+| **Team (user)** | Concept: logbook + stamp. Reference: **Nothing OS**. Accent: **Living Coral**. Anchor: station ledger. |
+| **PRD v0.5.2** | Honest language (BR-017). Freshness is separate from priority (BR-011). Reports and phones are two separate numbers (BR-012). |
+| **Sweep** (`00_SWEEP_AND_SCOPE.md`) | No warning hues on data (PAGASA collision). Sentence case. Word budgets. |
+| **Veronica-proposed** | Anything marked ⚑ is a proposed default. Challenge it freely. |
 
-**Classification.** App type: hybrid — **dashboard-data** for the station board, incident detail and responder dashboard (the primary user); **consumer-mobile** for the report form, QR screens and reporter status. Mode: Build (new screens) plus an audit of the existing ones. Tier: Standard (3½ days, multi-screen). Stack: React Native StyleSheet via Expo, iPhone in Expo Go, plus the React Native Web build.
+## 1. Personality
 
----
+**Should feel like:** a Nothing widget that was issued by the barangay hall. Two phrases describe it:
 
-## 1. Anchor
+- **Technical warmth**, Nothing's own phrase: mechanical type and a strict grid, with one warm hand-made gesture (the stamp).
+- **Quiet data, lively moments**: rows stay strict; saving, passing on and receiving get the life.
 
-- **Reference:** none supplied. Grounding is the existing screens (blue accent, grey page, 10 px radius, system type) and the Relay principles in PRD §6.
-- **The one job (product):** a station operator decides **what to act on next, and how much to trust it**. For a reporter: record an observation in about 15 seconds and know honestly where it went.
-- **Direction (delegated):** **a field logbook, not a feed.** Plain, exact, calm. Every line says what is known, from how many phones, and how old it is.
+**Should NOT feel like:**
+- a government website
+- a disaster movie
+- a command-centre HUD
+- a generic SaaS dashboard
+- a Linear clone (dark, mono, dense)
+- a Nothing clone (we borrow the discipline, not the brand)
 
-## 2. Personality
+## 2. Reference: what we take from Nothing OS, and what we don't
 
-- **Should feel:** plain, exact, calm. An operator at 3 am after landfall should read it at arm's length without being alarmed by decoration.
-- **Should NOT feel:** a social feed; a glossy app-store app; a dark "war room" monitoring wall with glowing reds; anything that sounds more certain than the evidence.
+| Take | Don't take |
+|---|---|
+| Near-monochrome base: black, white and one warm grey | Nothing's red (#D71920). **Coral replaces it.** |
+| Dot-matrix numerals for display. NDot comes from dot-matrix printers, and so does the paperwork in a barangay hall. | NDot or NType fonts themselves. They're Nothing's brand fonts, so we use an OFL analogue. |
+| Simple, self-contained widget blocks on resident Home | Widget grids on the station. The station is a ledger. |
+| Strict grid, fixed tracking, no decoration | The Glyph light metaphor, transparent hardware, brand phrasing |
 
-## 3. Layout intent, per screen
+## 3. Typography
 
-Route names follow AERIAL (`src/app/…`). New routes: `share` and `scan`.
-
-| Screen (route) | One job | Skeleton | Why not the default |
+| Role | Face | Size / line height (pt) | Use |
 |---|---|---|---|
-| **Report** (`index`) | Record in ~15 s | Category buttons in an **even 2-column grid** (Medical, Trapped first; "We are safe" full-width, separated below). Location line. Optional fields. **Submit always enabled**: tapping with something missing names what's missing inline and scrolls to it. After saving, the reporter-status panel (§3a) replaces the success line | The current grid wraps to ragged widths, and the submit button greys out with no reason given — the user can't tell they must pick a category first |
-| **Station board** (`station`) | Pick the next incident to act on | Single column. A **summary strip** at the top ("7 incidents · 2 stale · 1 area with limited coverage", each part tappable). Incident cards in urgency order (anatomy below). Resolved at the bottom, faded. **Coverage by area** as a section after the incidents | Coverage matters but isn't the operator's first question; putting it first would push the top incident below the fold |
-| **Incident detail** (`incident/[key]`) | Decide: acknowledge, resolve, or ask for more information | 1 header (category, area, status, stale notice if stale) → 2 **evidence line** (reports · sources, first/last seen) → 3 **actions** (Acknowledge / Resolve) → 4 **Known / Not yet reported** → 5 Why ranked here → 6 Timeline | Evidence and actions come before the score breakdown because "how do we know" decides the action; the breakdown explains the order, not the action |
-| **Share by QR** (`share`) | Let the other phone read the frames | QR as large as fits (screen width − 32 px, max 360), white card with a 4-module quiet zone, centred. Under it: "Frame i of n · Page p of P", Pause / Next frame, **Next page**. Below: **Scan their receipt**. One line at the top: "Let the other phone scan this. Keep it steady; turn brightness up." Optional "Scan their phone first" link above the QR | The QR is the whole screen's purpose; controls stay below it so a thumb never covers it |
-| **Receive by QR** (`scan`) | Collect every frame | Small ID QR at the top: "Show this to the sharer first (optional)". Camera view. **Progress bar with "12 of 29 frames"**. On completion the camera is replaced by "Received N (M new)" and a **large receipt QR** with "Show this to the sharer" | Progress must be visible at a glance while both people hold their phones up |
-| **My data** (`my-data`) | See what this phone holds and where own reports went | Existing list; each own observation gets the **status steps** (§3a) | — |
-| **Dashboard** (`dashboard`) | Same as the station, for a responder with internet | Phone: identical to the board. ≥ 768 px: **two columns** — ranked list left, the selected incident's detail right. Category filter and "since last visit" above the list | Reuses the board and detail components, so the two can't drift |
+| Display | **Doto** (Google Fonts, OFL, dot-matrix, variable dot size and roundness) | 44/48 | Big counts, ledger rank numerals, stamp dates. Numbers and ≤ 3 words only. |
+| Title | System (SF Pro), semibold | 28/34 | Screen titles |
+| Heading | System, semibold | 20/25 | Row titles, section heads |
+| Body | System, regular | 17/22 | All reading text. Supports Dynamic Type. |
+| Caption | System, regular, `tabular-nums` | 13/18 | Times, counts, device codes |
+| Stamp | System, heavy, uppercase, +8% tracking | 13/16 | Stamps only. **The only caps in the app.** |
 
-### Incident card anatomy (board and dashboard)
+Notes:
+- The scale is 13 → 17 → 20 → 28 → 44, with steps of 1.18–1.57. The body→heading step is small on purpose so rows stay compact. Display is a big, deliberate jump.
+- **No monospace face.** ⚑ Numbers use `fontVariant: ['tabular-nums']` on the system font. The "technical" feel comes from Doto plus the grid, which avoids mono-as-shorthand.
+- Loading Doto: use `@expo-google-fonts/doto` if the package exists. Otherwise bundle the OFL TTF with `expo-font` `useFonts(require(...))`, which works in Expo Go. Doto is display-only and never used under 20 pt.
 
-```
-FLOOD · Purok 4                                   60
-4 reports · 3 sources · strongly corroborated
-Last reported 3 min ago
-Not yet acknowledged                     [NEW] [ESCALATED]
-```
+## 4. Colour
 
-- Row 1: category and area at `size.h3`, score right-aligned at `size.h3` with tabular figures.
-- Row 2: the evidence line at `size.body`, `text-primary`. The two numbers are always both shown (BR-012).
-- Row 3: freshness at `size.caption`. Fresh = `text-secondary`. Aging = `text-secondary`. **Stale = `warning`, with a "STALE" badge and the words "Last known 3 h ago — may have changed"**.
-- Row 4: status text, then change flags.
-- Whole card is one touch target to the detail. No coloured left stripe (a recognised AI tell and colour-only meaning).
-
-### 3a. Reporter status steps (report screen after saving, and My data)
-
-A vertical list of four steps. Done steps: `text-primary` with ✓. Current step: bold. Future steps: `text-secondary`. Then, if true, "Grouped with reports from N other phones". Footer, always shown, in `text-secondary`: *"This shows only what this phone knows. It does not mean responders have seen it."* No green anywhere in it: none of these steps means help is coming.
-
-## 4. Typography
-
-- **One family:** the platform system face (`font.display` = `font.body`). Reasons in `tokens.json`: no downloaded font in an offline app, full Filipino coverage, tabular figures, iPhone users read it fastest. Hierarchy comes from size and weight only.
-- **Scale:** `caption` 13 · `body` 16 · `h3` 20 · `h2` 26 (ratios 1.25 and 1.3). This replaces **ten** different sizes in the current screens (11–22).
-- **Numbers** (counts, times, scores) use `tabularNums` so they line up down a list.
-- Leave `allowFontScaling` on (the default). Layouts must survive iOS larger text sizes: rows wrap, nothing truncates a count.
-
-## 5. Color — what each color means
-
-| Meaning | Token | Always with this text |
-|---|---|---|
-| Primary action, link, "NEW" flag, "Acknowledged" | `accent` | the label |
-| Escalated, errors | `danger` | "ESCALATED" / the error |
-| **Uncertainty**: stale, limited or stale coverage, "not yet reported", "newly corroborated" | `warning` | "STALE", "Limited coverage", "Not yet reported", … |
-| **Resolved**, explicit safe check-ins — **nothing else** | `success` | "Resolved", "N checked in safe" |
-| High coverage | `accent` (not green) | "High coverage" |
-| No reports from an expected area | `warning`, bold | "No reports — this does not mean it is safe" |
-
-Rules: colour is never the only signal; green never means "fine" except for an explicit resolve or safe check-in; red never means "uncertain".
-
-Contrast evidence (`tokens_export.py --check`, 2026-09-27): 0 errors, 0 warnings. Lowest text pair: `text-secondary` on `bg` 5.24:1; `warning` on `bg` 5.86:1; `border` on `bg` 3.35:1 (UI minimum 3:1).
-
-## 6. Spacing, geometry, density
-
-- Spacing: `space.1–7` on a 4 px grid (4, 8, 12, 16, 24, 32, 48). Page padding `space.4`; gap between cards `space.3`; inside a card `space.1`–`space.2`.
-- Radius: 10 for controls and cards, 4 for badges — what the app already uses.
-- Density: dashboard-data rules for board, detail and dashboard — dense, scannable, no decorative space. Report and QR screens get more room around the primary control.
-- Touch targets: 44 pt minimum (`TOUCH_TARGET`).
-
-## 7. Interaction character
-
-- **Motion: none added.** The only moving thing is the QR frame cycle (a functional necessity) and the scan progress bar. Navigator transitions are the platform's own.
-- **Light only this round.** Set `"userInterfaceStyle": "light"` in `app.json` (it's `automatic` today while every screen is light-only, so an iPhone in dark mode gets mismatched system UI). Set the navigation theme's background to `color.bg` explicitly. Dark mode is a later decision; a station in a dark evacuation hall is a real reason to add it.
-- **Signature move:** the evidence line. "4 reports · 3 sources · last reported 3 min ago" on every incident is what a message feed can't show; it gets the typographic weight that other apps spend on hero graphics.
-
-## 8. Forbidden list
-
-- Green for coverage, sources or freshness. Red for uncertainty.
-- Any status shown by colour alone, including coloured left stripes on cards.
-- A disabled primary button with no visible reason.
-- Words that overclaim: "received by responders", "help is on the way", "confirmed", "verified" (no verified state exists), "safe" for an area with no reports, "live".
-- Emoji as icons. ✓ and ? as text glyphs are fine.
-- A spinner alone for anything over a second: say what is loading.
-- Raw developer text as a user-facing state (e.g. environment-variable names on the dashboard).
-- Themed QR codes: modules are always `qr-dark` on `qr-light` with a quiet zone.
-
-## 9. Deliberate choices
-
-- allow: #f2f2f2 — page background kept from the existing screens, now set explicitly (delegated, 2026-09-27)
-- allow: lone-font — one system family on purpose: offline, Filipino coverage, tabular figures (delegated, 2026-09-27)
-- allow: #000000 @ QR components — QR modules are never themed (delegated, 2026-09-27)
-
-## 10. Components
-
-Named for reuse across board, detail and dashboard. Put them in `src/components/` (not `src/app/`, which is routes only).
-
-| Component | Variants | States | Tokens | Notes |
+| Token | Light | Dark | Contrast | Use |
 |---|---|---|---|---|
-| `Button` | primary, secondary, text-link, danger-secondary (Resolve) | default, pressed, focus (web), disabled (only when truly impossible, with the reason shown next to it), busy (keeps width, label "Saving…") | accent, accent-hover, surface-raised, text-on-accent, radius.control | ≥ 44 pt tall; `accessibilityRole="button"` |
-| `Badge` | status, flag (new / escalated / newly corroborated / resolved), stale, coverage | — | per §5, radius.badge, size.caption bold | Text always present; `accessibilityLabel` spells it out |
-| `IncidentCard` | open, acknowledged, resolved (faded 0.55), stale | pressed | surface, border-subtle, radius.card | One touch target; label reads the whole card |
-| `EvidenceLine` | card, detail | — | text-primary, tabularNums | "N reports · M sources" is never split across components |
-| `FreshnessText` | fresh, aging, stale | — | text-secondary / warning | Stale adds the badge and "may have changed" |
-| `KnownUnknownList` | — | empty known ("Nothing related reported nearby yet") | text-primary, warning | ✓ for known, ? for unknown, with text |
-| `TimelineRow` | report, acknowledge, resolve | — | caption, text-secondary | 6-char source label |
-| `CoverageRow` | high, limited, stale, no reports | — | per §5 | Area · level · last report · phones |
-| `StatusSteps` | 4 steps + optional grouped line | — | text-primary / text-secondary | Footer disclaimer always shown |
-| `QrFrame` | bundle, receipt, id | cycling, paused | qr-dark, qr-light, surface | Size = min(width − 32, 360); quiet zone ≥ 4 modules |
-| `ScanProgress` | — | idle, scanning, complete, wrong-bundle, error | accent, warning | Announces "12 of 29 frames" to VoiceOver at most every 2 s |
-| `Notice` | info, warning, error | — | surface, warning, danger | Replaces raw error strings |
+| `paper` | #FFFFFF | #0A0A0A | — | Page |
+| `surface` | #F2F2F2 | #1A1A1A | — | Resident widget blocks, pinned bars |
+| `ink` | #000000 | #F2F2F2 | 21 / 17.7 | Text; **fresh** evidence |
+| `ink-2` | #4A4A4A | #A3A3A3 | 8.9 / 7.9 | Secondary text; **aging** evidence |
+| `ink-3` | #767676 | #8A8A8A | 4.5 / 5.7 | **Old** evidence (AA floor, still legible) |
+| `rule` | #DCD7D2 (Nothing N-Grey) | #2A2A2A | non-text | Ledger ruling, dividers |
+| `coral` | #FF6F61 | #FF6F61 | fill + black text 7.7 | Primary button fill; stamp ink in dark mode |
+| `coral-ink` | #C0453A | #FF6F61 | 5.1 on white | Stamp ink and borders in light mode |
+| `ballpen` | #2343D1 | #8FA6FF | 7.5 white-on / on white · 8.6 on dark | Station mode band, links, margin marks, log times, PASSED ON stamp, Pass on block |
+| `ballpen-tint` | #E4E9FF | #16204A ⚑ | black text 17.4 | Changed rows ("what changed"), evidence block |
+| `nodata` | #DCD7D2 | #2A2A2A | black text 16+ | "No reports" chip (ISO 22324 grey = no information) |
 
-## 11. State matrix
+Notes:
+- **Coral source:** Pantone 16-1546 Living Coral, widely published as #FF6F61. Pantone's own values are paywalled, so check a physical swatch if print matters.
+- `coral-ink` is the same hue darkened to pass AA on white. ⚑
+- **Ballpen source:** the blue ballpoint that logbook entries are handwritten in. ISO 22324 also reserves blue for "informational", which is exactly its job here. ⚑
 
-| Screen | Empty | Loading | Error | Partial | Offline | No permission | First run |
-|---|---|---|---|---|---|---|---|
-| Report | n/a | locating (existing) | save failed → Notice + retry | no GPS → area text required (existing) | normal (it's the point) | location denied → area text required | n/a |
-| Station board | "No incidents yet. Reports appear as phones pass them on." | n/a (local) | store read failed → Notice | some incidents stale → summary strip counts them | normal | n/a | PIN setup (existing); first "Mark as seen" explained (existing) |
-| Incident detail | n/a | n/a | key no longer exists (evicted/regrouped) → "This incident changed. Back to the board." | no GPS members → area text instead of extent | normal | n/a | n/a |
-| Coverage section | "No areas named yet" | n/a | n/a | "No area named" bucket | normal | n/a | expected-areas list empty → hint to add puroks (if built) |
-| Share by QR | "Nothing to pass on yet" | preparing frames (< 1 s) | encode failed → Notice | last page shorter | normal | n/a | first time: one-line how-to |
-| Receive by QR | n/a | scanning with progress | frame from another bundle → "That's a different code. Keep scanning this one." · unreadable → keep scanning silently | frames missing → progress shows which count | normal | **camera denied → Notice with how to allow it in Settings; nothing else works on this screen** | first time: how-to |
-| My data | existing empty | n/a | n/a | n/a | normal | n/a | n/a |
-| Dashboard | "Nothing uploaded yet." | "Loading uploaded reports…" | **not configured** → "The responder database isn't connected on this deployment yet." (developer detail in small secondary text) · unreachable → "Can't reach the database." + Retry | n/a | "You're offline. Connect to see uploaded reports." | n/a | first visit: no "since last visit" highlights (existing) |
+**Colour rules (v1, colour pass 2026-09-27)**
+1. **Two inks with two meanings.**
+   - **Coral = hands.** Coral means something you do or someone did: Report, primary buttons, stamps, ack/resolve.
+   - **Ballpen blue = the logbook.** Blue means information and where you are: station mode, what changed, times in the log, links.
+2. **Colour by mode.**
+   - **Resident** is a coral world: the Report block is coral and Pass on is blue.
+   - **Station** always shows the blue band, so nobody mistakes one mode for the other.
+3. **Big fields, not specks.**
+   - Coral and blue are used as whole blocks (resident Home actions, the station band, changed rows, the QR screen background), Nothing-widget style.
+   - Text on coral is always black; white on coral fails contrast (2.7).
+4. **Data severity stays ink.**
+   - Freshness is ink weight (`ink` → `ink-2` → `ink-3`) plus a glyph (● ◐ ○) plus a time.
+   - Categories are ink pictograms.
+   - **Never used on data:** red, orange or yellow (PAGASA rainfall levels, ISO danger/caution), green (ISO = safe), purple or black-as-alarm (ISO = fatal danger).
+5. **Stamp inks by stage.** SAVED black · PASSED ON ballpen · AT STATION coral-ink · UPLOADED solid coral. Acknowledge is coral-ink. Resolved fades to `ink-3`.
+6. **Errors** are `ink` on `surface` with a pictogram. There is no "success" colour; stamps do that job.
+7. **Theme:** follow the system appearance. Dark matters on OLED iPhones during an outage. ⚑ Light is the demo default because stations sit in lit halls.
 
-## 12. Copy (English, Filipino draft)
+## 5. Spacing and grid
 
-Filipino strings are drafts matching the register already in `src/i18n` — **have a native speaker on the team review them before recording.**
+- **Scale:** 4 · 8 · 12 · 16 · 24 · 32 · 48. No other values.
+- **Phone grid:** 16 pt side margin and 4 columns.
+- **Ledger row:** 44 pt rank gutter, then content. Minimum row height 64 pt, with a hairline `rule` between rows.
+- **Touch targets:** at least 44 pt everywhere. Report category buttons are at least 72 pt tall.
 
-| Key | English | Filipino (draft) |
-|---|---|---|
-| evidenceLine | {n} reports · {m} sources | {n} ulat · {m} pinagmulan |
-| lastReported | Last reported {t} ago | Huling ulat: {t} na ang nakalipas |
-| staleLine | Last known {t} ago — may have changed | Huling alam: {t} na ang nakalipas — maaaring nagbago na |
-| staleBadge | STALE | LUMA NA |
-| knownHeading | Reported nearby | Naiulat sa malapit |
-| unknownHeading | Not yet reported nearby | Wala pang ulat sa malapit |
-| unknownItem | {category}: no report yet | {category}: wala pang ulat |
-| peopleUnknown | People affected: not reported | Bilang ng apektado: hindi naiulat |
-| coverageHigh | High coverage | Mataas na saklaw |
-| coverageLimited | Limited coverage | Limitadong saklaw |
-| coverageStale | No recent reports | Walang bagong ulat |
-| coverageNone | No reports — this does not mean it is safe | Walang ulat — hindi ibig sabihing ligtas |
-| stepSaved | Saved on this phone | Nakatala sa teleponong ito |
-| stepPassed | Passed to another phone | Naipasa sa ibang telepono |
-| stepStation | Reached a station | Nakarating sa istasyon |
-| stepUploaded | Uploaded from this phone | Na-upload mula sa teleponong ito |
-| stepGrouped | Grouped with reports from {n} other phones | Kasama ng mga ulat mula sa {n} pang telepono |
-| stepFooter | This shows only what this phone knows. It does not mean responders have seen it. | Ito lang ang alam ng teleponong ito. Hindi ibig sabihing nakita na ito ng mga responder. |
-| chooseCategoryFirst | Choose what is happening first. | Piliin muna kung ano ang nangyayari. |
-| shareTitle | Pass on by QR | Ipasa gamit ang QR |
-| shareHint | Let the other phone scan this. Keep it steady and turn brightness up. | Ipa-scan sa kabilang telepono. Huwag galawin at lakasan ang liwanag ng screen. |
-| frameCounter | Frame {i} of {n} · Page {p} of {P} | Frame {i} ng {n} · Pahina {p} ng {P} |
-| nextPage | Next page | Susunod na pahina |
-| scanReceipt | Scan their receipt | I-scan ang resibo nila |
-| swapHint | To get their reports too, swap: they show, you scan. | Para makuha rin ang ulat nila, magpalit: sila ang magpapakita, ikaw ang mag-i-scan. |
-| scanTitle | Receive by QR | Tumanggap gamit ang QR |
-| showIdFirst | Show this to the sharer first (optional) | Ipakita muna ito sa magpapasa (opsyonal) |
-| scanProgress | {k} of {n} frames | {k} sa {n} frame |
-| scanDone | Received {N} ({M} new) | Natanggap ang {N} ({M} bago) |
-| showReceipt | Show this receipt to the sharer | Ipakita ang resibong ito sa nagpasa |
-| wrongBundle | That's a different code. Keep scanning this one. | Ibang code iyan. Ituloy ang pag-scan sa naunang code. |
-| cameraDenied | PASAbi needs the camera to receive by QR. Allow it in Settings › Expo Go › Camera. | Kailangan ng PASAbi ang camera para makatanggap gamit ang QR. Payagan ito sa Settings › Expo Go › Camera. |
-| dashNotConnected | The responder database isn't connected on this deployment yet. | Hindi pa nakakonekta ang database ng responder sa deployment na ito. |
+## 6. Geometry
 
-## 13. Accessibility floor
+| Tier | Radius |
+|---|---|
+| Ledger rows, timeline | **0**. It's paper, not cards. |
+| Buttons, inputs | 12 |
+| Resident widget blocks | 20 (Nothing widget reference) ⚑ |
+| Stamps | 4, 2 pt border, rotated −2° to −4° (deterministic from the report ID) |
 
-- Contrast per §5 (checked). Input borders use `border` (3.35:1), never `border-subtle`.
-- Every badge and status has an `accessibilityLabel` in full words ("Stale. Last known 3 hours ago; may have changed").
-- `IncidentCard` reads as one element: "Flood, Purok 4. 4 reports from 3 sources, strongly corroborated. Last reported 3 minutes ago. Not yet acknowledged. Score 60."
-- Touch targets ≥ 44 pt. Larger iOS text sizes must not clip counts or labels.
-- Scan progress announced to VoiceOver, throttled.
-- Nothing essential depends on animation; the QR cycle can be paused and stepped manually.
+- **One edge treatment per element:** either a hairline or a fill. Never a shadow.
 
-## 14. Checks
+## 7. Density
 
-- `python <aegis>/scripts/slop_lint.py src --allow docs/design/DESIGN_BRIEF.md --tokens docs/design/tokens.json`
-- `python <aegis>/scripts/tokens_export.py docs/design/tokens.json --check`
-- Web build, served with clean URLs, then `render_check.py http://…/station --out .aegis/render-station` (and `/`, `/dashboard`, `/share`) and look at the 390 px screenshots.
-- `.aegis/` is script output; keep it out of git.
+- **Station and web:** medium-high. Every row answers what, where, how many phones and last heard without a tap.
+- **Resident:** low. One question per screen.
+
+## 8. Motion and haptics
+
+- **Stamp press** is the only expressive motion. The stamp starts at scale 1.25 and opacity 0, lands at 1 in 160 ms (ease-out), and triggers `Haptics.impactAsync(Medium)`. `expo-haptics` works in Expo Go.
+- **Change mark:** fades in over 200 ms, once.
+- **QR:** frames cycle. There is no other animation on that screen.
+- **Reduce Motion on:** the stamp simply appears; the haptic stays.
+- Everything else is none. No scroll effects, no hover growth, no pulsing "live" dots.
+
+## 9. Voice (see sweep §3.1)
+
+- **Word budgets:** button ≤ 3 words · title ≤ 4 · status ≤ 6 · one helper per screen ≤ 12 · the caveat once per screen in a fixed position.
+- **Evidence is written as numbers:** `3 phones · 4 reports · 14:19`.
+- **Time:** the station shows clock time first; residents see relative time.
+- **Banned words:** successfully, please, just, oops, "!", verified, confirmed, safe (outside "I'm safe"), severity, danger.
+- **Language:** resident strings use everyday spoken Filipino. Station strings use plain standard wording. All caveat strings are central constants.
+
+## 10. Pictograms
+
+- Nine categories (BR-001), drawn as one set: 2 pt stroke, round caps, a 24-unit grid, monochrome `ink`.
+- They are drawn by us: no emoji and no stock icon library.
+- Each pictogram always sits next to its text label.
+
+## 11. Forbidden
+
+**Structure and colour**
+- Stat-banner rows
+- Card grids on the station
+- Coloured left or top borders
+- Cards nested in cards
+- Gradients, glow or glass on content. Native iOS chrome may use Liquid Glass.
+- Emoji as icons
+- ALL-CAPS labels (stamps are the exception)
+- Colour-only status
+- Green, amber, red or purple on data (PAGASA, ISO 22324)
+- Coral on data
+- A rainbow category palette
+- Purple-to-cyan or neon-on-navy (the 2026 AI palette)
+- A map as the hero
+- Decorative sparklines or "Live" badges
+- Cream or beige backgrounds
+- A mono face used for flavour
+- Nothing's own fonts or logo
+
+**Language and behaviour**
+- Modal alerts for connectivity
+- "Success" when a report is only saved locally
+- "Verified"
+- "Safe" because nothing was reported
+- Evacuation or medical instructions
+- An urgency score shown as a headline number
+
+## 12. Components (from the locked anchor, Phase D)
+
+This is the whole kit. Build **no other components** without adding them here first. Code: `code/src/design/components/`.
+
+| Component | Used on | Anatomy | Rules |
+|---|---|---|---|
+| `StatusBand` | Every screen, top | Mode label · connection dot + words | Station: `ballpen` fill, white text. Resident: `surface` fill, `ink` text. Hollow dot = offline, filled dot = connected. Always words, never just the dot. |
+| `LedgerRow` | S1, W1 | Rank gutter 44 (Doto 20, `ballpen`; `ink-3` if old; "—" if resolved) · pictogram 22 + category (Heading) + place (Body, `ink-2`) · evidence line · right column (no wrap): `FreshnessMark`, change mark · stamps sit under the evidence line | Row radius 0, hairline below. Changed rows get the `ballpen-tint` background. Whole row ink follows freshness. Min height 64. |
+| `EvidenceLine` | LedgerRow | `**3 phones** · 4 reports · 6 people` | Phones semibold, always first. People omitted when unknown. |
+| `FreshnessMark` | LedgerRow, S2 | glyph + clock time, with the word (aging / old) on a caption line **under** the time | ● `14:19` · ◐ `13:10` / aging · ○ `10:05` / old. Old rows add one line to the content column: "May have changed." |
+| `ChangeMark` | LedgerRow | `ballpen` text 13 bold: New · +1 phone · Reopened · More people | Clears on "Mark seen". Fade-in 200 ms once. |
+| `Stamp` | Slip, ledger, S2, My reports | 2 pt border, radius 4, heavy caps 13, tracking +8%, rotation −4°…+3° seeded from the ID | Inks: `black` SAVED · `ballpen` PASSED ON · `coral-ink` AT STATION / ACK · `coral` solid UPLOADED · `ink-3` RESOLVED. Press animation + haptic only when newly earned. Pending stages show as dashed `rule` outline in sentence case ("At station"). |
+| `EvidenceCounts` | S2 | Two cells on `ballpen-tint`: Doto 44 number + label (phones, reports) + caption "Counts phones, not people." | Never merged into one number. |
+| `FactList` | S2 | 2-column grid: label (`ink-2`) · value | Last heard, First heard, Freshness, People, Spread. |
+| `WhyFirst` | S2 | Disclosure button (`ballpen`) → rows label · points → Total → caveat | Collapsed by default. Caveat string is fixed: "Sorted by fixed rules. Not a danger rating." |
+| `GapList` | S2, W1 | "Reported nearby" rows (● + category · phones · time) and "Haven't heard about" rows (? + category, `ink-2`) + one caveat | Never ✓ or ✕. Caveat once. |
+| `LogEntry` | S2, R3 | Time margin 56 (`ballpen` bold) · what · detail (`ink-2`) | Operator actions are written in `coral-ink`. Oldest first. |
+| `CoverageRow` | S1, S3, W1 | Area · dots (Doto 20: ●●● / ●●○ / ○○○ / ?) · label chip (no wrap) | "No reports" chip on `nodata` fill, bold. "Quiet since hh:mm" on `surface`. Worst first. |
+| `Button` | Everywhere | `primary`: `coral` fill, black text 17 bold, h 52, r 12 · `secondary`: 2 pt `ballpen` outline + text · `quiet`: text only (`ballpen` in station, underlined `ink` in resident) | One primary per screen. On a coral page (R3, R4) the primary is `ink` fill with white text, because coral on coral vanishes. |
+| `ActionBlock` | R1 | Radius 20 block, icon 28–36 + label | `coral` (Report, 176 tall, black text) · `ballpen` (Pass on, white) · `ink` (Receive, white). |
+| `CountWidget` | R1, R4 | `surface` block r20: Doto 44 number + label + side note | "12 reports on this phone · 3 urgent". |
+| `SlipCard` | R1, R3, R6 | Hairline r20: label + time · category · place · stamp row | Same stamp order everywhere. |
+| `TabBar` | Station | 4 items: Ledger · Pass on · Receive · Station; icon 24 + label 11 | Active: `ink` + 16×4 coral bar. Native tab bar allowed (may use Liquid Glass). |
+| `UndoBar` | S2 after Resolve, R6 after Delete | `ink` fill, white text, "Resolved. Undo" | 5 s, then commits. No modal confirm for Resolve. Delete keeps its confirm (irreversible on peers). |
+
+## 13. Explored and rejected
+
+- **v0 monochrome** (coral only as specks) was rejected by the team as "lacking colour, a bit boring". Don't drift back towards it.
+- **Word-pair device names** ("Mangga-Ilog") were rejected by Veronica: extra scope, and they could be read as identities.
+- **ChatGPT's red/orange/green freshness**: collides with PAGASA and ISO 22324.
+- **ChatGPT's all-caps labels** and **emoji category icons**.
+- **A separate "What changed" section** duplicates rows; changes are marks on rows instead.
+
+## 14. Change log
+
+- **2026-09-27, lock.** v1 locked as the anchor. Folded in the remaining critique fixes:
+  - no ✓ in "Nearby" (it read as "verified")
+  - phones semibold in the evidence line
+  - aging shown inline with the time
+  - `?` for no-report areas
+  - Undo after Resolve
+
+  Components section populated.
+- **2026-09-27, colour pass** (Step 9, dimension: colour). The team said v0 was "lacking colour, a bit boring".
+  - Diagnosis: execution was too timid; the concept wasn't wrong.
+  - Fix: added ballpen blue as a second ink, mode colours, big colour fields, a changed-row tint, stamp inks by stage, and ISO 22324 grey for "no reports".
+  - Coral-on-data ban kept. Rank numerals moved to ballpen at 20 pt. Ledger stamps raised to 13 pt.
+- **2026-09-27, draft.** Q5 decided by Veronica: device labels stay as short codes (`#7A3`), not word pairs. ⚑

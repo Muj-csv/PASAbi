@@ -1,5 +1,7 @@
 # PASAbi: Implementation Update (Relay alignment)
 
+> **Superseded 2026-09-29 by `docs/IMPLEMENTATION_PWA.md`** (React + Vite PWA rewrite, ADR-009). R0–R5 below are done. R6 (Multipeer) is dropped. R7 becomes W7. The §9 demo scenario is still the acceptance script.
+
 **Date:** 2026-09-27 (PHT) · **Deadline:** submit by Sept 30, 22:00 PHT (hard: Oct 1, 05:00 PHT)
 **Read this after** `CLAUDE.md`, `docs/PRD.md`, `docs/ARCHITECTURE.md` and `docs/DECISIONS.md`.
 

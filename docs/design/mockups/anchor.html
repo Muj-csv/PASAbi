@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PASAbi Anchor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Doto:wght@400..900&display=swap">
+<!--
+  PASAbi locked anchor (v1 + lock fixes), static reference for implementers.
+  Source of truth is DESIGN_BRIEF.md / SCREENS.md; this file only shows them rendered.
+  Left: S1 Ledger · Middle: S2 Incident (tap "Why 2nd?" and "Acknowledge") · Right: R1 Home.
+-->
+<style>
+:root{
+  --paper:#FFFFFF;--surface:#F2F2F2;--ink:#000000;--ink2:#4A4A4A;--ink3:#767676;--rule:#DCD7D2;
+  --coral:#FF6F61;--coral-ink:#C0453A;--ballpen:#2343D1;--ballpen-tint:#E4E9FF;--nodata:#DCD7D2;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#E9E9E9;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.wrap{display:flex;gap:48px;flex-wrap:wrap;justify-content:center;padding:48px 16px}
+.col{display:flex;flex-direction:column;gap:12px;align-items:center}
+.cap{font-size:13px;color:var(--ink2)}
+.phone{width:390px;background:var(--paper);border-radius:28px;overflow:hidden;display:flex;flex-direction:column;border:1px solid #CFCFCF}
+.doto{font-family:Doto,ui-monospace,monospace;font-weight:800}
+.band{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;font-size:13px;line-height:18px}
+.band.station{background:var(--ballpen);color:#fff}.band.resident{background:var(--surface)}
+.dot{width:8px;height:8px;border-radius:4px;border:2px solid currentColor;display:inline-block;margin-right:8px;vertical-align:-1px}
+h1{margin:0;font-size:28px;line-height:34px;font-weight:600}
+h2{margin:0;font-size:20px;line-height:25px;font-weight:600}
+.small{font-size:13px;line-height:18px;color:var(--ink2)}
+button{font-family:inherit;cursor:pointer}
+.btn2{height:44px;padding:0 16px;border-radius:12px;border:2px solid var(--ballpen);background:#fff;color:var(--ballpen);font-size:15px;font-weight:700}
+.row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;column-gap:12px;padding:16px 16px 16px 8px;border-bottom:1px solid var(--rule);text-decoration:none}
+.rank{font-size:20px;line-height:25px;text-align:center}
+.cat{font-size:20px;line-height:25px;font-weight:600}
+.stamp{display:inline-block;border:2px solid;border-radius:4px;padding:2px 6px;font-size:13px;line-height:16px;font-weight:800;letter-spacing:1px;text-transform:uppercase}
+.stamp.pending{border-style:dashed;border-color:var(--rule);color:var(--ink3);font-weight:600;letter-spacing:0;text-transform:none}
+.cov{display:grid;grid-template-columns:minmax(0,1fr) 56px auto;gap:8px;align-items:center;min-height:44px;padding:0 16px;border-bottom:1px solid var(--rule)}
+.chip{justify-self:end;white-space:nowrap;font-size:13px;line-height:18px;padding:4px 8px;border-radius:4px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--rule);padding:8px 8px 24px}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--ink2);min-height:44px;justify-content:center}
+.facts{display:grid;grid-template-columns:112px 1fr;gap:12px;padding:24px 16px;font-size:17px;line-height:22px;border-bottom:1px solid var(--rule)}
+.facts span:nth-child(odd){color:var(--ink2)}
+.line{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:center;min-height:44px;border-bottom:1px solid var(--rule);font-size:17px}
+.log{display:grid;grid-template-columns:56px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule)}
+.block{border-radius:20px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;text-decoration:none}
+@keyframes press{0%{transform:scale(1.25) rotate(-3deg);opacity:0}100%{transform:scale(1) rotate(-3deg);opacity:1}}
+@media (prefers-reduced-motion:reduce){.pressed{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ============ S1 LEDGER ============ -->
+<div class="col"><div class="cap">S1 · Ledger (station)</div>
+<div class="phone">
+  <div class="band station"><b>Station · Brgy. Hall</b><span><span class="dot"></span>Offline · local data only</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:24px 16px 16px">
+    <div><h1>Situation</h1><div class="small">5 open · 1 resolved</div></div>
+    <div style="text-align:right"><div class="doto" style="font-size:44px;line-height:48px">14:32</div><div class="small">Last update here</div></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:0 16px 12px;border-bottom:1px solid var(--rule)">
+    <span class="small">By priority</span><button class="btn2">Mark seen</button>
+  </div>
+  <div id="rows"></div>
+  <div style="padding:32px 16px 12px;border-bottom:1px solid var(--rule)"><h2>Coverage</h2><div class="small">Last 3 hours. No report doesn't mean none.</div></div>
+  <div id="cov"></div>
+  <div style="height:24px"></div>
+  <div class="tabs" id="tabs"></div>
+</div></div>
+
+<!-- ============ S2 INCIDENT ============ -->
+<div class="col"><div class="cap">S2 · Incident (tap Why 2nd? and Acknowledge)</div>
+<div class="phone">
+  <div class="band station"><b>Station · Brgy. Hall</b><span><span class="dot"></span>Offline · local data only</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 16px 0 8px;border-bottom:1px solid var(--rule)">
+    <span style="color:var(--ballpen);font-size:17px">‹ Ledger</span><span class="small">2nd of 5 open</span>
+  </div>
+  <div style="position:relative;padding:24px 16px 16px">
+    <div style="display:flex;align-items:center;gap:12px"><span id="flood32"></span><h1>Flood</h1><span style="font-size:17px;color:var(--ink2);align-self:flex-end;padding-bottom:4px">Purok 4</span></div>
+    <div id="status" style="font-size:15px;color:var(--ink2);margin-top:8px">Open · not acknowledged</div>
+    <span id="ackStamp" class="stamp" style="display:none;margin-top:12px;color:var(--coral-ink);padding:6px 10px;transform:rotate(-3deg)">Acknowledged 14:33 · #ST1</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;background:var(--ballpen-tint)">
+    <div style="padding:16px;border-right:1px solid #fff"><div class="doto" style="font-size:44px;line-height:48px">3</div><div style="font-size:15px">phones</div></div>
+    <div style="padding:16px"><div class="doto" style="font-size:44px;line-height:48px">4</div><div style="font-size:15px">reports</div></div>
+  </div>
+  <div class="small" style="padding:8px 16px 0">Counts phones, not people.</div>
+  <div class="facts"><span>Last heard</span><b>● 14:19 · 13 min ago</b><span>First heard</span><span>14:02</span><span>Freshness</span><span>Fresh</span><span>People</span><span>6 in latest report</span><span>Spread</span><span>Within 90 m</span></div>
+  <div style="padding:8px 16px 16px;border-bottom:1px solid var(--rule)">
+    <button id="whyBtn" style="width:100%;display:flex;justify-content:space-between;align-items:center;min-height:44px;border:0;background:none;padding:0;color:var(--ballpen);font-size:17px;font-weight:600" aria-expanded="false"><span>Why 2nd?</span><span id="whySign">+</span></button>
+    <div id="why" style="display:none"></div>
+  </div>
+  <div style="padding:24px 16px 0">
+    <h2 style="margin-bottom:8px">Reported nearby</h2>
+    <div class="line"><b>●</b><span>Trapped · 2 phones</span><span class="small">14:08</span></div>
+    <h2 style="margin:24px 0 4px">Haven't heard about</h2>
+    <div class="small" style="padding-bottom:8px">No report doesn't mean none.</div>
+    <div class="line" style="color:var(--ink2)"><b>?</b><span>Medical</span><span></span></div>
+    <div class="line" style="color:var(--ink2)"><b>?</b><span>Road blocked</span><span></span></div>
+  </div>
+  <div style="padding:32px 16px 0"><h2 style="margin-bottom:8px">Log</h2><div id="log"></div></div>
+  <div style="height:24px"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 16px 32px;border-top:1px solid var(--rule)">
+    <button id="ackBtn" style="height:52px;border-radius:12px;border:0;background:var(--coral);font-size:17px;font-weight:700">Acknowledge</button>
+    <button style="height:52px;border-radius:12px;border:2px solid var(--ballpen);background:#fff;color:var(--ballpen);font-size:17px;font-weight:700">Resolve</button>
+  </div>
+</div></div>
+
+<!-- ============ R1 HOME ============ -->
+<div class="col"><div class="cap">R1 · Home (resident)</div>
+<div class="phone" style="height:844px">
+  <div class="band resident"><span><span class="dot"></span>Offline · reports stay on this phone</span><b>EN · FIL</b></div>
+  <div style="display:flex;flex-direction:column;gap:12px;padding:16px 16px 0">
+    <div class="doto" style="font-size:32px;line-height:36px;font-weight:900">PASAbi</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:16px;background:var(--surface);border-radius:20px">
+      <div><div class="doto" style="font-size:44px;line-height:48px;font-weight:900">12</div><div style="font-size:15px">reports on this phone</div></div><b style="font-size:15px">3 urgent</b>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid var(--rule);border-radius:20px">
+      <div style="display:flex;justify-content:space-between" class="small"><span>Your last report</span><span>14:02</span></div>
+      <h2>Flood · Purok 4</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span class="stamp" style="color:var(--ink);transform:rotate(-2deg)">Saved</span>
+        <span class="stamp" style="color:var(--ballpen);transform:rotate(3deg)">Passed on</span>
+        <span class="stamp pending">At station</span><span class="stamp pending">Uploaded</span>
+      </div>
+    </div>
+  </div>
+  <div style="flex:1"></div>
+  <div style="display:flex;flex-direction:column;gap:8px;padding:0 16px 32px">
+    <span style="min-height:44px;display:flex;align-items:center;font-size:17px;font-weight:700;text-decoration:underline">I'm safe</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="block" style="height:104px;background:var(--ballpen);color:#fff"><span id="ic-pass"></span><b style="font-size:20px">Pass on</b></div>
+      <div class="block" style="height:104px;background:var(--ink);color:#fff"><span id="ic-recv"></span><b style="font-size:20px">Receive</b></div>
+    </div>
+    <div class="block" style="height:176px;padding:20px;background:var(--coral);color:#000"><span id="ic-report"></span>
+      <div><div style="font-size:34px;line-height:40px;font-weight:800">Report</div><div style="font-size:15px;font-weight:500">What's happening?</div></div></div>
+  </div>
+</div></div>
+
+</div>
+<script>
+const P = {
+  TRAPPED:['M3 6l18 4','M10 13a2 2 0 1 0 4 0a2 2 0 1 0 -4 0','M8 21v-1a4 4 0 0 1 8 0v1'],
+  FLOOD:['M7 11V7l5-4 5 4v4','M3 15c2 0 2-1.5 4.5-1.5S9.5 15 12 15s2.5-1.5 4.5-1.5S18.5 15 21 15','M3 19.5c2 0 2-1.5 4.5-1.5S9.5 19.5 12 19.5s2.5-1.5 4.5-1.5S18.5 19.5 21 19.5'],
+  MEDICAL:['M3 12h4l2-5 4 10 2-5h6'],
+  WATER_FOOD:['M12 3c3 4.5 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-6.5 6-11z'],
+  ROAD_BLOCKED:['M4 9h16v5H4z','M8 9l3 5M14 9l3 5','M6 14v6M18 14v6'],
+  STRUCTURAL:['M4 11l8-7 8 7v9H4z','M12 9l-1.5 3.5 2.5 2-1.5 5.5'],
+  passOn:['M4 12h13','M13 7l5 5-5 5','M20 5v14'], receive:['M4 8V4h4','M16 4h4v4','M20 16v4h-4','M8 20H4v-4','M8 12h8'],
+  ledger:['M5 4h14v16H5z','M9 9h7','M9 13h7','M9 17h4'], station:['M4 20V10l8-6 8 6v10z','M10 20v-5h4v5'],
+  report:['M6 3h9l4 4v14H6z','M15 3v4h4','M12 11v6','M9 14h6']
+};
+const svg=(k,s,c)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[k].map(d=>`<path d="${d}"/>`).join('')}</svg>`;
+const INK={fresh:'var(--ink)',aging:'var(--ink2)',stale:'var(--ink3)'}, SUB={fresh:'var(--ink2)',aging:'var(--ink2)',stale:'var(--ink3)'}, G={fresh:'●',aging:'◐',stale:'○'};
+const rows=[
+ {cat:'Trapped',k:'TRAPPED',place:'Purok 4',p:2,r:3,n:3,t:'14:08',f:'fresh'},
+ {cat:'Flood',k:'FLOOD',place:'Purok 4',p:3,r:4,n:6,t:'14:19',f:'fresh',mark:'+1 phone'},
+ {cat:'Medical',k:'MEDICAL',place:'Purok 2',p:1,r:1,n:2,t:'14:27',f:'fresh',mark:'New'},
+ {cat:'Water & food',k:'WATER_FOOD',place:'Purok 3',p:2,r:2,n:12,t:'13:10',f:'aging',stamp:['Ack 13:40','var(--coral-ink)']},
+ {cat:'Road blocked',k:'ROAD_BLOCKED',place:'Purok 1',p:1,r:1,t:'10:05',f:'stale'},
+ {cat:'Damage',k:'STRUCTURAL',place:'Purok 2',p:2,r:2,t:'11:48',f:'stale',resolved:true,stamp:['Resolved','var(--ink3)']}
+];
+let rank=0;
+document.getElementById('rows').innerHTML=rows.map(x=>{
+  if(!x.resolved)rank++;
+  const ink=INK[x.f],sub=SUB[x.f];
+  const ev=`<b style="font-weight:600">${x.p}&nbsp;phone${x.p>1?'s':''}</b> · ${x.r}&nbsp;report${x.r>1?'s':''}${x.n?` · ${x.n}&nbsp;people`:''}`;
+  const word=x.f==='aging'?' · aging':x.f==='stale'?' · old':'';
+  return `<div class="row" style="color:${ink};background:${x.mark?'var(--ballpen-tint)':'var(--paper)'}">
+   <span class="doto rank" style="color:${x.f==='stale'||x.resolved?'var(--ink3)':'var(--ballpen)'}">${x.resolved?'—':String(rank).padStart(2,'0')}</span>
+   <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+     <div style="display:flex;align-items:baseline;column-gap:8px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:8px;white-space:nowrap">${svg(x.k,22,x.f==='fresh'?'#000':x.f==='aging'?'#4A4A4A':'#767676')}<span class="cat">${x.cat}</span></span><span style="font-size:17px;color:${sub}">${x.place}</span></div>
+     <span style="font-size:15px;line-height:20px;color:${sub}">${ev}</span>
+     ${x.f==='stale'&&!x.resolved?`<span style="font-size:13px;color:${sub}">May have changed.</span>`:''}
+     ${x.stamp?`<span><span class="stamp" style="color:${x.stamp[1]};transform:rotate(-3deg);margin-top:4px">${x.stamp[0]}</span></span>`:''}
+   </div>
+   <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+     <span style="font-size:15px;font-weight:600;white-space:nowrap">${G[x.f]} ${x.t}</span>${word?`<span style="font-size:13px;line-height:18px;margin-top:-6px">${word.replace(' · ','')}</span>`:''}
+     ${x.mark?`<span style="font-size:13px;font-weight:700;color:var(--ballpen)">${x.mark}</span>`:''}
+   </div></div>`;}).join('');
+const cov=[['Purok 5','?','No reports','var(--nodata)',700],['Purok 1','○○○','Quiet since 10:05','var(--surface)',600],['Purok 2','●●○','Few phones','transparent',400],['Purok 3','●●○','Few phones','transparent',400],['Purok 4','●●●','Many phones','transparent',400]];
+document.getElementById('cov').innerHTML=cov.map(c=>`<div class="cov"><b style="font-size:17px;font-weight:600">${c[0]}</b><span class="doto" style="font-size:20px;letter-spacing:2px;font-weight:900">${c[1]}</span><span class="chip" style="background:${c[3]};font-weight:${c[4]}">${c[2]}</span></div>`).join('');
+document.getElementById('tabs').innerHTML=[['ledger','Ledger',1],['passOn','Pass on'],['receive','Receive'],['station','Station']].map(t=>`<div class="tab" style="${t[2]?'color:#000;font-weight:600':''}">${svg(t[0],24,t[2]?'#000':'#4A4A4A')}<span>${t[1]}</span><span style="width:${t[2]?16:4}px;height:4px;border-radius:2px;background:${t[2]?'var(--coral)':'transparent'}"></span></div>`).join('');
+document.getElementById('flood32').innerHTML=svg('FLOOD',32,'#000');
+document.getElementById('ic-pass').innerHTML=svg('passOn',28,'#fff');
+document.getElementById('ic-recv').innerHTML=svg('receive',28,'#fff');
+document.getElementById('ic-report').innerHTML=svg('report',36,'#000');
+const baseLog=[['14:02','#7A3 reported','2 people · near chapel'],['14:08','#C19 reported','3 people'],['14:15','#K42 reported','No count given'],['14:19','#7A3 reported again','6 people · water at the road'],['14:26','Received at this station','Carried by #K42']];
+let acked=false, whyOpen=false;
+function draw(){
+  const log=acked?[...baseLog,['14:33','Acknowledged here','',1]]:baseLog;
+  document.getElementById('log').innerHTML=log.map(l=>`<div class="log"><b style="font-size:15px;color:${l[3]?'var(--coral-ink)':'var(--ballpen)'}">${l[0]}</b><div><div style="font-size:17px;color:${l[3]?'var(--coral-ink)':'var(--ink)'}">${l[1]}</div>${l[2]?`<div class="small">${l[2]}</div>`:''}</div></div>`).join('');
+  const why=[['Flood','+30'],['2 more phones','+20'],['6 people','+14'],[acked?'Acknowledged':'Not acknowledged',acked?'0':'+10'],['Heard within the hour','0']];
+  document.getElementById('why').innerHTML=why.map(w=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--rule);font-size:15px"><span>${w[0]}</span><b>${w[1]}</b></div>`).join('')+`<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:15px;font-weight:600"><span>Total</span><span>${acked?64:74}</span></div><div class="small">Sorted by fixed rules. Not a danger rating.</div>`;
+  document.getElementById('why').style.display=whyOpen?'block':'none';
+  document.getElementById('whySign').textContent=whyOpen?'−':'+';
+  document.getElementById('whyBtn').setAttribute('aria-expanded',String(whyOpen));
+  const b=document.getElementById('ackBtn');
+  b.textContent=acked?'Acknowledged':'Acknowledge'; b.disabled=acked; b.style.background=acked?'var(--surface)':'var(--coral)';
+  document.getElementById('status').textContent=acked?'Open · acknowledged':'Open · not acknowledged';
+}
+document.getElementById('whyBtn').onclick=()=>{whyOpen=!whyOpen;draw();};
+document.getElementById('ackBtn').onclick=()=>{ if(acked)return; acked=true; const s=document.getElementById('ackStamp'); s.style.display='inline-block'; s.classList.add('pressed'); s.style.animation='press 160ms ease-out'; draw(); };
+draw();
+</script>
+</body>
+</html>

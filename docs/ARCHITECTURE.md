@@ -203,11 +203,11 @@ A 3,000-observation station store is roughly 900 KB of JSON — well inside Asyn
 
 **ADR-003: Hosted Postgres, no custom backend.** *Proposed, provider open (D-006).* The server only stores observations idempotently and serves reads.
 
-**ADR-004: Rule-based urgency, not ML.** *Proposed.* Deciding who gets help first must be explainable and auditable. Every score shows its breakdown. Weights live in `rules.ts` and are a documented decision.
+**ADR-004: Rule-based urgency, not ML.** *Proposed. Narrowed by ADR-010: AI may draft the report form, never the ranking.* Deciding who gets help first must be explainable and auditable. Every score shows its breakdown. Weights live in `rules.ts` and are a documented decision.
 
 **ADR-005: Engine implemented twice (Kotlin + TypeScript).** *Superseded by ADR-006.* With one language the engine is written **once**, and NFR-002's cross-language risk disappears. This was the stated cost of ADR-002; the pivot removes it.
 
-**ADR-006: React Native (Expo) + React Native Web, one codebase, iOS-first.** *Accepted (D-014).* One TypeScript codebase serves iOS, Android and web, so the engine, rules and UI are written once and the dashboard becomes a route rather than a separate port. Trade-offs: the iOS transport needs a custom native module; carry mode must be designed to iOS's foreground-only constraint (D-013); and the two platforms cannot mesh with each other (D-012).
+**ADR-006: React Native (Expo) + React Native Web, one codebase, iOS-first.** *Accepted (D-014). Superseded by ADR-009 (2026-09-29).* One TypeScript codebase serves iOS, Android and web, so the engine, rules and UI are written once and the dashboard becomes a route rather than a separate port. Trade-offs: the iOS transport needs a custom native module; carry mode must be designed to iOS's foreground-only constraint (D-013); and the two platforms cannot mesh with each other (D-012).
 
 **ADR-007: Transport behind an interface with three implementations.** *Accepted.* `Transport` is implemented by `multipeer`, `nearby` and `mock`. This is not speculative abstraction — three implementations exist on day one, and the mock is what makes encounter sync testable in CI and in the browser without any hardware.
 
@@ -217,6 +217,17 @@ A 3,000-observation station store is roughly 900 KB of JSON — well inside Asyn
 - *Decision:* (2). A QR exchange has no discovery, connection or two-way channel, so wrapping it in `onPeerFound`/`connect`/`send` would be a fake adapter that lies about its capabilities. It reuses what matters: `encodeBatch`, `urgencyByObservation`, `toWire`/`asReceived`, and the same store ingest path as sync.
 - *Trade-offs:* slower than radio; two passes for both directions; no summary exchange, so paging and receipts (D-025) stand in for it.
 - *Consequences:* `CLAUDE.md`'s transport rule gains one named exception. Session transports (Multipeer, Nearby) stay behind `Transport`. QR also works across iOS and Android, which D-012 radio transports cannot.
+
+**ADR-009: React + Vite PWA replaces Expo.** *Accepted (D-028, 2026-09-29). Supersedes ADR-006.*
+- The app installs to the Home Screen and runs offline from a service-worker cache, with user data in IndexedDB.
+- `packages/core` is reused unchanged.
+- There is no radio from a browser, so QR (ADR-008) is the only phone-to-phone path, and Multipeer/Nearby (R6) are dropped.
+- Full text: `docs/IMPLEMENTATION_PWA.md` §1.
+
+**ADR-010: AI boundary.** *Accepted (D-030, 2026-09-29). Narrows ADR-004 without removing it.*
+- AI may only draft the report form from voice or text. It runs in a server function, and a person confirms the draft.
+- Grouping, corroboration, freshness and ranking stay rule-based, and no AI code goes in `packages/core`.
+- Full text: `docs/IMPLEMENTATION_PWA.md` §1.
 
 ## 10. Testing
 

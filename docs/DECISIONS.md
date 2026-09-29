@@ -34,6 +34,18 @@
 
 **ADR-008** (QR bundle transfer sits beside `Transport`, not behind it) is recorded in `ARCHITECTURE.md` §9.
 
+## PWA rewrite (2026-09-29)
+
+The full text of each decision is in `docs/IMPLEMENTATION_PWA.md` §1. Summary:
+
+| # | Decision | Status | Affects |
+|---|---|---|---|
+| D-028 | Rewrite as a React + Vite **PWA** (installable, offline via service worker + IndexedDB). `packages/core` is unchanged. Expo is retired in W5 (ADR-009, supersedes ADR-006) | **Accepted** (team, 2026-09-29) | Platform, D-024, R6 dropped |
+| D-029 | **Mobile-only.** Every screen is single column at phone width, including the responder view | **Accepted** (team, 2026-09-29) | SCREENS.md W1 |
+| D-030 | **AI may draft the report form** from voice or text, and a person confirms it. Engine and ranking stay deterministic (ADR-010, narrows ADR-004) | **Accepted** (team, 2026-09-29) | FR-001, CLAUDE.md rules |
+| D-031 | The UI is the locked `docs/design/` package. It wins over the plan's example screens and over the PR #13 re-skin colours | **Accepted** (team, 2026-09-29) | All UI |
+| D-032 | The name stays **PASAbi**. The source plan's AgapAI-only parts (voice API routes, region packs, jurisdiction) are not ported | **Accepted** (2026-09-29) | Scope |
+
 ## Package R (applied 2026-09-25)
 
 Rule-level fixes resolving contradictions and gaps found in spec review. All are encoded in `packages/core/rules.ts` and covered by test vectors.
