@@ -11,12 +11,25 @@ import {
   useLang,
   useStrings,
 } from "@/i18n";
-import { color, freshnessStyle, layout, size, space } from "@/theme/tokens";
+import { cardShadow, color, freshnessStyle, layout, radius, size, space } from "@/theme/tokens";
 
 import { EvidenceLine, evidenceText } from "./EvidenceLine";
 import { freshnessText, FreshnessText } from "./FreshnessText";
 import { Pictogram } from "./pictograms";
 import { Stamp } from "./Stamp";
+
+/**
+ * Change-flag colour (DESIGN_BRIEF §5's accent/danger/warning split, applied
+ * with the tokens this app actually has). "escalated" is the one flag that
+ * is genuinely bad news, so it's the one that gets coralInk — always next to
+ * its own word, never colour-alone. The rest stay ballpen (more information
+ * arrived) or ink2 ("resolved" fading toward neutral, not blue).
+ */
+function changeColor(flag: IncidentChange): string {
+  if (flag === "escalated") return color.danger;
+  if (flag === "resolved") return color.ink2;
+  return color.ballpen;
+}
 
 /** Area text when there is one, otherwise the centroid (FR-006). */
 export function areaOf(incident: Incident): string {
@@ -31,9 +44,15 @@ export function areaOf(incident: Incident): string {
 
 /**
  * A ledger row (DESIGN_BRIEF section 12, `LedgerRow`), shared by the station
- * board and the dashboard so the two cannot drift. Radius 0, hairline below,
- * ink follows freshness. No headline score: rank order already says how the
- * engine sorted it, and "Why ranked here" on the detail screen explains it.
+ * board and the dashboard so the two cannot drift. Ink follows freshness. No
+ * headline score: rank order already says how the engine sorted it, and "Why
+ * ranked here" on the detail screen explains it.
+ *
+ * 2026-09-29 reskin: a rounded, shadowed card per incident (radius.card)
+ * instead of a continuous flat ledger row — see LEARNING.md. The category
+ * icon still gets no colour-coding by severity: that's the one thing kept
+ * from the reference image that this app can't copy (ISO 22324 / PAGASA hue
+ * rule, tokens.ts file header).
  */
 export function IncidentCard({
   incident,
@@ -64,29 +83,31 @@ export function IncidentCard({
   const rankInk =
     evidence.freshness === "stale" || resolved ? color.ink3 : color.ballpen;
   const rankText = resolved || rank === null ? "—" : String(rank).padStart(2, "0");
-  const changeText = flags.map((f) => changeLabel(f, t)).join(" · ");
+  const changeWords = flags.map((f) => changeLabel(f, t)).join(" · ");
 
   const spoken = [
     [category, area].filter(Boolean).join(", "),
     evidenceText(evidence, t, corroboration),
     freshnessText(evidence, t),
     status,
-    changeText,
+    changeWords,
   ]
     .filter(Boolean)
     .join(". ");
 
   const body = (
     <>
-      <Text style={[styles.rank, { color: rankInk }]}>{rankText}</Text>
+      <View style={styles.badge}>
+        <Pictogram category={incident.category} size={20} color={color.ink} />
+      </View>
 
       <View style={styles.content}>
         <View style={styles.headRow}>
           <View style={styles.catRow}>
-            <Pictogram category={incident.category} size={22} color={rowInk} />
             <Text numberOfLines={1} style={[styles.category, { color: rowInk }]}>
               {category}
             </Text>
+            <Text style={[styles.rank, { color: rankInk }]}>{rankText}</Text>
           </View>
           {area ? (
             <Text numberOfLines={1} style={[styles.place, { color: rowSub }]}>
@@ -116,12 +137,21 @@ export function IncidentCard({
 
       <View style={styles.right}>
         <FreshnessText evidence={evidence} />
-        {changeText ? <Text style={styles.change}>{changeText}</Text> : null}
+        {flags.length > 0 ? (
+          <Text style={styles.change}>
+            {flags.map((f, i) => (
+              <Text key={f} style={{ color: changeColor(f) }}>
+                {i > 0 ? " · " : ""}
+                {changeLabel(f, t)}
+              </Text>
+            ))}
+          </Text>
+        ) : null}
       </View>
     </>
   );
 
-  const tinted = changeText.length > 0 && styles.rowChanged;
+  const tinted = flags.length > 0 && styles.rowChanged;
 
   if (!onPress) {
     return (
@@ -146,31 +176,33 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     minHeight: layout.rowMinHeight,
-    paddingVertical: space[3],
-    paddingRight: layout.sideMargin,
-    paddingLeft: space[2],
+    padding: space[3],
     gap: space[3],
-    borderBottomWidth: 1,
-    borderBottomColor: color.rule,
-    backgroundColor: color.paper,
     alignItems: "flex-start",
+    ...cardShadow,
   },
-  rowChanged: { backgroundColor: color.ballpenTint },
+  rowChanged: { backgroundColor: color.ballpenTint, borderColor: color.ballpen },
   rowPressed: { backgroundColor: color.surface },
+  badge: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.pill,
+    backgroundColor: color.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   rank: {
-    width: layout.rankGutter,
-    textAlign: "center",
     fontFamily: "Doto_800ExtraBold",
-    fontSize: 20,
-    lineHeight: 25,
+    fontSize: 15,
+    lineHeight: 18,
   },
   content: { flex: 1, gap: space[1] / 2 },
   headRow: { flexDirection: "row", alignItems: "baseline", flexWrap: "wrap", gap: space[2] },
-  catRow: { flexDirection: "row", alignItems: "center", gap: space[2] },
+  catRow: { flexDirection: "row", alignItems: "baseline", gap: space[2] },
   category: { fontSize: size.heading.fontSize, fontWeight: "600", color: color.ink },
   place: { fontSize: size.body, color: color.ink2, flexShrink: 1 },
   statusRow: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: space[2] },
   status: { fontSize: size.caption, fontWeight: "600", color: color.ink2 },
   right: { alignItems: "flex-end", gap: space[1] },
-  change: { fontSize: size.caption, fontWeight: "700", color: color.ballpen },
+  change: { fontSize: size.caption, fontWeight: "700" },
 });

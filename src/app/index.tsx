@@ -20,6 +20,7 @@ import {
   type Propagation,
 } from "@pasabi/core";
 
+import { BottomNav, NAV_HEIGHT } from "@/components/BottomNav";
 import { Button } from "@/components/Button";
 import { Pictogram } from "@/components/pictograms";
 import { StatusBand } from "@/components/StatusBand";
@@ -27,7 +28,7 @@ import { StatusSteps } from "@/components/StatusSteps";
 import { CATEGORY_LABELS, useLang, useStrings } from "@/i18n";
 import { getDeviceId, newObservationId } from "@/storage/device";
 import { addObservation, canCreateNow } from "@/storage/observations";
-import { color, layout, radius, size, space } from "@/theme/tokens";
+import { cardShadow, color, layout, size, space } from "@/theme/tokens";
 
 const NOTE_MAX = 140;
 /** FR-001: if there is no fix within 30 s, area text is required instead. */
@@ -202,8 +203,8 @@ export default function NewObservation() {
       accessibilityRole="button"
       accessibilityState={{ selected: category === c }}
     >
-      <Pictogram category={c} size={26} color={category === c ? color.onCoral : color.ink} />
-      <Text style={[styles.chipText, category === c && styles.chipTextOn]}>
+      <Pictogram category={c} size={28} color={category === c ? color.onCoral : color.ink} />
+      <Text numberOfLines={2} style={[styles.chipText, category === c && styles.chipTextOn]}>
         {CATEGORY_LABELS[lang][c]}
       </Text>
     </Pressable>
@@ -335,13 +336,14 @@ export default function NewObservation() {
           {t.stationMode}
         </Link>
       </ScrollView>
+      <BottomNav active="home" />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: color.paper },
-  form: { padding: space[4], gap: space[4], paddingBottom: space[7] },
+  page: { flex: 1, backgroundColor: color.pageBg },
+  form: { padding: space[4], gap: space[4], paddingBottom: space[7] + NAV_HEIGHT },
   prompt: { fontSize: size.title.fontSize, fontWeight: "700", color: color.ink },
   grid: { gap: space[2] },
   gridRow: { flexDirection: "row", gap: space[2] },
@@ -349,21 +351,18 @@ const styles = StyleSheet.create({
   chip: {
     flex: 1,
     minHeight: layout.categoryButtonMin,
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    gap: space[2],
+    gap: space[1],
     paddingVertical: space[3],
     paddingHorizontal: space[2],
-    borderRadius: radius.control,
-    borderWidth: 1,
-    borderColor: color.ink,
-    backgroundColor: color.paper,
+    ...cardShadow,
   },
-  chipWide: { flex: 0 },
+  chipWide: { flex: 0, flexDirection: "row", minHeight: undefined },
   chipOn: { borderColor: color.coral, backgroundColor: color.coral },
   chipText: {
-    fontSize: size.body,
+    fontSize: size.bodySmall,
     fontWeight: "600",
     textAlign: "center",
     color: color.ink,
@@ -373,13 +372,10 @@ const styles = StyleSheet.create({
   field: { gap: space[1] },
   label: { fontSize: size.body, fontWeight: "600", color: color.ink },
   input: {
-    borderWidth: 1,
-    borderColor: color.ink,
-    borderRadius: radius.control,
-    backgroundColor: color.paper,
     padding: space[3],
     fontSize: size.body,
     color: color.ink,
+    ...cardShadow,
   },
   inputProblem: { borderColor: color.coralInk, borderWidth: 2 },
   noteInput: { minHeight: 88, textAlignVertical: "top" },
@@ -391,9 +387,8 @@ const styles = StyleSheet.create({
   link: { fontSize: size.body, color: color.ballpen, paddingVertical: space[2] },
   qrRow: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
   statusPanel: {
-    backgroundColor: color.surface,
-    borderRadius: radius.control,
     padding: space[3],
     gap: space[2],
+    ...cardShadow,
   },
 });

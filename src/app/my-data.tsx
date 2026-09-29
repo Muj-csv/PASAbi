@@ -10,13 +10,15 @@ import {
   type Propagation,
 } from "@pasabi/core";
 
+import { BottomNav, NAV_HEIGHT } from "@/components/BottomNav";
 import { Button } from "@/components/Button";
+import { Notice } from "@/components/Notice";
 import { StatusBand } from "@/components/StatusBand";
 import { StatusSteps } from "@/components/StatusSteps";
 import { CATEGORY_LABELS, plural, useLang, useStrings } from "@/i18n";
 import { deleteOwnObservation, loadObservations } from "@/storage/observations";
 import { uploadPending } from "@/storage/uplink";
-import { color, radius, size, space, tabularNums } from "@/theme/tokens";
+import { cardShadow, color, radius, size, space, tabularNums } from "@/theme/tokens";
 
 function when(epochSeconds: number): string {
   return new Date(epochSeconds * 1000).toLocaleString();
@@ -33,7 +35,8 @@ export default function MyData() {
   const [observations, setObservations] = useState<Observation[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [status, setStatus] = useState<Map<string, Propagation>>(new Map());
-  const [uploadNote, setUploadNote] = useState<string | null>(null);
+  type UploadNote = { message: string; detail?: string; tone: "info" | "error" };
+  const [uploadNote, setUploadNote] = useState<UploadNote | null>(null);
   const [uploading, setUploading] = useState(false);
   const [confirming, setConfirming] = useState<string | null>(null);
 
@@ -57,16 +60,20 @@ export default function MyData() {
       const result = await uploadPending();
       setUploadNote(
         !result.attempted
-          ? t.uploadOffline
+          ? { message: t.uploadOffline, tone: "info" }
           : result.error !== null
-            ? t.loadError + " " + result.error
-            : String(result.uploaded) +
-              " " +
-              t.uploadedCount +
-              ", " +
-              String(result.pending) +
-              " " +
-              t.pendingCount,
+            ? { message: t.loadError, detail: result.error, tone: "error" }
+            : {
+                message:
+                  String(result.uploaded) +
+                  " " +
+                  t.uploadedCount +
+                  ", " +
+                  String(result.pending) +
+                  " " +
+                  t.pendingCount,
+                tone: "info",
+              },
       );
       await reload();
     } finally {
@@ -96,11 +103,18 @@ export default function MyData() {
 
         <Button
           label={t.uploadNow}
+          variant="info"
           onPress={() => void upload()}
           busy={uploading}
           busyLabel={t.saving}
         />
-        {uploadNote ? <Text style={styles.muted}>{uploadNote}</Text> : null}
+        {uploadNote ? (
+          <Notice
+            message={uploadNote.message}
+            detail={uploadNote.detail}
+            tone={uploadNote.tone}
+          />
+        ) : null}
 
         <View style={styles.links}>
           <Link href="/" style={styles.link}>
@@ -182,13 +196,14 @@ export default function MyData() {
         ) : null}
         <Text style={styles.muted}>{t.deleteNote}</Text>
       </ScrollView>
+      <BottomNav active="myData" />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: color.paper },
-  form: { padding: space[4], gap: space[3], paddingBottom: space[7] },
+  page: { flex: 1, backgroundColor: color.pageBg },
+  form: { padding: space[4], gap: space[3], paddingBottom: space[7] + NAV_HEIGHT },
   summary: {
     fontSize: size.title.fontSize,
     fontWeight: "700",
@@ -198,10 +213,9 @@ const styles = StyleSheet.create({
   links: { flexDirection: "row", flexWrap: "wrap", gap: space[4] },
   link: { fontSize: size.body, color: color.ballpen, paddingVertical: space[2] },
   card: {
-    backgroundColor: color.surface,
-    borderRadius: radius.control,
     padding: space[3],
     gap: space[2],
+    ...cardShadow,
   },
   cardHead: {
     flexDirection: "row",
@@ -209,8 +223,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cardTitle: { fontSize: size.body, fontWeight: "700", color: color.ink },
-  mine: { fontSize: size.caption, fontWeight: "700", color: color.ballpen },
-  carried: { fontSize: size.caption, color: color.ink2 },
+  mine: {
+    fontSize: size.caption,
+    fontWeight: "700",
+    color: color.ballpen,
+    backgroundColor: color.ballpenTint,
+    paddingHorizontal: space[2],
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+    overflow: "hidden",
+  },
+  carried: {
+    fontSize: size.caption,
+    color: color.ink2,
+    backgroundColor: color.surface,
+    paddingHorizontal: space[2],
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+    overflow: "hidden",
+  },
   note: { fontSize: size.body, color: color.ink },
   muted: { fontSize: size.caption, color: color.ink2 },
   row: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },

@@ -31,7 +31,7 @@ import {
 } from "@/i18n";
 import { getDeviceId } from "@/storage/device";
 import { addStatusObservation, loadObservations } from "@/storage/observations";
-import { color, radius, size, space, tabularNums } from "@/theme/tokens";
+import { cardShadow, color, size, space, tabularNums } from "@/theme/tokens";
 
 function nowSeconds(): number {
   return Math.floor(Date.now() / 1000);
@@ -128,7 +128,7 @@ export default function IncidentDetail() {
       <StatusBand mode="station" label={t.board} />
       <ScrollView contentContainerStyle={styles.form}>
         {/* 1. Header */}
-        <View style={styles.section}>
+        <View style={styles.card}>
           <View style={styles.headRow}>
             <Pictogram category={incident.category} size={30} color={color.ink} />
             <Text style={styles.h2}>{CATEGORY_LABELS[lang][incident.category]}</Text>
@@ -156,7 +156,7 @@ export default function IncidentDetail() {
         </View>
 
         {/* 2. Evidence */}
-        <View style={styles.section}>
+        <View style={styles.card}>
           <EvidenceLine
             evidence={evidence}
             people={incident.peopleAffected}
@@ -227,13 +227,12 @@ export default function IncidentDetail() {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: color.paper },
+  page: { flex: 1, backgroundColor: color.pageBg },
   form: {
     padding: space[4],
-    gap: space[4],
+    gap: space[3],
     paddingBottom: space[7],
   },
-  section: { gap: space[1] },
   headRow: { flexDirection: "row", alignItems: "center", gap: space[2] },
   h2: { fontSize: size.title.fontSize, fontWeight: "700", color: color.ink },
   status: { fontSize: size.body, fontWeight: "600", color: color.ink2 },
@@ -242,10 +241,9 @@ const styles = StyleSheet.create({
   number: { fontSize: size.body, color: color.ink, ...tabularNums },
   row: { flexDirection: "row", gap: space[2], flexWrap: "wrap" },
   card: {
-    backgroundColor: color.surface,
-    borderRadius: radius.control,
     padding: space[3],
     gap: space[1],
+    ...cardShadow,
   },
   cardTitle: { fontSize: size.body, fontWeight: "700", color: color.ink },
   termRow: { flexDirection: "row", justifyContent: "space-between" },

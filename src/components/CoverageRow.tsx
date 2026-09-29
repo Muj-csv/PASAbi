@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import type { AreaCoverage, CoverageLevel } from "@pasabi/core";
 
 import { fill, formatAge, plural, useStrings, type Strings } from "@/i18n";
-import { color, size, space, tabularNums } from "@/theme/tokens";
+import { color, radius, size, space, tabularNums } from "@/theme/tokens";
 
 /**
  * DESIGN_BRIEF section 12, `CoverageRow`. High coverage is ballpen, never
@@ -89,12 +89,13 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     paddingHorizontal: space[2],
     paddingVertical: 2,
+    borderRadius: radius.pill,
+    overflow: "hidden",
   },
   chipPlain: { color: color.ink2 },
   chipNoData: {
     color: color.ink,
     backgroundColor: color.nodata,
-    overflow: "hidden",
   },
   detail: {
     fontSize: size.caption,

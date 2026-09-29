@@ -25,11 +25,17 @@ export default function RootLayout() {
   return (
     // DESIGN_BRIEF section 7: light only this round, and the page ground is
     // set on purpose rather than inherited from React Navigation's default.
+    // 2026-09-29 reskin: dark navy header + white title/back everywhere, one
+    // consistent treatment rather than a per-screen light/dark split, so the
+    // app reads as one system (see LEARNING.md). `contentStyle` is the new
+    // `pageBg` canvas that cards sit on.
     <Stack
       screenOptions={{
-        headerTitleStyle: { fontWeight: "700", color: color.ink },
-        headerStyle: { backgroundColor: color.surface },
-        contentStyle: { backgroundColor: color.paper },
+        headerTitleStyle: { fontWeight: "700", color: color.onFill },
+        headerStyle: { backgroundColor: color.ink },
+        headerTintColor: color.onFill,
+        headerShadowVisible: false,
+        contentStyle: { backgroundColor: color.pageBg },
       }}
     >
       <Stack.Screen name="index" options={{ title: "Pasabi" }} />
