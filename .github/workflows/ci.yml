@@ -21,12 +21,16 @@ jobs:
         run: npm run typecheck
       - name: Test
         run: npm test
-      - name: Web build
+      - name: Design guard (PWA)
+        run: npm run check:design
+      - name: Web build (legacy Expo, until W5)
         run: npm run build:web
-      - name: No service-role key in the web bundle
+      - name: PWA build
+        run: npm run web:build
+      - name: No service-role key in either web bundle
         run: |
-          if grep -rq "service_role" dist/; then
-            echo "A service-role key reached the web bundle. It bypasses RLS."
+          if grep -rq "service_role" dist/ web/dist/; then
+            echo "A service-role key reached a web bundle. It bypasses RLS."
             exit 1
           fi
-          echo "OK: no service-role key in dist/"
+          echo "OK: no service-role key in dist/ or web/dist/"

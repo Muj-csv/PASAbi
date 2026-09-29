@@ -103,7 +103,17 @@ Do **one phase at a time**, in order. At the end of each phase:
 - update the README Features table
 - **stop and report**
 
-### W0: Docs and rules (this change)
+**Status (2026-09-30):**
+- W0: done.
+- W1–W4: built in one pass on branch `web/ui-design`, at the team's request.
+  - All resident screens, QR relay, station ledger/incident/status, and the responder view.
+  - Checked in a browser at 390 px, offline reload included.
+- Still open, and needing a human with two iPhones:
+  - the W1 camera spike (scan rate inside the installed Home Screen app)
+  - the W3 two-phone acceptance
+- Not built: `/sim` port, S3 as its own screen (expected areas live on S4), swipe-to-delete (a visible Delete instead).
+
+### W0: Docs and rules
 Import the design package and the plan into `docs/`, write this file, amend `CLAUDE.md`, and record D-028 to D-032, ADR-009 and ADR-010.
 
 ### W1: PWA shell and camera spike
