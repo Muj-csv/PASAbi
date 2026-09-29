@@ -223,7 +223,7 @@ export default function Sim() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.paper },
+  root: { flex: 1, backgroundColor: color.pageBg },
   page: { padding: space[4], gap: space[3], paddingBottom: space[7] },
   h1: { fontSize: size.title.fontSize, fontWeight: "700", color: color.ink },
   h2: { fontSize: size.heading.fontSize, fontWeight: "700", marginTop: space[2], color: color.ink },

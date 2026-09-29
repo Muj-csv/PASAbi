@@ -41,6 +41,7 @@ export const UI_PATHS = {
   ledger: ["M5 4h14v16H5z", "M9 9h7", "M9 13h7", "M9 17h4"],
   station: ["M4 20V10l8-6 8 6v10z", "M10 20v-5h4v5"],
   report: ["M6 3h9l4 4v14H6z", "M15 3v4h4", "M12 11v6", "M9 14h6"],
+  home: ["M4 11l8-7 8 7v9H4z", "M9 20v-6h6v6"],
   back: ["M15 5l-7 7 7 7"],
   gps: [
     "M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z",

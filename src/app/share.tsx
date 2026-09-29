@@ -234,7 +234,7 @@ export default function Share() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: color.coral },
-  pageStation: { backgroundColor: color.paper },
+  pageStation: { backgroundColor: color.pageBg },
   form: { padding: space[4], gap: space[3], paddingBottom: space[7] },
   hint: { fontSize: size.body, color: color.onCoral },
   counter: {

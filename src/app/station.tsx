@@ -1,6 +1,6 @@
 import { Link, useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   changesSince,
@@ -33,7 +33,7 @@ import {
   saveExpectedAreas,
   saveSnapshot,
 } from "@/storage/station";
-import { color, radius, size, space, tabularNums } from "@/theme/tokens";
+import { cardShadow, color, radius, size, space, tabularNums } from "@/theme/tokens";
 
 const PIN_MIN = 4;
 
@@ -101,6 +101,16 @@ export default function Station() {
     }, [reload]),
   );
 
+  const pressDigit = (d: string): void => {
+    setPin((p) => (p.length < 8 ? p + d : p));
+    setPinError(null);
+  };
+
+  const backspace = (): void => {
+    setPin((p) => p.slice(0, -1));
+    setPinError(null);
+  };
+
   const unlock = async (): Promise<void> => {
     // Say what is wrong instead of greying the button out (DESIGN_BRIEF 8).
     if (pin.length < PIN_MIN) {
@@ -151,25 +161,57 @@ export default function Station() {
   };
 
   if (!unlocked) {
+    const keyRows = [
+      ["1", "2", "3"],
+      ["4", "5", "6"],
+      ["7", "8", "9"],
+      ["", "0", "⌫"],
+    ];
     return (
       <View style={styles.page}>
         <StatusBand mode="station" label={t.stationMode} />
         <ScrollView contentContainerStyle={styles.form}>
-          <Text style={styles.muted}>{t.stationLocked}</Text>
-          <TextInput
-            value={pin}
-            onChangeText={(v) => {
-              setPin(v.replace(/[^0-9]/g, "").slice(0, 8));
-              setPinError(null);
-            }}
-            keyboardType="number-pad"
-            secureTextEntry
-            style={styles.pinInput}
-            accessibilityLabel={t.stationLocked}
-          />
-          <Text style={styles.hint}>{t.stationPinHint}</Text>
-          {pinError ? <Text style={styles.error}>{pinError}</Text> : null}
-          <Button label={t.stationUnlock} onPress={() => void unlock()} />
+          <View style={styles.pinCard}>
+            <Text style={styles.muted}>{t.stationLocked}</Text>
+            <View
+              style={styles.pinDots}
+              accessible
+              accessibilityLabel={fill(t.pinEntered, { n: pin.length })}
+            >
+              <Text style={styles.pinDotsText}>
+                {pin.length > 0 ? "●".repeat(pin.length) : "‒"}
+              </Text>
+            </View>
+            <Text style={styles.hint}>{t.stationPinHint}</Text>
+            {pinError ? <Text style={styles.error}>{pinError}</Text> : null}
+
+            <View style={styles.keypad}>
+              {keyRows.map((row, i) => (
+                <View key={i} style={styles.keypadRow}>
+                  {row.map((k, j) =>
+                    k === "" ? (
+                      <View key={j} style={styles.key} />
+                    ) : (
+                      <Pressable
+                        key={j}
+                        style={({ pressed }) => [styles.key, pressed && styles.keyPressed]}
+                        onPress={() => (k === "⌫" ? backspace() : pressDigit(k))}
+                        accessibilityRole="button"
+                        accessibilityLabel={k === "⌫" ? t.pinBackspace : k}
+                      >
+                        <Text style={styles.keyText}>{k}</Text>
+                      </Pressable>
+                    ),
+                  )}
+                </View>
+              ))}
+            </View>
+
+            <Button label={t.stationUnlock} onPress={() => void unlock()} />
+            {pin.length > 0 ? (
+              <Button label={t.cancel} variant="quiet" onPress={() => setPin("")} />
+            ) : null}
+          </View>
           <Link href="/" style={styles.link}>
             {t.newObservation}
           </Link>
@@ -302,8 +344,10 @@ export default function Station() {
   );
 }
 
+const KEY_SIZE = 64;
+
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: color.paper },
+  page: { flex: 1, backgroundColor: color.pageBg },
   form: {
     padding: space[4],
     gap: space[3],
@@ -319,7 +363,7 @@ const styles = StyleSheet.create({
   hint: { fontSize: size.caption, color: color.ink2 },
   error: { fontSize: size.body, color: color.ink, fontWeight: "700" },
   row: { flexDirection: "row", gap: space[2], flexWrap: "wrap" },
-  ledger: { marginHorizontal: -space[4] },
+  ledger: { gap: space[3] },
   input: {
     borderWidth: 1,
     borderColor: color.ink,
@@ -329,16 +373,26 @@ const styles = StyleSheet.create({
     fontSize: size.body,
     color: color.ink,
   },
-  pinInput: {
-    borderWidth: 1,
-    borderColor: color.ink,
-    borderRadius: radius.control,
-    backgroundColor: color.paper,
-    padding: space[3],
-    fontSize: size.h3,
-    letterSpacing: 6,
+  pinCard: { padding: space[4], gap: space[3], alignItems: "center", ...cardShadow },
+  pinDots: { minHeight: 32, justifyContent: "center" },
+  pinDotsText: {
+    fontSize: 24,
+    letterSpacing: 8,
     color: color.ink,
+    textAlign: "center",
   },
+  keypad: { gap: space[2] },
+  keypadRow: { flexDirection: "row", gap: space[2] },
+  key: {
+    width: KEY_SIZE,
+    height: KEY_SIZE,
+    borderRadius: radius.pill,
+    backgroundColor: color.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  keyPressed: { backgroundColor: color.rule },
+  keyText: { fontSize: size.heading.fontSize, fontWeight: "700", color: color.ink },
   areaInput: {
     flexGrow: 1,
     flexBasis: 160,
@@ -347,9 +401,8 @@ const styles = StyleSheet.create({
   },
   panel: {
     gap: space[1],
-    paddingTop: space[3],
-    borderTopWidth: 1,
-    borderTopColor: color.rule,
+    padding: space[3],
+    ...cardShadow,
   },
   panelTitle: {
     fontSize: size.body,

@@ -38,7 +38,9 @@ import {
 } from "@/i18n";
 import { fetchObservations, isConfigured } from "@/storage/uplink";
 import {
+  cardShadow,
   color,
+  radius,
   size,
   space,
   tabularNums,
@@ -174,6 +176,7 @@ export default function Dashboard() {
   const safeAreas = Object.entries(safe).sort((a, b) =>
     a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0,
   );
+  const phoneCount = new Set(observations.map((o) => o.device_id)).size;
 
   return (
     <View style={styles.page}>
@@ -181,12 +184,27 @@ export default function Dashboard() {
       <ScrollView contentContainerStyle={styles.form}>
         <Text style={styles.muted}>{t.dashboardIntro}</Text>
 
+        <View style={styles.statRow}>
+          <View style={styles.stat}>
+            <Text style={styles.statNumber}>{incidents.length}</Text>
+            <Text style={styles.statLabel}>
+              {plural(incidents.length, t.incidentOne, t.incidentMany)}
+            </Text>
+          </View>
+          <View style={styles.stat}>
+            <Text style={styles.statNumber}>{phoneCount}</Text>
+            <Text style={styles.statLabel}>{plural(phoneCount, t.phone, t.phones)}</Text>
+          </View>
+          <View style={styles.stat}>
+            <Text style={styles.statNumber}>{observationCount}</Text>
+            <Text style={styles.statLabel}>
+              {plural(observationCount, t.observationOne, t.observationMany)}
+            </Text>
+          </View>
+        </View>
+
         <View style={styles.row}>
           <Button label={t.refresh} variant="secondary" onPress={() => void load()} />
-          <Text style={styles.count}>
-            {plural(incidents.length, t.incidentOne, t.incidentMany)} ·{" "}
-            {plural(observationCount, t.observationOne, t.observationMany)}
-          </Text>
         </View>
 
         {status === "loading" ? (
@@ -309,7 +327,7 @@ export default function Dashboard() {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: color.paper },
+  page: { flex: 1, backgroundColor: color.pageBg },
   form: {
     padding: space[4],
     gap: space[3],
@@ -317,7 +335,6 @@ const styles = StyleSheet.create({
     maxWidth: 900,
   },
   muted: { fontSize: size.caption, color: color.ink2 },
-  count: { fontSize: size.caption, color: color.ink2, ...tabularNums },
   line: { fontSize: size.body, color: color.ink },
   breakdown: {
     fontSize: size.caption,
@@ -330,12 +347,28 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     alignItems: "center",
   },
-  ledger: { gap: 0 },
+  statRow: { flexDirection: "row", gap: space[2] },
+  stat: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: space[3],
+    ...cardShadow,
+  },
+  statNumber: {
+    fontFamily: "Doto_800ExtraBold",
+    fontSize: 28,
+    lineHeight: 32,
+    color: color.ink,
+    ...tabularNums,
+  },
+  statLabel: { fontSize: size.caption, color: color.ink2, textAlign: "center" },
+  ledger: { gap: space[3] },
   chip: {
     minHeight: TOUCH_TARGET,
     justifyContent: "center",
     borderWidth: 1,
     borderColor: color.ink,
+    borderRadius: radius.pill,
     paddingHorizontal: space[3],
     backgroundColor: color.paper,
   },
@@ -344,9 +377,8 @@ const styles = StyleSheet.create({
   chipTextOn: { color: color.onFill },
   panel: {
     gap: space[1],
-    paddingTop: space[3],
-    borderTopWidth: 1,
-    borderTopColor: color.rule,
+    padding: space[3],
+    ...cardShadow,
   },
   panelTitle: {
     fontSize: size.body,

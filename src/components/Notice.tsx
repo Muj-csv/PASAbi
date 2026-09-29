@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { color, radius, size, space } from "@/theme/tokens";
+import { cardShadow, color, size, space } from "@/theme/tokens";
 
 type Tone = "info" | "warning" | "error";
 
@@ -8,7 +8,9 @@ type Tone = "info" | "warning" | "error";
  * DESIGN_BRIEF section 12: replaces raw error strings. There is no colour
  * for "error": ink on surface, bold, with one sentence — the forbidden list
  * bans red for uncertainty and there is no severity hue at all here.
- * `detail` is for developer-facing text, kept small and secondary.
+ * Weight (not hue) marks "warning"/"error" — a thicker ink left edge — so a
+ * notice still reads as more urgent without a status colour. `detail` is for
+ * developer-facing text, kept small and secondary.
  */
 export function Notice({
   message,
@@ -20,7 +22,10 @@ export function Notice({
   tone?: Tone;
 }) {
   return (
-    <View style={styles.box} accessibilityRole={tone === "info" ? undefined : "alert"}>
+    <View
+      style={[styles.box, tone !== "info" && styles.boxFlagged]}
+      accessibilityRole={tone === "info" ? undefined : "alert"}
+    >
       <Text style={styles.message}>{message}</Text>
       {detail ? <Text style={styles.detail}>{detail}</Text> : null}
     </View>
@@ -29,11 +34,11 @@ export function Notice({
 
 const styles = StyleSheet.create({
   box: {
-    backgroundColor: color.surface,
-    borderRadius: radius.control,
     padding: space[3],
     gap: space[1],
+    ...cardShadow,
   },
+  boxFlagged: { borderLeftWidth: 4, borderLeftColor: color.ink },
   message: { fontSize: size.body, color: color.ink, fontWeight: "600" },
   detail: { fontSize: size.caption, color: color.ink2 },
 });

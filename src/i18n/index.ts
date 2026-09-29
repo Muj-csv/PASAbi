@@ -140,6 +140,10 @@ const en = {
   incidentChanged: "This incident changed. Back to the board.",
   chooseCategoryFirst: "Choose what is happening first.",
   pinTooShort: "Enter at least 4 digits.",
+  pinBackspace: "Backspace",
+  pinEntered: "{n} digits entered",
+  navHome: "Home",
+  navMyReports: "My reports",
 
   // QR bundle transfer (R2, DESIGN_BRIEF section 12)
   shareTitle: "Pass on by QR",
@@ -341,6 +345,10 @@ const fil: Strings = {
   incidentChanged: "Nagbago ang insidenteng ito. Bumalik sa board.",
   chooseCategoryFirst: "Piliin muna kung ano ang nangyayari.",
   pinTooShort: "Maglagay ng hindi bababa sa 4 na numero.",
+  pinBackspace: "Burahin ang huling numero",
+  pinEntered: "{n} numerong naipasok",
+  navHome: "Home",
+  navMyReports: "Mga ulat ko",
 
   // QR, drafts for a native speaker to review (DESIGN_BRIEF section 12).
   shareTitle: "Ipasa gamit ang QR",
