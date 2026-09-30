@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
   toServerRow,
@@ -36,11 +36,18 @@ export function isConfigured(): boolean {
   return Boolean(SUPABASE_URL) && Boolean(ANON);
 }
 
-function supabase(): SupabaseClient | null {
+/**
+ * Loaded on first use: only Upload and the responder view need it, so it
+ * stays out of the first download (it is still precached for offline).
+ */
+async function supabase(): Promise<SupabaseClient | null> {
   if (!isConfigured()) return null;
-  client ??= createClient(SUPABASE_URL as string, ANON as string, {
-    auth: { persistSession: false },
-  });
+  if (client === null) {
+    const { createClient } = await import("@supabase/supabase-js");
+    client = createClient(SUPABASE_URL as string, ANON as string, {
+      auth: { persistSession: false },
+    });
+  }
   return client;
 }
 
@@ -55,7 +62,7 @@ export interface UploadResult {
  * Upserts are idempotent by id, so a retry after a partial failure is safe.
  */
 export async function uploadPending(): Promise<UploadResult> {
-  const db = supabase();
+  const db = await supabase();
   const pending = observations.get().filter((o) => o.uploaded !== true);
   if (db === null) return { uploaded: 0, pending: pending.length, error: "not-configured" };
 
@@ -75,7 +82,7 @@ export async function uploadPending(): Promise<UploadResult> {
 
 /** FR-010: the responder view reads the read-only view, never the table. */
 export async function fetchObservations(): Promise<ServerObservationRow[]> {
-  const db = supabase();
+  const db = await supabase();
   if (db === null) return [];
   const { data, error } = await db
     .from(READ_VIEW)

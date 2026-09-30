@@ -6,7 +6,7 @@
  */
 import type { Evidence, Incident, IncidentChange } from "@pasabi/core";
 
-import { changeMark, clock, evidenceText, FRESH_GLYPH, FRESH_WORD, placeOf } from "../design/format";
+import { changeMark, clock, evidenceText, FRESH_GLYPH, FRESH_WORD, peopleText, placeOf } from "../design/format";
 import { useT } from "../design/i18n";
 import { Pictogram } from "../design/pictograms";
 import { Link } from "../router";
@@ -19,7 +19,7 @@ export function EvidenceLine({ phones, reports, people }: { phones: number; repo
   return (
     <span className="small num sub">
       <b className="strong">{p}</b> · {r}
-      {people ? ` · ${t("ev.people", { n: people })}` : ""}
+      {people ? ` · ${peopleText(t, people)}` : ""}
     </span>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+import { BluetoothAsk } from "./components/nearby";
 import { useNow } from "./hooks";
 import { navigate, usePath } from "./router";
 import { Home } from "./screens/Home";
@@ -32,6 +33,16 @@ function StationIncident({ incidentKey }: { incidentKey: string }) {
  * station routes send a resident to Settings, where the PIN lives.
  */
 export function App() {
+  return (
+    <>
+      <Page />
+      {/* D-033: asked once as the app starts, native app only. */}
+      <BluetoothAsk />
+    </>
+  );
+}
+
+function Page() {
   const [path, query = ""] = usePath().split("?");
   const isStation = station.use().enabled;
   const param = (prefix: string) => decodeURIComponent(path.slice(prefix.length));
