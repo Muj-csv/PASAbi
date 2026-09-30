@@ -284,6 +284,19 @@ const en = {
   "start.continue": "Continue",
   "bt.hint": "Swipe down from the top right, tap Bluetooth. PASAbi can't switch it on itself.",
 
+  // Field test log (P1, added)
+  "field.title": "Field test log",
+  "field.hint": "Kept on this phone only. Times each transfer for testing.",
+  "field.none": "No transfers yet.",
+  "field.finished": "{done} of {total} transfers finished",
+  "field.median": "Typical time: {s} s",
+  "field.copy": "Copy log",
+  "field.copied": "Copied.",
+  "field.copyFailed": "Couldn't copy. Use Download.",
+  "field.download": "Download",
+  "field.clear": "Clear log",
+  "field.clearConfirm": "Tap again to clear",
+
   // Responder view (W1)
   "resp.since": "Since last sync", // added
   "resp.nothing": "Nothing new since last sync.", // added
@@ -561,6 +574,18 @@ const fil: Record<CopyKey, string> = {
   "start.later": "Mamaya na",
   "start.continue": "Magpatuloy",
   "bt.hint": "Mag-swipe pababa mula kanang itaas, i-tap ang Bluetooth. Hindi ito kayang buksan ng PASAbi.",
+
+  "field.title": "Talaan ng field test",
+  "field.hint": "Nasa phone na ito lang. Sinusukat ang bawat paglipat.",
+  "field.none": "Wala pang paglipat.",
+  "field.finished": "{done} sa {total} na paglipat ang natapos",
+  "field.median": "Karaniwang tagal: {s} s",
+  "field.copy": "Kopyahin",
+  "field.copied": "Nakopya.",
+  "field.copyFailed": "Hindi makopya. Gamitin ang Download.",
+  "field.download": "I-download",
+  "field.clear": "Burahin ang talaan",
+  "field.clearConfirm": "I-tap ulit para burahin",
 
   "resp.since": "Mula huling sync",
   "resp.nothing": "Walang bago mula huling sync.",

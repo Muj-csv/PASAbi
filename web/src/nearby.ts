@@ -32,6 +32,7 @@ import {
   storeCapacity,
 } from "./storage/observations";
 import { station } from "./storage/station";
+import { logTransfer } from "./storage/transferLog";
 
 /** What a NearbyNode needs from the phone's store. Injected, so tests use memory. */
 export interface NearbyStore {
@@ -182,9 +183,11 @@ const phoneStore: NearbyStore = {
   // Waiting for pings: every batch from any phone goes through the one
   // ingest path (R0), and the Receive screen hears about it.
   apply: (incoming, from) =>
-    void receiveObservations(incoming).then((added) =>
-      inbox.set({ at: nowSeconds(), from, received: incoming.length, added }),
-    ),
+    void receiveObservations(incoming).then((added) => {
+      inbox.set({ at: nowSeconds(), from, received: incoming.length, added });
+      const at = Date.now();
+      void logTransfer({ kind: "bt-receive", startedAt: at, endedAt: at, completed: true, sent: 0, received: incoming.length, added });
+    }),
   freeCapacity: () => Math.max(0, storeCapacity() - observations.get().length),
   onSent: (ids, role) => void markPassedOn(ids, role),
 };
@@ -221,8 +224,24 @@ export async function startNearby(): Promise<boolean> {
   return node !== null;
 }
 
-export function pingAll(): Promise<PingResult> {
-  return node ? node.pingAll() : Promise.resolve({ reached: 0, sent: 0 });
+export async function pingAll(): Promise<PingResult> {
+  if (!node) return { reached: 0, sent: 0 };
+  const startedAt = Date.now();
+  const peers = node.peers.size;
+  const result = await node.pingAll();
+  // P1 field log: one entry per Ping, reached / in range.
+  void logTransfer({
+    kind: "bt-ping",
+    startedAt,
+    endedAt: Date.now(),
+    completed: result.reached > 0,
+    sent: result.sent,
+    received: 0,
+    added: 0,
+    peers,
+    peersReached: result.reached,
+  });
+  return result;
 }
 
 /**

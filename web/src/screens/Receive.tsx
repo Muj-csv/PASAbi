@@ -4,7 +4,7 @@
  * show a one-frame receipt for the sender to scan back. Nothing is applied
  * until the batch is complete (BundleAssembler).
  */
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { BundleAssembler, encodeReceipt } from "@pasabi/core";
 
@@ -16,6 +16,7 @@ import { useT } from "../design/i18n";
 import { deviceIdSync } from "../storage/device";
 import { receiveObservations } from "../storage/observations";
 import { station } from "../storage/station";
+import { logTransfer } from "../storage/transferLog";
 
 const TIPS = ["err.cantRead", "err.cantRead.2", "err.cantRead.3"] as const;
 
@@ -37,10 +38,32 @@ export function Receive() {
 
   useWakeLock(showReceipt);
 
+  // P1 field log: from the first frame caught to a complete bundle. Leaving
+  // part-way logs an unfinished receive with how many frames made it.
+  const firstFrameAt = useRef<number | null>(null);
+  const pendingUnfinished = useRef<number | null>(null);
+  useEffect(() => {
+    if (pendingUnfinished.current !== null) clearTimeout(pendingUnfinished.current);
+    // The same assembler for the screen's whole life; captured for cleanup.
+    const bundleSoFar = assembler.current;
+    return () => {
+      const started = firstFrameAt.current;
+      if (started === null) return;
+      const endedAt = Date.now();
+      const { received: framesSeen, expected: frames } = bundleSoFar;
+      pendingUnfinished.current = window.setTimeout(() => {
+        void logTransfer({ kind: "qr-receive", startedAt: started, endedAt, completed: false, sent: 0, received: 0, added: 0, frames, framesSeen });
+      }, 0);
+    };
+  }, []);
+
   const onCode = async (text: string) => {
     if (done !== null || applying.current) return;
     const before = assembler.current.received;
     const result = assembler.current.accept(text);
+    if (firstFrameAt.current === null && (result.kind === "progress" || result.kind === "complete")) {
+      firstFrameAt.current = Date.now();
+    }
     if (result.kind === "progress") {
       setProgress({ received: result.received, total: result.total });
       setMessage(null);
@@ -56,6 +79,19 @@ export function Receive() {
       applying.current = true;
       try {
         const added = await receiveObservations(result.observations);
+        const frames = assembler.current.expected;
+        void logTransfer({
+          kind: "qr-receive",
+          startedAt: firstFrameAt.current ?? Date.now(),
+          endedAt: Date.now(),
+          completed: true,
+          sent: 0,
+          received: result.observations.length,
+          added,
+          frames,
+          framesSeen: frames,
+        });
+        firstFrameAt.current = null; // logged; "Receive more" starts a new one
         setDone({ bundleId: result.bundleId, received: result.observations.length, added });
       } finally {
         applying.current = false;

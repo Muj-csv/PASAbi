@@ -237,3 +237,34 @@ screen to "Received N (M new)". Then scan the receipt back.
 | | | | | | |
 | | | | | | |
 | | | | | | |
+
+## 9. P1: transport validation with the field-test log (spec §10, 2026-10-01)
+
+Every phone now keeps a **field-test log** of its own transfers. It covers each QR send and receive, each Bluetooth Ping, and each batch received by Bluetooth. Each entry records start and end times, whether it finished, frames (caught / total) and reports moved.
+- It stays on the phone and is never uploaded.
+- Find it at **Settings → Field test log**, and on the station's **Station** tab.
+- **Copy log** or **Download** exports it as JSON, with the phone labelled by its 6-character source label.
+
+### Protocol (run with 3–4 iPhones, airplane mode; Bluetooth parts need the native build)
+1. **Clear the log** on every phone (Clear log, then tap again).
+2. **Straight transfer:** A passes 10 reports to B by QR. Repeat 5 times.
+3. **Interrupted:** start a QR receive on B, walk B away after a few frames, then come back and restart. Nothing may be applied until the bundle is complete, and the unfinished attempt must be logged.
+4. **Duplicates:** pass the same reports A→B twice. On the second pass, B's "new" count is 0 and the ledger doesn't change.
+5. **Relay:** A→B, then B→C, then C→station. The station ledger must match A's picture for those reports.
+6. **Bluetooth (native build):** 3 phones with PASAbi open. A taps Ping nearby once. Check "Passed on to 2 phones", then B and C's Receive lines.
+7. **Battery:** note the battery % at the start and end of an hour of normal use.
+8. **Export every phone's log** and paste the JSON under the date below.
+
+### Results against spec §10.3
+
+| Metric | How to read it | Result |
+|---|---|---|
+| Propagation | Median time from the log, per transport | |
+| Reliability | finished ÷ total, per transport | |
+| Human friction | Log time plus the taps counted by the observer | |
+| Battery | % per hour (step 7) | |
+| Correctness | Do the ledgers match after step 5? | |
+| Clustering | Wrong merges seen on the ledgers | |
+| Coverage | Were silent puroks shown as gaps? | |
+| Comprehension | Could an operator say what, where and how fresh within 30 s? | |
+| Recovery | Did the upload after reconnecting show the right states? | |

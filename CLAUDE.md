@@ -4,7 +4,7 @@
 
 **Mid-rewrite (ADR-009):** the Vite app is in `web/`. The old Expo app in `src/` stays until phase W5 deletes it; don't build new features there.
 
-Read first: `docs/IMPLEMENTATION_PWA.md` (current phases W0–W7; **wins over every older doc**) → `docs/design/README.md`, `DESIGN_BRIEF.md`, `SCREENS.md` (locked UI) → `docs/PRD.md` (what and why) → `docs/ARCHITECTURE.md` (how) → `docs/DECISIONS.md`. Background: `docs/EDGE_FIRST_PWA_PLAN.md` (the source plan, written for AgapAI; read "AgapAI" as PASAbi) and `docs/IMPLEMENTATION_UPDATE.md` (the earlier Expo-era phases R0–R7).
+Read first: `docs/IMPLEMENTATION_SPEC.md` (current phases P0–P8: Incident Passport, information gaps, Purok Sweep; from `docs/PASABI_SPEC.md`; **wins over every older doc**) → `docs/IMPLEMENTATION_PWA.md` (the PWA rewrite, W0–W4 done) → `docs/design/README.md`, `DESIGN_BRIEF.md`, `SCREENS.md` (locked UI) → `docs/PRD.md` (what and why) → `docs/ARCHITECTURE.md` (how) → `docs/DECISIONS.md`. Background: `docs/EDGE_FIRST_PWA_PLAN.md` (the source plan, written for AgapAI; read "AgapAI" as PASAbi) and `docs/IMPLEMENTATION_UPDATE.md` (the earlier Expo-era phases R0–R7).
 
 ## Rules
 - **Incidents are derived, never transmitted.** Only observations are stored and sent. Never add an incident table that syncs (ADR-002).
@@ -58,7 +58,7 @@ Chat · AI anywhere outside the ADR-010 report draft · photos · custom BLE sta
 `README.md` is a living draft. When a feature lands or changes, update its row in the README Features table (Planned → Done) in the same change.
 
 ## How to work
-Phases 0–5 and R0–R5 are done. Now do one phase of `docs/IMPLEMENTATION_PWA.md` §4 (W0–W7) at a time. At the end:
+Phases 0–5, R0–R5 and W0–W4 are done. Now do one phase of `docs/IMPLEMENTATION_SPEC.md` §3 (P0–P8) at a time, starting with P0 (confirm D-035 to D-040). At the end:
 - run tests, typecheck, lint, the web build and the design guard
 - add 3–5 lines to `LEARNING.md`
 - **stop and report**
