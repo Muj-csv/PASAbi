@@ -165,3 +165,21 @@ Devlog for FirstCommit. One entry per build phase.
 - **Asking for Bluetooth properly on iOS takes Core Bluetooth, not Multipeer.** A `CBCentralManager` with `ShowPowerAlert` raises the permission prompt and iOS's own "Turn On Bluetooth" alert, and reports on/off/unauthorized. Multipeer alone would start quietly over Wi-Fi and never say Bluetooth was off.
 - **"Ask every launch" needed a rule for when to stop asking.** The sheet shows at startup only while something that can still change is off. "Not now" lasts until the next launch. A location "timeout" counts as allowed, because the geolocation timeout only starts after permission is given.
 - **Receiving by Bluetooth has no button.** While PASAbi is open, any ping is answered and applied through `receiveObservations()`. The Receive screen just shows it is waiting, and what the last ping brought.
+
+## Testing "does it ask for Bluetooth at startup" without an iPhone (2026-10-01)
+
+- **You can make the browser believe it is the native app.** Capacitor decides "iOS" when `window.webkit.messageHandlers.bridge` exists, and calls plugins through `window.Capacitor.nativePromise` / `nativeCallback` using injected `PluginHeaders`. A 30-line fake of that injected before load runs the real app in "native" mode and logs every plugin call. The same fake in Node runs in `web/src/startup.test.ts`.
+- **It found a real bug on the first try.** On a first native launch the Bluetooth state was never set, because the app deliberately doesn't ask iOS before explaining. The sheet only renders once the state is known, so it never appeared and Bluetooth was never asked for. Fixed with an explicit "not asked yet" state, and the test pins it.
+- **What this does not prove:** that iOS shows its prompt and its "Turn On Bluetooth" alert. It proves the app makes the call that triggers them, at the right moment. The rest needs the native build on a phone.
+
+## "Make it turn Bluetooth on" (2026-10-01, D-034)
+
+- **iOS never lets an app switch Bluetooth on.** The honest best is iOS's own "Turn On Bluetooth" alert, which only appears when a `CBCentralManager` is *created* while Bluetooth is off. So the plugin drops and recreates the manager on each Allow tap while it's off, and that alert's Settings button takes the person to the switch. After a "Don't Allow", iOS never asks again: the app's only move is Open Settings to its own page.
+- **Android can do what was asked, with the person's one tap:** the `ACTION_REQUEST_ENABLE` system dialog. Specced in `native/README.md` behind the same JS API, so no screen changes when an Android build appears.
+- **A test can check that the app has no way to flip the switch.** `startup.test.ts` asserts that the only plugin calls made are ask, start and open-settings. There is nothing that could turn Bluetooth on, so nobody adds one by accident.
+
+## P0–P1: decisions, then measure before tuning (2026-10-01)
+
+- **The spec's #1 priority is proving the transport on real phones, so the software's job was to make that measurable.** Each phone now logs its own transfers: QR send and receive, Bluetooth ping and receive, with timing, completion and frames. It's exported by hand, and a `summarize()` turns it into the spec §10.3 reliability and time numbers. Nothing gets tuned until those numbers exist.
+- **Unfinished transfers are the most useful data point.** Leaving Pass on without a receipt, or Receive part-way, logs a failed attempt with how many frames made it. That is exactly the "interrupted/partial transfer" row the spec asks for.
+- **The logging hooks hit the React Compiler rules straight away:** `useRef(Date.now())` counts as an impure read during render, and reading refs in cleanup triggers warnings. The fixes are `useState(() => Date.now())` and capturing the assembler when the effect runs. The StrictMode double-mount needed the same delayed "left the screen" commit as the Undo bar, or dev runs would log phantom failures.

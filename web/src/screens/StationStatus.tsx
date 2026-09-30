@@ -7,6 +7,7 @@ import { useState, type FormEvent } from "react";
 
 import { EXPECTED_AREAS_MAX, normalizeArea } from "@pasabi/core";
 
+import { TransferLogSection } from "../components/fieldlog";
 import { FactList } from "../components/incident";
 import { Button, CountWidget, ModeBand, Notice, TabBar } from "../components/kit";
 import { clock } from "../design/format";
@@ -138,6 +139,10 @@ export function StationStatus() {
           ))}
         </div>
       </section>
+
+      <div className="pad" style={{ paddingTop: 32 }}>
+        <TransferLogSection />
+      </div>
 
       <div className="pad" style={{ paddingTop: 32, paddingBottom: 32 }}>
         <Button

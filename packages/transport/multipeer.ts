@@ -20,6 +20,7 @@ export type BluetoothState = "on" | "off" | "unauthorized" | "unsupported";
 
 interface NearbyPlugin {
   requestBluetooth(): Promise<{ state: BluetoothState }>;
+  openSettings(): Promise<void>;
   start(options: { displayName: string; serviceType: string }): Promise<void>;
   stop(): Promise<void>;
   send(options: { peer: string; data: string }): Promise<void>;
@@ -34,6 +35,15 @@ interface NearbyPlugin {
  */
 export async function requestBluetooth(): Promise<BluetoothState> {
   return (await Native.requestBluetooth()).state;
+}
+
+/**
+ * Opens PASAbi's page in the phone's Settings, where Bluetooth permission is
+ * given back after a refusal. No platform lets an app flip Bluetooth itself
+ * without the person (iOS: never; Android: its own one-tap dialog, planned).
+ */
+export async function openAppSettings(): Promise<void> {
+  await Native.openSettings();
 }
 
 /** Bluetooth switched on or off while the app runs. */

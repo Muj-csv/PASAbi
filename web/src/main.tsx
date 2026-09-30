@@ -19,11 +19,12 @@ import { getDeviceId } from "./storage/device";
 import { requestPersistence } from "./storage/kv";
 import { refreshStore } from "./storage/observations";
 import { restoreStation } from "./storage/station";
+import { restoreTransferLog } from "./storage/transferLog";
 import { restoreLastUpload } from "./storage/uplink";
 
 async function boot(): Promise<void> {
   try {
-    await Promise.all([getDeviceId(), restoreLang(), restoreLastUpload()]);
+    await Promise.all([getDeviceId(), restoreLang(), restoreLastUpload(), restoreTransferLog()]);
     // Station mode first: it sets the store capacity the first write uses.
     await restoreStation();
     await refreshStore();

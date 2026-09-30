@@ -59,6 +59,40 @@ This is the acceptance check for R6.
 4. On phone B open **Receive**: it shows "Waiting for nearby phones to ping." On A tap **Ping nearby** (the main button on Pass on). A shows "Passed on to 1 phone"; B shows "Got N by Bluetooth · M new", and A's slip gets a PASSED ON stamp.
 5. Record the time it took in `docs/FIELD_TEST.md`.
 
+## Turning Bluetooth on (why the app can't, and what it does instead)
+
+**iPhone:** iOS has no API that lets an app switch Bluetooth on, and forcing it would get the app rejected. `CLAUDE.md` forbids it too. So PASAbi asks:
+- **Allow** asks iOS, which shows its permission prompt the first time.
+- **Whenever Bluetooth is off:** Allow shows iOS's own "Turn On Bluetooth" alert again (a fresh `CBCentralManager` with `ShowPowerAlert`). That alert's Settings button opens Bluetooth settings.
+- **The sheet explains:** "Swipe down from the top right, tap Bluetooth."
+- **After "Don't Allow":** iOS never asks again, so **Open Settings** goes to PASAbi's page in Settings.
+- **When the person turns Bluetooth on,** the app notices (`bluetoothState`) and starts by itself.
+
+**Android: planned, not built (D-034).** Android *can* do what was asked: a system dialog, "PASAbi wants to turn on Bluetooth", and one tap on **Allow** switches it on. When there is an Android build:
+1. Write a `PasabiNearby` Capacitor plugin for Android with the **same JavaScript API**: `requestBluetooth`, `openSettings`, `start`, `stop`, `send`, and the same events. Then `packages/transport/multipeer.ts` and every screen work unchanged.
+2. `requestBluetooth`:
+   1. On Android 12+, request `BLUETOOTH_SCAN`, `BLUETOOTH_ADVERTISE`, `BLUETOOTH_CONNECT` (and `NEARBY_WIFI_DEVICES` on 13+). On older versions, `ACCESS_FINE_LOCATION`.
+   2. If the adapter is off, launch `BluetoothAdapter.ACTION_REQUEST_ENABLE`. That intent is the system "turn on Bluetooth" dialog; `BluetoothAdapter.enable()` is deprecated and not allowed for apps.
+   3. Resolve `on` on `RESULT_OK`, `off` otherwise.
+
+   ```kotlin
+   @PluginMethod
+   fun requestBluetooth(call: PluginCall) {
+       val adapter = (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
+           ?: return call.resolve(JSObject().put("state", "unsupported"))
+       if (adapter.isEnabled) return call.resolve(JSObject().put("state", "on"))
+       // The system dialog: "PASAbi wants to turn on Bluetooth" [Deny] [Allow]
+       startActivityForResult(call, Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), "onEnableResult")
+   }
+
+   @ActivityCallback
+   private fun onEnableResult(call: PluginCall, result: ActivityResult) {
+       call.resolve(JSObject().put("state", if (result.resultCode == Activity.RESULT_OK) "on" else "off"))
+   }
+   ```
+3. The transport is Google **Nearby Connections**, `Strategy.P2P_CLUSTER`, with service ID `pasabi-obs`: advertise and discover, auto-accept, `Payload.fromBytes`.
+4. iPhones and Android phones **cannot see each other** over radio (D-012): Multipeer and Nearby Connections don't interoperate. They meet through QR and the cloud.
+
 ## Limits
 
 - **Foreground only (D-013).** A phone must have PASAbi open to be found and to receive.

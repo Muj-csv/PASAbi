@@ -18,6 +18,7 @@ import { uuid4 } from "../storage/device";
 import { markPassedOn, nowSeconds, observations } from "../storage/observations";
 import { recordReceipt } from "../storage/qrReceipts";
 import { station } from "../storage/station";
+import { logTransfer } from "../storage/transferLog";
 
 const TIPS = ["err.cantRead", "err.cantRead.2", "err.cantRead.3"] as const;
 
@@ -50,7 +51,35 @@ export function PassOn() {
 
   useEffect(() => {
     if (bundle) sent.current.set(bundle.bundleId, bundle.ids);
+    framesShown.current = bundle?.frames.length ?? 0;
   }, [bundle]);
+
+  // P1 field log: time from opening Pass on to a scanned receipt. Leaving
+  // with a QR unanswered is logged as unfinished: reliability data too.
+  const [openedAt] = useState(() => Date.now());
+  const logged = useRef(false);
+  const framesShown = useRef(0);
+  const pendingUnfinished = useRef<number | null>(null);
+  useEffect(() => {
+    // A StrictMode remount cancels the "left" entry its fake unmount queued.
+    if (pendingUnfinished.current !== null) clearTimeout(pendingUnfinished.current);
+    return () => {
+      if (logged.current || pages.length === 0) return;
+      const endedAt = Date.now();
+      pendingUnfinished.current = window.setTimeout(() => {
+        void logTransfer({
+          kind: "qr-send",
+          startedAt: openedAt,
+          endedAt,
+          completed: false,
+          sent: 0,
+          received: 0,
+          added: 0,
+          frames: framesShown.current,
+        });
+      }, 0);
+    };
+  }, [pages, openedAt]);
 
   const frames = bundle?.frames.length ?? 0;
   useEffect(() => {
@@ -71,6 +100,17 @@ export function PassOn() {
     }
     await recordReceipt(receipt.deviceId, ids);
     await markPassedOn(ids, receipt.role);
+    logged.current = true;
+    void logTransfer({
+      kind: "qr-send",
+      startedAt: openedAt,
+      endedAt: Date.now(),
+      completed: true,
+      sent: ids.length,
+      received: 0,
+      added: 0,
+      frames: framesShown.current,
+    });
     setDone({ n: ids.length, station: receipt.role === "station" });
   };
 

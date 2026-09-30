@@ -6,6 +6,7 @@
  */
 import { useState, type FormEvent } from "react";
 
+import { TransferLogSection } from "../components/fieldlog";
 import { BackBar, Button, StatusBand } from "../components/kit";
 import { setLang, useT } from "../design/i18n";
 import { Icon } from "../design/pictograms";
@@ -130,6 +131,8 @@ export function Settings() {
             />
           </form>
         </section>
+
+        <TransferLogSection />
 
         <Link to="/responder" className="body">
           {t("settings.responder")}
