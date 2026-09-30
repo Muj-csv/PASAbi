@@ -13,7 +13,13 @@ import {
 } from "@pasabi/core";
 
 import type { PeerId, Transport } from "../../packages/transport/types";
-import { MultipeerTransport, multipeerAvailable } from "../../packages/transport/multipeer";
+import {
+  MultipeerTransport,
+  multipeerAvailable,
+  onBluetoothState,
+  requestBluetooth,
+  type BluetoothState,
+} from "../../packages/transport/multipeer";
 
 import { deviceIdSync } from "./storage/device";
 import { kvGet, kvSet, live } from "./storage/kv";
@@ -31,7 +37,7 @@ export interface NearbyStore {
   role(): Role;
   observations(): Observation[];
   /** Must go through the one ingest path (receiveObservations, R0). */
-  apply(incoming: Observation[]): void;
+  apply(incoming: Observation[], from: PeerId): void;
   freeCapacity(): number;
   /** BR-015: a batch actually went out to a peer that claimed `role`. */
   onSent(ids: string[], role: Role): void;
@@ -88,7 +94,7 @@ export class NearbyNode {
       role: this.store.role(),
       now: this.now,
       observations: () => this.store.observations(),
-      apply: (incoming) => this.store.apply(incoming),
+      apply: (incoming) => this.store.apply(incoming, peer),
       freeCapacity: () => this.store.freeCapacity(),
       onSent: (ids, role) => this.store.onSent(ids, role),
       maxPayloadBytes: this.transport.maxPayloadBytes,
@@ -148,17 +154,35 @@ export interface NearbyState {
 
 export const nearby = live<NearbyState>({ available: false, running: false, peers: [] });
 
-/** Whether the start-up Bluetooth question has been answered on this phone. */
-export const nearbyAsked = live<boolean>(true);
+/**
+ * What iOS says about Bluetooth for PASAbi. "web" = the browser build,
+ * where Bluetooth between phones does not exist at all.
+ */
+export const bluetooth = live<BluetoothState | "unknown" | "web">("unknown");
 
-const ASKED_KEY = "nearby.asked.v1";
+/** The last batch that arrived by Bluetooth, for the Receive screen. */
+export interface InboxEntry {
+  at: number;
+  from: string;
+  received: number;
+  added: number;
+}
+export const inbox = live<InboxEntry | null>(null);
+
+/** The person said yes once; later launches ask iOS again without the sheet. */
+const ALLOWED_KEY = "nearby.allowed.v1";
 
 let node: NearbyNode | null = null;
 
 const phoneStore: NearbyStore = {
   role: () => (station.get().enabled ? "station" : "resident"),
   observations: () => observations.get(),
-  apply: (incoming) => void receiveObservations(incoming),
+  // Waiting for pings: every batch from any phone goes through the one
+  // ingest path (R0), and the Receive screen hears about it.
+  apply: (incoming, from) =>
+    void receiveObservations(incoming).then((added) =>
+      inbox.set({ at: nowSeconds(), from, received: incoming.length, added }),
+    ),
   freeCapacity: () => Math.max(0, storeCapacity() - observations.get().length),
   onSent: (ids, role) => void markPassedOn(ids, role),
 };
@@ -199,17 +223,43 @@ export function pingAll(): Promise<PingResult> {
   return node ? node.pingAll() : Promise.resolve({ reached: 0, sent: 0 });
 }
 
-/** Boot: ask once (native only); if already allowed, start listening. */
-export async function restoreNearby(): Promise<void> {
-  publish();
-  if (!multipeerAvailable()) return;
-  const asked = (await kvGet<boolean>(ASKED_KEY)) === true;
-  nearbyAsked.set(asked);
-  if (asked) await startNearby();
+/**
+ * Ask iOS for Bluetooth, and start passing on and listening if it is on.
+ * The first time this shows iOS's permission prompt; whenever Bluetooth is
+ * off it shows iOS's own "Turn On Bluetooth" alert. Never switches it on.
+ */
+export async function allowBluetooth(): Promise<BluetoothState | "web"> {
+  if (!multipeerAvailable()) {
+    bluetooth.set("web");
+    return "web";
+  }
+  let state: BluetoothState;
+  try {
+    state = await requestBluetooth();
+  } catch {
+    state = "unsupported";
+  }
+  bluetooth.set(state);
+  await kvSet(ALLOWED_KEY, true);
+  if (state === "on") await startNearby();
+  return state;
 }
 
-export async function answerNearbyAsk(allow: boolean): Promise<void> {
-  await kvSet(ASKED_KEY, true);
-  nearbyAsked.set(true);
-  if (allow) await startNearby();
+/**
+ * Boot. In the browser: mark Bluetooth as unavailable. In the native app:
+ * follow Bluetooth being switched on and off, and if the person already
+ * allowed it once, ask iOS again right away (the startup ask, D-033).
+ * Otherwise the StartupAsk sheet explains first, then asks.
+ */
+export async function restoreNearby(): Promise<void> {
+  publish();
+  if (!multipeerAvailable()) {
+    bluetooth.set("web");
+    return;
+  }
+  onBluetoothState((state) => {
+    bluetooth.set(state);
+    if (state === "on") void startNearby();
+  });
+  if ((await kvGet<boolean>(ALLOWED_KEY)) === true) await allowBluetooth();
 }

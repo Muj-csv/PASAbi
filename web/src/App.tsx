@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { BluetoothAsk } from "./components/nearby";
+import { StartupAsk } from "./components/nearby";
 import { useNow } from "./hooks";
 import { navigate, usePath } from "./router";
 import { Home } from "./screens/Home";
@@ -36,8 +36,8 @@ export function App() {
   return (
     <>
       <Page />
-      {/* D-033: asked once as the app starts, native app only. */}
-      <BluetoothAsk />
+      {/* Bluetooth + Location, asked at every launch until on (2026-09-30). */}
+      <StartupAsk />
     </>
   );
 }

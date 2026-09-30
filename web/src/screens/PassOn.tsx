@@ -10,6 +10,7 @@ import { bundlePages, decodeReceipt, encodeBundle, QR_FRAME_INTERVAL_MS } from "
 
 import { BackBar, Button, ModeBand, Notice, TabBar } from "../components/kit";
 import { NearbySection } from "../components/nearby";
+import { nearby } from "../nearby";
 import { QrCode, QrScanner, useWakeLock, type CameraState } from "../components/qr";
 import { useT } from "../design/i18n";
 import { navigate } from "../router";
@@ -23,6 +24,8 @@ const TIPS = ["err.cantRead", "err.cantRead.2", "err.cantRead.3"] as const;
 export function PassOn() {
   const t = useT();
   const isStation = station.use().enabled;
+  /** Bluetooth exists (native app): it leads, QR follows. One primary each way. */
+  const btFirst = nearby.use().available;
   // Pages come from what the phone held when the screen opened, so a batch
   // never reshuffles under the camera of the phone reading it.
   const [pages] = useState(() => bundlePages(observations.get(), nowSeconds(), new Set()));
@@ -97,6 +100,10 @@ export function PassOn() {
       {isStation ? null : <BackBar label={t("nav.back")} fallback="/" resident />}
       <div className="pad stack gap4" style={{ paddingTop: 16, paddingBottom: 24 }}>
         <h1 className="title">{t("pass.title")}</h1>
+
+        {/* Where Bluetooth exists (native app), Ping is how you pass on;
+            the QR stays below as the fallback (2026-09-30). */}
+        {mode === "show" && btFirst ? <NearbySection onCoral={coral} primary /> : null}
 
         {mode === "scan" ? (
           <>
@@ -173,14 +180,15 @@ export function PassOn() {
           </>
         )}
 
-        {/* D-033: Bluetooth is the other way to pass on, under the QR. */}
-        {mode === "show" ? <NearbySection onCoral={coral} /> : null}
+        {/* In the browser, Bluetooth sits under the QR and says why it's off. */}
+        {mode === "show" && !btFirst ? <NearbySection onCoral={coral} primary={false} /> : null}
       </div>
 
       <div className="spacer" />
       {mode === "show" && bundle !== null ? (
         <div className="pinned stack gap2">
           <Button
+            variant={btFirst ? "secondary" : "primary"}
             onCoral={coral}
             label={t("pass.scanReceipt")}
             onClick={() => {

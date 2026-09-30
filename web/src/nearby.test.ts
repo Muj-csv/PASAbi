@@ -28,16 +28,19 @@ function report(n: number, device: string): Observation {
 
 function memoryStore(role: Role, held: Observation[]) {
   const passedOn: { ids: string[]; role: Role }[] = [];
+  /** Who each received batch came from: what the Receive screen shows. */
+  const receivedFrom: string[] = [];
   const store: NearbyStore = {
     role: () => role,
     observations: () => held,
-    apply: (incoming) => {
+    apply: (incoming, from) => {
+      receivedFrom.push(from);
       for (const o of incoming) if (!held.some((h) => h.id === o.id)) held.push({ ...o, own: false });
     },
     freeCapacity: () => 1000,
     onSent: (ids, peerRole) => passedOn.push({ ids, role: peerRole }),
   };
-  return { store, held, passedOn };
+  return { store, held, passedOn, receivedFrom };
 }
 
 const A = "aaaaaaaa-0000-4000-8000-000000000001";
@@ -65,6 +68,8 @@ describe("NearbyNode ping", () => {
     expect(result.reached).toBe(2);
     const ids = (s: { held: Observation[] }) => s.held.map((o) => o.id).sort();
     expect(ids(b)).toEqual(ids(a)); // B got A's two, A got B's one
+    // B was only waiting (never tapped anything) and knows who pinged it.
+    expect(b.receivedFrom).toContain(A);
     // The exchanges run at the same moment, so C gets what A held when the
     // ping began; B's report reaches C on A's next ping (store and carry).
     expect(ids(c)).toEqual([report(1, A).id, report(2, A).id]);

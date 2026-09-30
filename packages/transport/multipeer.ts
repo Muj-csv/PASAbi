@@ -15,12 +15,30 @@ import type { PeerId, Transport, TransportListener } from "./types";
  *  match NSBonjourServices in the iOS Info.plist (native/README.md). */
 export const SERVICE_TYPE = "pasabi-obs";
 
+/** What iOS says about Bluetooth for this app. */
+export type BluetoothState = "on" | "off" | "unauthorized" | "unsupported";
+
 interface NearbyPlugin {
+  requestBluetooth(): Promise<{ state: BluetoothState }>;
   start(options: { displayName: string; serviceType: string }): Promise<void>;
   stop(): Promise<void>;
   send(options: { peer: string; data: string }): Promise<void>;
   addListener(event: "peerFound" | "peerLost", fn: (e: { peer: string }) => void): Promise<PluginListenerHandle>;
   addListener(event: "payload", fn: (e: { peer: string; data: string }) => void): Promise<PluginListenerHandle>;
+  addListener(event: "bluetoothState", fn: (e: { state: BluetoothState }) => void): Promise<PluginListenerHandle>;
+}
+
+/**
+ * Asks iOS about Bluetooth: raises the permission prompt the first time and
+ * iOS's own "Turn On Bluetooth" alert when it is off. Never switches it on.
+ */
+export async function requestBluetooth(): Promise<BluetoothState> {
+  return (await Native.requestBluetooth()).state;
+}
+
+/** Bluetooth switched on or off while the app runs. */
+export function onBluetoothState(fn: (state: BluetoothState) => void): void {
+  void Native.addListener("bluetoothState", (e) => fn(e.state));
 }
 
 const Native = registerPlugin<NearbyPlugin>("PasabiNearby");

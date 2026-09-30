@@ -158,3 +158,10 @@ Devlog for FirstCommit. One entry per build phase.
 - **"Street View of nearby devices" became a radar that admits what it doesn't know.** Multipeer reports who is connected, not distance or direction, and Street View needs internet. Phones sit evenly on one ring with the caption "Shows who is in range, not how far."
 - **The whole ping protocol is tested without a phone.** `NearbyNode` depends only on the `Transport` interface, so `nearby.test.ts` runs it on `MockNetwork`: three phones, one tap, both-way sync, honest passed-on marks. Writing the test exposed a wrong expectation of mine. A single ping exchanges with everyone at the same moment, so a report from B reaches C only on the *next* ping. That's store-and-carry, not a bug.
 - **Inside the native shell, several web assumptions flip.** There's no service worker; the files are bundled, so it's offline-ready by construction. `/favicon.png` is local, so the "can we reach the internet" check must hit a remote host instead.
+
+## Startup asks + Bluetooth receive (2026-09-30)
+
+- **"Bluetooth isn't working" was the web build doing exactly what it should.** iPhone browsers have no Bluetooth. The fix was not in code but in saying so plainly, in the app ("Needs the PASAbi app. QR works here.") and to the team. The radio only exists in the native build.
+- **Asking for Bluetooth properly on iOS takes Core Bluetooth, not Multipeer.** A `CBCentralManager` with `ShowPowerAlert` raises the permission prompt and iOS's own "Turn On Bluetooth" alert, and reports on/off/unauthorized. Multipeer alone would start quietly over Wi-Fi and never say Bluetooth was off.
+- **"Ask every launch" needed a rule for when to stop asking.** The sheet shows at startup only while something that can still change is off. "Not now" lasts until the next launch. A location "timeout" counts as allowed, because the geolocation timeout only starts after permission is given.
+- **Receiving by Bluetooth has no button.** While PASAbi is open, any ping is answered and applied through `receiveObservations()`. The Receive screen just shows it is waiting, and what the last ping brought.
