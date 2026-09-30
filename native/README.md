@@ -53,10 +53,10 @@ After any web change: `npm run web:build && npx cap sync ios`.
 
 This is the acceptance check for R6.
 
-1. Install on two iPhones. Open PASAbi on both and tap **Allow Bluetooth**, then allow the iOS prompts.
+1. Install on two iPhones. Open PASAbi on both: the **Before you start** sheet asks for Bluetooth and Location. Tap **Allow**, then allow the iOS prompts (and turn Bluetooth on if iOS offers).
 2. Turn on airplane mode on both, then turn Bluetooth back on. Airplane mode switches Bluetooth off; iOS lets you re-enable it.
 3. On phone A, record a report, then open **Pass on**. Within a few seconds the radar should show one dot, "1 phone in range".
-4. Tap **Ping nearby**. It should show "Passed on to 1 phone". Phone B's My reports → Carrying shows A's report, and A's slip gets a PASSED ON stamp.
+4. On phone B open **Receive**: it shows "Waiting for nearby phones to ping." On A tap **Ping nearby** (the main button on Pass on). A shows "Passed on to 1 phone"; B shows "Got N by Bluetooth · M new", and A's slip gets a PASSED ON stamp.
 5. Record the time it took in `docs/FIELD_TEST.md`.
 
 ## Limits

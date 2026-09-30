@@ -13,6 +13,7 @@ import { App } from "./App";
 import { restoreLang } from "./design/i18n";
 import { offlineReady } from "./hooks";
 import { restoreNearby } from "./nearby";
+import { checkLocation } from "./permissions";
 import { persisted } from "./screens/Settings";
 import { getDeviceId } from "./storage/device";
 import { requestPersistence } from "./storage/kv";
@@ -61,8 +62,11 @@ async function boot(): Promise<void> {
     void requestPersistence().then((ok) => persisted.set(ok));
   }
 
-  // D-033: in the native app, ask about Bluetooth once as it starts (the
-  // BluetoothAsk sheet), or start listening if already allowed. No-op on web.
+  // Startup asks (2026-09-30): Bluetooth and Location together, every launch
+  // until both are on. These learn the current answers; the StartupAsk sheet
+  // then asks for whatever is still off. Bluetooth exists in the native app
+  // only; in the browser it is reported as "web" and QR carries everything.
+  void checkLocation();
   void restoreNearby();
 
   createRoot(document.getElementById("root")!).render(

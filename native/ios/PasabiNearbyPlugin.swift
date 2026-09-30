@@ -17,6 +17,7 @@
 
 import Foundation
 import Capacitor
+import CoreBluetooth
 import MultipeerConnectivity
 
 @objc(PasabiNearbyPlugin)
@@ -24,10 +25,45 @@ public class PasabiNearbyPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "PasabiNearbyPlugin"
     public let jsName = "PasabiNearby"
     public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "requestBluetooth", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "start", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "stop", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "send", returnType: CAPPluginReturnPromise),
     ]
+
+    // Only used to ASK: the first CBCentralManager raises the Bluetooth
+    // permission prompt, and ShowPowerAlert makes iOS itself offer "Turn On
+    // Bluetooth" when it is off. The app never switches Bluetooth on.
+    private var central: CBCentralManager?
+    private var pendingBluetooth: [CAPPluginCall] = []
+
+    /** Resolves { state: "on" | "off" | "unauthorized" | "unsupported" }. */
+    @objc func requestBluetooth(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            if let central = self.central, central.state != .unknown, central.state != .resetting {
+                call.resolve(["state": Self.describe(central.state)])
+                return
+            }
+            self.pendingBluetooth.append(call)
+            if self.central == nil {
+                self.central = CBCentralManager(
+                    delegate: self,
+                    queue: nil,
+                    options: [CBCentralManagerOptionShowPowerAlertKey: true]
+                )
+            }
+        }
+    }
+
+    fileprivate static func describe(_ state: CBManagerState) -> String {
+        switch state {
+        case .poweredOn: return "on"
+        case .poweredOff: return "off"
+        case .unauthorized: return "unauthorized"
+        case .unsupported: return "unsupported"
+        default: return "off"
+        }
+    }
 
     private var me: MCPeerID?
     private var session: MCSession?
@@ -104,6 +140,18 @@ public class PasabiNearbyPlugin: CAPPlugin, CAPBridgedPlugin {
         lock.lock()
         connected.removeAll()
         lock.unlock()
+    }
+}
+
+extension PasabiNearbyPlugin: CBCentralManagerDelegate {
+    public func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        let state = Self.describe(central.state)
+        // Tell the app whenever Bluetooth is switched on or off later, too.
+        notifyListeners("bluetoothState", data: ["state": state])
+        guard central.state != .unknown, central.state != .resetting else { return }
+        let calls = pendingBluetooth
+        pendingBluetooth.removeAll()
+        calls.forEach { $0.resolve(["state": state]) }
     }
 }
 

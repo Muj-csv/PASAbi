@@ -1,14 +1,18 @@
 /**
- * Bluetooth pass-on UI (D-033): NearbyRadar, NearbySection (radar + Ping,
- * under the QR on Pass on) and BluetoothAsk (the start-up question).
- * Added to DESIGN_BRIEF §12 first. The radar is honest about what the radio
- * knows: who is in range, not how far or in which direction, so every phone
- * sits on the same ring. No pulsing, no sweep (DESIGN_BRIEF §8).
+ * Bluetooth pass-on UI (D-033), in DESIGN_BRIEF §12:
+ * - NearbyRadar: who is in range.
+ * - NearbySection: Pass on, radar + Ping.
+ * - NearbyReceive: Receive, waiting for pings.
+ * - StartupAsk: Bluetooth + Location, asked at every launch until on.
+ * The radar shows who is in range, never how far or where (Multipeer gives
+ * neither), so every phone sits on the same ring. No sweep, no pulse (§8).
  */
 import { useState } from "react";
 
+import { clock } from "../design/format";
 import { useT } from "../design/i18n";
-import { answerNearbyAsk, nearby, nearbyAsked, pingAll, startNearby } from "../nearby";
+import { allowBluetooth, bluetooth, inbox, nearby, pingAll } from "../nearby";
+import { location, requestLocation } from "../permissions";
 
 import { Button, Notice } from "./kit";
 
@@ -42,15 +46,51 @@ export function NearbyRadar({ peers, live }: { peers: string[]; live: boolean })
   );
 }
 
+/** Radar card + the line under it: count, or why Bluetooth isn't running. */
+function RadarCard({ webLine }: { webLine: "near.webOnly" | "near.webOnlyRecv" }) {
+  const t = useT();
+  const s = nearby.use();
+  const bt = bluetooth.use();
+  const live = s.available && s.running;
+  const n = s.peers.length;
+  return (
+    <>
+      <div className="qr-card">
+        <NearbyRadar peers={s.peers} live={live} />
+        {live ? (
+          <>
+            <span className="body strong">
+              {n === 0 ? t("near.none") : n === 1 ? t("near.inRange.one") : t("near.inRange", { n })}
+            </span>
+            <span className="caption ink2">{t("near.range")}</span>
+          </>
+        ) : null}
+      </div>
+      {!s.available ? (
+        <p className="body">{t(webLine)}</p>
+      ) : !s.running ? (
+        <Notice
+          message={bt === "unauthorized" ? t("start.btDenied") : t("near.off")}
+          detail={t("bt.hint")}
+          action={<Button variant="secondary" small label={t("near.turnOn")} onClick={() => void allowBluetooth()} />}
+        />
+      ) : null}
+    </>
+  );
+}
+
 type PingState = { kind: "idle" } | { kind: "busy" } | { kind: "done"; n: number } | { kind: "failed" };
 
-/** Under the QR on Pass on: who is in range, and one tap to pass to all of them. */
-export function NearbySection({ onCoral }: { onCoral: boolean }) {
+/**
+ * Pass on by Bluetooth: one tap passes to every phone in range. Where
+ * Bluetooth exists (native app) this is the screen's main action, above the
+ * QR; in the browser it sits under the QR and explains why it's off.
+ */
+export function NearbySection({ onCoral, primary }: { onCoral: boolean; primary: boolean }) {
   const t = useT();
   const s = nearby.use();
   const [ping, setPing] = useState<PingState>({ kind: "idle" });
   const live = s.available && s.running;
-  const count = s.peers.length;
 
   const doPing = async () => {
     setPing({ kind: "busy" });
@@ -58,40 +98,17 @@ export function NearbySection({ onCoral }: { onCoral: boolean }) {
     setPing(r.reached > 0 ? { kind: "done", n: r.reached } : { kind: "failed" });
   };
 
-  const caption = !live
-    ? null
-    : count === 0
-      ? t("near.none")
-      : count === 1
-        ? t("near.inRange.one")
-        : t("near.inRange", { n: count });
-
   return (
     <section className="stack gap3" aria-labelledby="near-title">
       <h2 id="near-title" className="heading">
         {t("near.title")}
       </h2>
-      <div className="qr-card">
-        <NearbyRadar peers={s.peers} live={live} />
-        {caption ? <span className="body strong">{caption}</span> : null}
-        {live ? <span className="caption ink2">{t("near.range")}</span> : null}
-      </div>
-
-      {!s.available ? (
-        <p className="body">{t("near.webOnly")}</p>
-      ) : !s.running ? (
-        <Notice
-          message={t("near.off")}
-          detail={t("bt.hint")}
-          action={<Button variant="secondary" small label={t("near.turnOn")} onClick={() => void startNearby()} />}
-        />
-      ) : null}
-
+      <RadarCard webLine="near.webOnly" />
       <Button
-        variant="secondary"
+        variant={primary ? "primary" : "secondary"}
         onCoral={onCoral}
         label={ping.kind === "busy" ? t("near.pinging") : t("near.ping")}
-        disabled={!live || count === 0 || ping.kind === "busy"}
+        disabled={!live || s.peers.length === 0 || ping.kind === "busy"}
         onClick={() => void doPing()}
       />
       {ping.kind === "done" ? (
@@ -109,26 +126,103 @@ export function NearbySection({ onCoral }: { onCoral: boolean }) {
 }
 
 /**
- * Asked once, as the app starts, inside the native app only. "Allow" starts
- * the radio, which is what makes iOS show its own Bluetooth / Local Network
- * prompts. PASAbi never switches Bluetooth on itself (CLAUDE.md); it asks.
+ * Receive by Bluetooth. Listening needs no tap: while PASAbi is open with
+ * Bluetooth on, any nearby phone's ping lands here through the one ingest
+ * path. This shows that it is waiting, and what the last ping brought.
  */
-export function BluetoothAsk() {
+export function NearbyReceive() {
   const t = useT();
   const s = nearby.use();
-  const asked = nearbyAsked.use();
-  if (!s.available || asked) return null;
+  const last = inbox.use();
+  const live = s.available && s.running;
+  return (
+    <section className="stack gap3" aria-labelledby="near-recv-title">
+      <h2 id="near-recv-title" className="heading">
+        {t("near.title")}
+      </h2>
+      <RadarCard webLine="near.webOnlyRecv" />
+      {live ? (
+        <p className="body strong" role="status">
+          {last
+            ? t("near.gotFrom", { n: last.received, m: last.added, time: clock(last.at) })
+            : t("near.waiting")}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+/**
+ * Asked at every launch until both are on (team decision, 2026-09-30).
+ * - Bluetooth (native app): "Allow" asks iOS, which shows its permission
+ *   prompt, or its own "Turn On Bluetooth" alert when it is off.
+ * - Location (everywhere): "Allow" raises the location prompt.
+ * Nothing is switched on by the app (CLAUDE.md); it only asks. "Not now"
+ * hides the sheet until the next launch.
+ */
+export function StartupAsk() {
+  const t = useT();
+  const s = nearby.use();
+  const bt = bluetooth.use();
+  const loc = location.use();
+  const [dismissed, setDismissed] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const btNeeded = s.available && bt !== "on" && bt !== "unsupported";
+  const locNeeded = loc === "prompt" || loc === "denied";
+  if (dismissed || (!btNeeded && !locNeeded) || bt === "unknown" || loc === "unknown") return null;
+
+  const allow = async () => {
+    setBusy(true);
+    try {
+      if (btNeeded) await allowBluetooth();
+      if (loc === "prompt") await requestLocation();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const btStatus = !s.available
+    ? t("start.webBt")
+    : bt === "on"
+      ? t("start.on")
+      : bt === "unauthorized"
+        ? t("start.btDenied")
+        : bt === "off"
+          ? t("start.btOff")
+          : t("start.btWhy");
+  const locStatus =
+    loc === "granted"
+      ? t("start.on")
+      : loc === "denied"
+        ? t("start.locDenied")
+        : loc === "unavailable"
+          ? t("start.locNone")
+          : t("start.locWhy");
+  // Only offer "Allow" when a tap can still change something.
+  const canAsk = btNeeded || loc === "prompt";
+
   return (
     <div className="scrim">
-      <div className="sheet" role="dialog" aria-modal="true" aria-labelledby="bt-title">
-        <h2 id="bt-title" className="heading">
-          {t("bt.title")}
+      <div className="sheet" role="dialog" aria-modal="true" aria-labelledby="start-title">
+        <h2 id="start-title" className="heading">
+          {t("start.title")}
         </h2>
-        <p className="body">{t("bt.body")}</p>
-        <p className="caption ink2">{t("bt.hint")}</p>
-        <Button label={t("bt.allow")} onClick={() => void answerNearbyAsk(true)} />
+        <p className="body">{t("start.body")}</p>
+        <dl className="facts body" style={{ margin: 0, padding: 0, border: 0 }}>
+          <dt>{t("start.bt")}</dt>
+          <dd>{btStatus}</dd>
+          <dt>{t("start.loc")}</dt>
+          <dd>{locStatus}</dd>
+        </dl>
+        {canAsk ? <Button label={t("start.allow")} disabled={busy} onClick={() => void allow()} /> : null}
         <div>
-          <Button variant="quiet" resident label={t("bt.later")} onClick={() => void answerNearbyAsk(false)} />
+          <Button
+            variant="quiet"
+            resident
+            label={canAsk ? t("start.later") : t("start.continue")}
+            onClick={() => setDismissed(true)}
+          />
         </div>
       </div>
     </div>
