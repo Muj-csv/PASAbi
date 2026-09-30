@@ -47,16 +47,35 @@
   box-sizing: border-box;
 }
 
+/*
+ * Dynamic Type (DESIGN_BRIEF §3, IMPLEMENTATION §6: never block text
+ * scaling). Every font size below is in rem off this root: 17px (1rem) at
+ * the default iOS text size, larger when the person has raised it in
+ * Settings. `-apple-system-body` is Apple-only; elsewhere the 17px stays.
+ * Touch targets and layout widths stay in px on purpose.
+ */
+html {
+  font-size: 17px;
+}
+@supports (font: -apple-system-body) {
+  html {
+    font: -apple-system-body;
+  }
+}
+
 html,
 body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--system);
-  font-size: 17px;
-  line-height: 22px;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--system);
+  font-size: 1rem;
+  line-height: 1.2941rem;
 }
 
 #root {
@@ -112,30 +131,30 @@ a {
 .display {
   font-family: var(--display);
   font-weight: 800;
-  font-size: 44px;
-  line-height: 48px;
+  font-size: 2.5882rem;
+  line-height: 2.8235rem;
 }
 .title {
-  font-size: 28px;
-  line-height: 34px;
+  font-size: 1.6471rem;
+  line-height: 2rem;
   font-weight: 600;
 }
 .heading {
-  font-size: 20px;
-  line-height: 25px;
+  font-size: 1.1765rem;
+  line-height: 1.4706rem;
   font-weight: 600;
 }
 .body {
-  font-size: 17px;
-  line-height: 22px;
+  font-size: 1rem;
+  line-height: 1.2941rem;
 }
 .small {
-  font-size: 15px;
-  line-height: 20px;
+  font-size: 0.8824rem;
+  line-height: 1.1765rem;
 }
 .caption {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 0.7647rem;
+  line-height: 1.0588rem;
 }
 .num {
   font-variant-numeric: tabular-nums;
@@ -225,8 +244,8 @@ a {
   min-height: var(--touch);
   padding: var(--s3) var(--side);
   padding-top: calc(var(--s3) + env(safe-area-inset-top));
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 0.7647rem;
+  line-height: 1.0588rem;
   background: var(--surface);
   color: var(--ink);
 }
@@ -249,7 +268,7 @@ a {
   border: 0;
   background: none;
   padding: 0;
-  font-size: 13px;
+  font-size: 0.7647rem;
   font-weight: 600;
 }
 .band .lang .off {
@@ -266,7 +285,7 @@ a {
   padding: 0 var(--s4);
   border-radius: var(--r-control);
   border: 0;
-  font-size: 17px;
+  font-size: 1rem;
   font-weight: 700;
   text-decoration: none;
   width: 100%;
@@ -307,7 +326,7 @@ a {
 .btn.small {
   min-height: var(--touch);
   width: auto;
-  font-size: 15px;
+  font-size: 0.8824rem;
 }
 .btn:disabled {
   background: var(--surface);
@@ -315,6 +334,13 @@ a {
   border-color: var(--surface);
   cursor: default;
   opacity: 1;
+}
+/* On a coral page the outline button would otherwise look live when off. */
+.btn.secondary.on-coral:disabled {
+  background: transparent;
+  border-color: var(--ink);
+  color: var(--ink);
+  opacity: 0.4;
 }
 .btn.quiet:disabled {
   background: none;
@@ -330,7 +356,7 @@ a {
   border: 0;
   border-radius: var(--r-block);
   padding: var(--s4);
-  height: 104px;
+  min-height: 104px; /* grows with Dynamic Type */
   text-align: left;
   text-decoration: none;
   width: 100%;
@@ -341,7 +367,7 @@ a {
 .block.coral {
   background: var(--coral);
   color: var(--on-coral);
-  height: 176px;
+  min-height: 176px;
   padding: 20px;
 }
 .block.ballpen {
@@ -353,17 +379,17 @@ a {
   color: var(--on-fill);
 }
 .block .label {
-  font-size: 20px;
-  line-height: 25px;
+  font-size: 1.1765rem;
+  line-height: 1.4706rem;
   font-weight: 800;
 }
 .block.coral .label {
-  font-size: 34px;
-  line-height: 40px;
+  font-size: 2rem;
+  line-height: 2.3529rem;
 }
-.block .sub {
-  font-size: 15px;
-  line-height: 20px;
+.block .block-sub {
+  font-size: 0.8824rem;
+  line-height: 1.1765rem;
   font-weight: 500;
 }
 .block:disabled {
@@ -384,8 +410,8 @@ a {
 .wordmark {
   font-family: var(--display);
   font-weight: 900;
-  font-size: 32px;
-  line-height: 36px;
+  font-size: 1.8824rem;
+  line-height: 2.1176rem;
 }
 
 /* ---------------------------------------------------------------- Slip + stamps */
@@ -418,8 +444,8 @@ a.slip:active {
   border: 2px solid currentColor;
   border-radius: var(--r-stamp);
   padding: 2px 6px;
-  font-size: 13px;
-  line-height: 16px;
+  font-size: 0.7647rem;
+  line-height: 0.9412rem;
   font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase; /* the only caps in the app */
@@ -482,8 +508,8 @@ a.slip:active {
 .ledger-row .rank {
   font-family: var(--display);
   font-weight: 800;
-  font-size: 20px;
-  line-height: 25px;
+  font-size: 1.1765rem;
+  line-height: 1.4706rem;
   text-align: center;
   color: var(--ballpen);
 }
@@ -514,9 +540,17 @@ a.slip:active {
 .sub {
   color: var(--sub, var(--ink2));
 }
+/* ink3 on ballpen-tint is 3.76:1, under AA. An old row that is also
+   changed keeps ink2 (7.34:1); "old" still reads from the ○ glyph, the
+   word and "May have changed.", never from colour alone. */
+.ledger-row.changed.fresh-stale,
+.ledger-row.changed .rank.dim {
+  color: var(--ink2);
+  --sub: var(--ink2);
+}
 .change-mark {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 0.7647rem;
+  line-height: 1.0588rem;
   font-weight: 700;
   color: var(--ballpen);
   animation: fade 200ms ease-out both;
@@ -539,14 +573,14 @@ a.slip:active {
 .cov-row .dots {
   font-family: var(--display);
   font-weight: 900;
-  font-size: 20px;
+  font-size: 1.1765rem;
   letter-spacing: 2px;
 }
 .chip {
   justify-self: end;
   white-space: nowrap;
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 0.7647rem;
+  line-height: 1.0588rem;
   padding: var(--s1) var(--s2);
   border-radius: var(--r-stamp);
 }
@@ -577,7 +611,7 @@ a.slip:active {
   background: none;
   padding: 0;
   color: var(--ballpen);
-  font-size: 17px;
+  font-size: 1rem;
   text-decoration: none;
 }
 .back-link.resident {
@@ -625,8 +659,8 @@ a.slip:active {
   justify-content: space-between;
   padding: var(--s2) 0;
   border-bottom: 1px solid var(--rule);
-  font-size: 15px;
-  line-height: 20px;
+  font-size: 0.8824rem;
+  line-height: 1.1765rem;
 }
 .gap-line {
   display: grid;
@@ -651,7 +685,7 @@ a.slip:active {
   border-bottom: 1px solid var(--rule);
 }
 .log .time {
-  font-size: 15px;
+  font-size: 0.8824rem;
   font-weight: 700;
   color: var(--ballpen);
   font-variant-numeric: tabular-nums;
@@ -684,8 +718,8 @@ a.slip:active {
   justify-content: center;
   gap: var(--s1);
   min-height: var(--touch);
-  font-size: 11px;
-  line-height: 13px;
+  font-size: 0.6471rem;
+  line-height: 0.7647rem;
   font-weight: 600;
   color: var(--ink2);
   text-decoration: none;
@@ -715,7 +749,7 @@ a.slip:active {
   border: 1px solid var(--ink);
   border-radius: var(--r-control);
   background: var(--paper);
-  font-size: 17px;
+  font-size: 1rem;
   width: 100%;
 }
 textarea.input {
@@ -725,7 +759,7 @@ textarea.input {
 .input.pin {
   font-family: var(--display);
   font-weight: 800;
-  font-size: 32px;
+  font-size: 1.8824rem;
   letter-spacing: 12px;
   text-align: center;
 }
@@ -743,7 +777,7 @@ textarea.input {
   border: 1px solid var(--ink);
   border-radius: var(--r-control);
   background: var(--paper);
-  font-size: 17px;
+  font-size: 1rem;
   font-weight: 600;
   text-align: left;
 }
@@ -755,7 +789,7 @@ textarea.input {
 .progress-dots {
   font-family: var(--display);
   font-weight: 900;
-  font-size: 20px;
+  font-size: 1.1765rem;
   letter-spacing: 4px;
 }
 .stepper {
@@ -770,7 +804,7 @@ textarea.input {
   border-radius: var(--r-control);
   border: 2px solid var(--ink);
   background: var(--paper);
-  font-size: 28px;
+  font-size: 1.6471rem;
   font-weight: 600;
 }
 .segmented {
@@ -804,7 +838,7 @@ textarea.input {
   border: 1px solid var(--ink);
   border-radius: var(--r-control);
   background: var(--paper);
-  font-size: 15px;
+  font-size: 0.8824rem;
 }
 .filter-chips button[aria-pressed="true"] {
   background: var(--ink);
@@ -923,6 +957,32 @@ dialog.confirm::backdrop {
     linear-gradient(var(--c), var(--c)) bottom right / 4px 28px;
   background-repeat: no-repeat;
 }
+/* NearbyRadar (D-033): rings are ruling, phones in range are ballpen
+   (information), this phone is ink. Static: no sweep, no pulse (§8). */
+.radar {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 1;
+  display: block;
+}
+.radar .ring {
+  fill: none;
+  stroke: var(--rule);
+  stroke-width: 2;
+}
+.radar .me {
+  fill: var(--ink);
+}
+.radar .peer {
+  fill: var(--ballpen);
+}
+.radar.off .ring {
+  stroke-dasharray: 4 6;
+}
+.radar.off .me {
+  fill: var(--ink3);
+}
+
 .progress {
   height: 8px;
   border-radius: var(--r-stamp);

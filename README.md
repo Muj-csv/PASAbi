@@ -35,7 +35,7 @@ At the barangay hall or evacuation centre, a **station** device shows the whole 
 | Phone-to-phone exchange by QR code: paged, most urgent first, with a receipt (works in airplane mode, any two phones with cameras) | Built; not yet tested on iPhones |
 | Installable offline app: add to the iPhone Home Screen, opens and saves with no signal (PWA rewrite, React + Vite, in `web/`) | Built (W1–W4): every resident and station screen from the design package, offline shell and IndexedDB store; not yet tested on iPhones |
 | AI-drafted report from voice or text, always confirmed by the person; the form still works offline without it | Planned (W6, stretch) |
-| Phone-to-phone exchange over Bluetooth / Wi-Fi (Multipeer on iOS, Nearby on Android) | Dropped: not possible from a browser (ADR-009) |
+| Phone-to-phone exchange over Bluetooth / Wi-Fi: a radar of nearby phones and one **Ping nearby** tap to pass to all of them, under the QR on Pass on (native iPhone app, Multipeer) | Built, not yet run on a device: needs an Apple Developer account for the native build (`native/README.md`). The web app shows the section but says Bluetooth needs the app |
 | On-device incident engine: grouping, corroboration, urgency with explanation | Done |
 | Station mode: situation board, acknowledge / resolve, "what changed" | Done |
 | Honest status for the reporter: saved on this phone → passed to another phone → reached a station → uploaded, and never "responders received it" | Done (set by QR receipts; radio sync hook ready for later) |

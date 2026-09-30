@@ -108,8 +108,10 @@ export function Mine() {
           message={t("undo.deleted")}
           onUndo={() => setPendingDelete(null)}
           onCommit={() => {
+            // `id` is this bar's own item. A second Delete inside the window
+            // swaps the bar, which commits this one; don't clear the new one.
             const id = pendingDelete;
-            setPendingDelete(null);
+            setPendingDelete((current) => (current === id ? null : current));
             void deleteOwnObservation(id);
           }}
         />

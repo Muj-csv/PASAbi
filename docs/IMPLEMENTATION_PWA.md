@@ -113,6 +113,10 @@ Do **one phase at a time**, in order. At the end of each phase:
   - the W3 two-phone acceptance
 - Not built: `/sim` port, S3 as its own screen (expected areas live on S4), swipe-to-delete (a visible Delete instead).
 
+**D-033 (2026-09-30): Bluetooth pass-on**, the plan's "optional native enhancement" (§3.4, §23A.8).
+- The UI is on Pass on, the protocol is tested on the mock network, and the iOS plugin is in `native/`.
+- It needs an Apple Developer account and a Mac or cloud Mac to build. Until then, QR is the only live path, and the demo stays QR.
+
 ### W0: Docs and rules
 Import the design package and the plan into `docs/`, write this file, amend `CLAUDE.md`, and record D-028 to D-032, ADR-009 and ADR-010.
 

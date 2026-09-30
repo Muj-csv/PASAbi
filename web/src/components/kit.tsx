@@ -156,7 +156,7 @@ export function ActionBlock({
       <Icon name={icon} size={big ? 36 : 28} />
       <span className="stack gap1">
         <span className="label">{label}</span>
-        {sub ? <span className="sub">{sub}</span> : null}
+        {sub ? <span className="block-sub">{sub}</span> : null}
       </span>
     </>
   );
@@ -345,7 +345,11 @@ export function CoverageRow({ c }: { c: AreaCoverage }) {
 
 // ------------------------------------------------------------ UndoBar
 
-/** "Resolved. Undo": 5 s, then commits. Replaces a confirm for reversible actions. */
+/**
+ * "Resolved. Undo": commits after 5 s, or at once if the bar goes away
+ * (the user navigated off). Only tapping Undo cancels. Leaving the screen
+ * must never silently drop an action the screen already announced.
+ */
 export function UndoBar({
   message,
   onUndo,
@@ -357,17 +361,39 @@ export function UndoBar({
 }) {
   const t = useT();
   const commit = useRef(onCommit);
+  const settled = useRef(false);
+  const flush = useRef<number | null>(null);
   useEffect(() => {
     commit.current = onCommit;
   });
   useEffect(() => {
-    const id = setTimeout(() => commit.current(), 5000);
-    return () => clearTimeout(id);
+    // Remounted (React StrictMode's dev double-mount): cancel the flush the
+    // simulated unmount scheduled, and keep waiting.
+    if (flush.current !== null) clearTimeout(flush.current);
+    const id = window.setTimeout(() => {
+      settled.current = true;
+      commit.current();
+    }, 5000);
+    return () => {
+      clearTimeout(id);
+      // Deferred a tick so a StrictMode remount can cancel it; a real
+      // unmount lets it run.
+      if (!settled.current) {
+        flush.current = window.setTimeout(() => {
+          settled.current = true;
+          commit.current();
+        }, 0);
+      }
+    };
   }, []);
+  const undo = () => {
+    settled.current = true;
+    onUndo();
+  };
   return (
     <div className="undo-bar" role="status">
       <span>{message}</span>
-      <button onClick={onUndo}>{t("undo")}</button>
+      <button onClick={undo}>{t("undo")}</button>
     </div>
   );
 }

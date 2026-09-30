@@ -74,7 +74,6 @@ const en = {
   "slip.grouped": "Grouped with reports from {n} other phones.",
   "slip.grouped.one": "Grouped with a report from 1 other phone.", // added
   "slip.missing": "This report is no longer on this phone.", // added
-  "slip.people": "{n} people", // added
   "stamp.saved": "Saved",
   "stamp.passed": "Passed on",
   "stamp.station": "At station",
@@ -176,6 +175,7 @@ const en = {
   "ev.reports": "{n} reports",
   "ev.report": "1 report",
   "ev.people": "{n} people",
+  "ev.person": "1 person", // added: singular
   "cov.title": "Coverage",
   "cov.high": "Many phones",
   "cov.limited": "Few phones",
@@ -207,7 +207,6 @@ const en = {
   "why.more": "{n} more phones", // added
   "why.more.one": "1 more phone", // added
   "why.noMore": "No other phones", // added
-  "why.people": "{n} people", // added
   "why.noPeople": "No people count", // added
   "why.unacked": "Not acknowledged", // added
   "why.acked": "Acknowledged", // added
@@ -248,6 +247,27 @@ const en = {
   "station.leave": "Leave station mode",
   "tab.ledger": "Ledger",
   "tab.station": "Station",
+
+  // Nearby by Bluetooth (D-033, added)
+  "near.title": "Nearby phones",
+  "near.inRange": "{n} phones in range",
+  "near.inRange.one": "1 phone in range",
+  "near.none": "No phones in range yet.",
+  "near.range": "Shows who is in range, not how far.",
+  "near.webOnly": "Bluetooth needs the PASAbi app. Use the QR above.",
+  "near.off": "Bluetooth is off for PASAbi.",
+  "near.turnOn": "Turn on Bluetooth",
+  "near.ping": "Ping nearby",
+  "near.pinging": "Passing on",
+  "near.done": "Passed on to {n} phones",
+  "near.done.one": "Passed on to 1 phone",
+  "near.failed": "Couldn't reach them. Try again.",
+  "near.me": "This phone",
+  "bt.title": "Pass on by Bluetooth?",
+  "bt.body": "PASAbi can pass reports to phones near you. No internet needed.",
+  "bt.hint": "If Bluetooth is off, turn it on in Settings.",
+  "bt.allow": "Allow Bluetooth",
+  "bt.later": "Not now",
 
   // Responder view (W1)
   "resp.since": "Since last sync", // added
@@ -324,7 +344,6 @@ const fil: Record<CopyKey, string> = {
   "slip.grouped": "Kasama ng ulat mula sa {n} pang phone.",
   "slip.grouped.one": "Kasama ng ulat mula sa 1 pang phone.",
   "slip.missing": "Wala na sa phone na ito ang ulat.",
-  "slip.people": "{n} tao",
   "stamp.saved": "Naka-save",
   "stamp.passed": "Naipasa",
   "stamp.station": "Nasa istasyon",
@@ -422,6 +441,7 @@ const fil: Record<CopyKey, string> = {
   "ev.reports": "{n} ulat",
   "ev.report": "1 ulat",
   "ev.people": "{n} tao",
+  "ev.person": "1 tao",
   "cov.title": "Saklaw",
   "cov.high": "Maraming phone",
   "cov.limited": "Kaunting phone",
@@ -452,7 +472,6 @@ const fil: Record<CopyKey, string> = {
   "why.more": "{n} pang phone",
   "why.more.one": "1 pang phone",
   "why.noMore": "Walang ibang phone",
-  "why.people": "{n} tao",
   "why.noPeople": "Walang bilang ng tao",
   "why.unacked": "Hindi pa natatanggap",
   "why.acked": "Natanggap",
@@ -492,6 +511,26 @@ const fil: Record<CopyKey, string> = {
   "station.leave": "Umalis sa station mode",
   "tab.ledger": "Talaan",
   "tab.station": "Istasyon",
+
+  "near.title": "Mga phone sa malapit",
+  "near.inRange": "{n} phone sa malapit",
+  "near.inRange.one": "1 phone sa malapit",
+  "near.none": "Wala pang phone sa malapit.",
+  "near.range": "Kung sino ang abot, hindi kung gaano kalayo.",
+  "near.webOnly": "Kailangan ng PASAbi app para sa Bluetooth. Gamitin ang QR sa itaas.",
+  "near.off": "Naka-off ang Bluetooth para sa PASAbi.",
+  "near.turnOn": "Buksan ang Bluetooth",
+  "near.ping": "Ipasa sa malapit",
+  "near.pinging": "Ipinapasa",
+  "near.done": "Naipasa sa {n} phone",
+  "near.done.one": "Naipasa sa 1 phone",
+  "near.failed": "Hindi sila maabot. Subukan ulit.",
+  "near.me": "Itong phone",
+  "bt.title": "Ipasa gamit ang Bluetooth?",
+  "bt.body": "Maipapasa ng PASAbi ang ulat sa mga phone sa malapit. Walang internet.",
+  "bt.hint": "Kung naka-off ang Bluetooth, buksan ito sa Settings.",
+  "bt.allow": "Payagan ang Bluetooth",
+  "bt.later": "Mamaya na",
 
   "resp.since": "Mula huling sync",
   "resp.nothing": "Walang bago mula huling sync.",

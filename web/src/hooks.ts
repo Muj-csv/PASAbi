@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { Capacitor } from "@capacitor/core";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   compute,
@@ -11,18 +12,64 @@ import {
 import { live } from "./storage/kv";
 import { nowSeconds } from "./storage/observations";
 
-function onlineSubscribe(l: () => void) {
-  window.addEventListener("online", l);
-  window.addEventListener("offline", l);
-  return () => {
-    window.removeEventListener("online", l);
-    window.removeEventListener("offline", l);
-  };
+/**
+ * "Online" means this phone can reach the internet, not merely that it is
+ * on a network: a barangay Wi-Fi with a dead uplink makes navigator.onLine
+ * true. So a true onLine is confirmed by fetching a tiny file with a
+ * throwaway query, which misses the service-worker cache and must really
+ * cross the network.
+ * ponytail: one probe per 30 s, and on every "online" event; a push-based
+ * signal would need a server we don't have.
+ */
+const reachable = live<boolean>(typeof navigator !== "undefined" ? navigator.onLine : false);
+
+async function probe(): Promise<void> {
+  if (!navigator.onLine) {
+    reachable.set(false);
+    return;
+  }
+  // In the native app (D-033) "/" is inside the app itself and always
+  // answers, so probe the responder database's host instead (any answer,
+  // even an error page, proves the internet is there). With none set, the
+  // phone's own signal is all there is to go on.
+  const native = Capacitor.isNativePlatform();
+  const remote = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+  if (native && !remote) {
+    reachable.set(navigator.onLine);
+    return;
+  }
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), 5000);
+  try {
+    if (native) {
+      await fetch(`${remote}?probe=${Date.now()}`, { mode: "no-cors", cache: "no-store", signal: abort.signal });
+      reachable.set(true);
+      return;
+    }
+    const res = await fetch(`/favicon.png?probe=${Date.now()}`, { cache: "no-store", signal: abort.signal });
+    reachable.set(res.ok);
+  } catch {
+    reachable.set(false);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+let probing = false;
+
+function startProbing(): void {
+  if (probing) return;
+  probing = true;
+  window.addEventListener("online", () => void probe());
+  window.addEventListener("offline", () => reachable.set(false));
+  setInterval(() => void probe(), 30000);
+  void probe();
 }
 
 /** Connection words in the band are always from here; never a modal. */
 export function useOnline(): boolean {
-  return useSyncExternalStore(onlineSubscribe, () => navigator.onLine);
+  useEffect(startProbing, []);
+  return reachable.use();
 }
 
 /**

@@ -16,7 +16,7 @@ import {
 
 import { EvidenceCounts, FactList, GapList, LogEntry, WhyFirst } from "../components/incident";
 import { BackBar, Button, ModeBand, Notice, Stamp, StatusBand, UndoBar } from "../components/kit";
-import { ago, clock, FRESH_GLYPH, FRESH_WORD, ordinal, placeOf, whyLines } from "../design/format";
+import { ago, clock, FRESH_GLYPH, FRESH_WORD, ordinal, peopleText, placeOf, whyLines } from "../design/format";
 import { useT, type T } from "../design/i18n";
 import { Pictogram } from "../design/pictograms";
 import { navigate } from "../router";
@@ -30,7 +30,7 @@ function logLines(timeline: TimelineEntry[], me: string, t: T) {
     if (e.type === "REPORT") {
       const again = seen.has(e.source);
       seen.add(e.source);
-      const detail = [e.people ? t("slip.people", { n: e.people }) : null, e.note ?? null].filter(Boolean).join(" · ");
+      const detail = [e.people ? peopleText(t, e.people) : null, e.note ?? null].filter(Boolean).join(" · ");
       return {
         id: e.id,
         time: clock(e.created_at),
@@ -67,7 +67,12 @@ export function IncidentDetail({
 
   const view = useMemo(() => {
     const incidents = compute(held, now);
-    const incident = incidents.find((i) => i.key === incidentKey);
+    // The key is the group's smallest observation ID, so a newly arrived
+    // report can re-key the incident. The report behind the old key is
+    // still a member: follow it instead of saying "this incident changed".
+    const incident =
+      incidents.find((i) => i.key === incidentKey) ??
+      incidents.find((i) => i.observationIds.includes(incidentKey));
     if (!incident) return null;
     const open = incidents.filter((i) => i.status !== "resolved");
     return {
@@ -75,7 +80,7 @@ export function IncidentDetail({
       incidents,
       evidence: evidenceOf(incident, held, now),
       gaps: gapsFor(incident, incidents, held),
-      rank: open.findIndex((i) => i.key === incidentKey) + 1,
+      rank: open.findIndex((i) => i.key === incident.key) + 1,
       openCount: open.length,
     };
   }, [held, now, incidentKey]);
@@ -210,9 +215,12 @@ export function IncidentDetail({
           onUndo={() => setResolving(false)}
           onCommit={() => {
             // Created only after the undo window: observations are immutable.
-            void addStatusObservation("RESOLVE", i.observationIds, deviceIdSync()).then(() =>
-              navigate("/station", { replace: true }),
-            );
+            // Also runs if the operator left this screen early; then don't
+            // yank them back from wherever they went.
+            const here = location.pathname;
+            void addStatusObservation("RESOLVE", i.observationIds, deviceIdSync()).then(() => {
+              if (location.pathname === here) navigate("/station", { replace: true });
+            });
           }}
         />
       ) : null}

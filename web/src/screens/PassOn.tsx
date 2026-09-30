@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { bundlePages, decodeReceipt, encodeBundle, QR_FRAME_INTERVAL_MS } from "@pasabi/core";
 
 import { BackBar, Button, ModeBand, Notice, TabBar } from "../components/kit";
+import { NearbySection } from "../components/nearby";
 import { QrCode, QrScanner, useWakeLock, type CameraState } from "../components/qr";
 import { useT } from "../design/i18n";
 import { navigate } from "../router";
@@ -171,6 +172,9 @@ export function PassOn() {
             </div>
           </>
         )}
+
+        {/* D-033: Bluetooth is the other way to pass on, under the QR. */}
+        {mode === "show" ? <NearbySection onCoral={coral} /> : null}
       </div>
 
       <div className="spacer" />

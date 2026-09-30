@@ -7,7 +7,7 @@ import { compute, propagationFor } from "@pasabi/core";
 import { useState } from "react";
 
 import { Button, Notice, SlipCard, slipStamps, slipStatus, StatusBand } from "../components/kit";
-import { clock } from "../design/format";
+import { clock, peopleText } from "../design/format";
 import { useT } from "../design/i18n";
 import { useNow } from "../hooks";
 import { navigate } from "../router";
@@ -45,7 +45,7 @@ export function Slip({ id, fresh }: { id: string; fresh: boolean }) {
   stamps[0].justEarned = fresh;
 
   const detail = [
-    o.people ? t("slip.people", { n: o.people }) : null,
+    o.people ? peopleText(t, o.people) : null,
     o.note ? `"${o.note}"` : null,
   ]
     .filter(Boolean)

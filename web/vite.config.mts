@@ -22,7 +22,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "autoUpdate",
+      // "prompt": a new build waits instead of reloading the page mid-report
+      // or mid-transfer. main.tsx applies it at a safe moment.
+      registerType: "prompt",
       includeAssets: ["favicon.png", "apple-touch-icon.png"],
       manifest: {
         name: "PASAbi",

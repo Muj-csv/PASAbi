@@ -46,6 +46,11 @@ export function evidenceText(t: T, phones: number, reports: number): [string, st
   ];
 }
 
+/** "1 person" / "3 people". Never "1 people". */
+export function peopleText(t: T, n: number): string {
+  return n === 1 ? t("ev.person") : t("ev.people", { n });
+}
+
 export const FRESH_WORD: Record<Freshness, CopyKey> = {
   fresh: "fresh.fresh",
   aging: "fresh.aging",
@@ -87,7 +92,7 @@ export function whyLines(i: Incident, t: T): { label: string; points: number }[]
       points: b.corroboration,
     },
     {
-      label: i.peopleAffected > 0 ? t("why.people", { n: i.peopleAffected }) : t("why.noPeople"),
+      label: i.peopleAffected > 0 ? peopleText(t, i.peopleAffected) : t("why.noPeople"),
       points: b.people,
     },
     { label: b.unacknowledged > 0 ? t("why.unacked") : t("why.acked"), points: b.unacknowledged },

@@ -192,6 +192,9 @@ This is the whole kit. Build **no other components** without adding them here fi
 | `SlipCard` | R1, R3, R6 | Hairline r20: label + time · category · place · stamp row | Same stamp order everywhere. |
 | `TabBar` | Station | 4 items: Ledger · Pass on · Receive · Station; icon 24 + label 11 | Active: `ink` + 16×4 coral bar. Native tab bar allowed (may use Liquid Glass). |
 | `UndoBar` | S2 after Resolve, R6 after Delete | `ink` fill, white text, "Resolved. Undo" | 5 s, then commits. No modal confirm for Resolve. Delete keeps its confirm (irreversible on peers). |
+| `NearbyRadar` *(added 2026-09-30, D-033)* | R4 Pass on, under the QR | White card r20: 3 `rule` rings, this phone as an `ink` dot at the centre, each phone in range as a `ballpen` dot on the middle ring, evenly spaced | Static: no sweep, no pulse (§8). Position carries no meaning: Multipeer gives no distance or direction, and the caption says so ("Shows who is in range, not how far."). Web build: dashed rings, no dots, and the line "Bluetooth needs the PASAbi app." |
+| `NearbySection` *(added, D-033)* | R4 Pass on | "Nearby phones" heading · NearbyRadar · count line · **Ping nearby** (`secondary`, since the screen's primary stays "Scan their receipt") · result line | Result is "Passed on to N phones" only for phones that finished the exchange; failure is "Couldn't reach them. Try again." |
+| `BluetoothAsk` *(added, D-033)* | App start, native app only, once | Bottom sheet: title · one sentence · hint · [Allow Bluetooth] primary · [Not now] quiet | Asks; never switches Bluetooth on (PRD, CLAUDE.md). "Allow" starts the radio, which raises iOS's own prompts. |
 
 ## 13. Explored and rejected
 
@@ -203,6 +206,9 @@ This is the whole kit. Build **no other components** without adding them here fi
 
 ## 14. Change log
 
+- **2026-09-30, Bluetooth pass-on (D-033).** The team asked for a Street View-style map of nearby phones.
+  - Replaced by `NearbyRadar`: Street View needs internet, maps as hero are forbidden (§11), and Bluetooth gives no direction.
+  - Added `NearbySection` and `BluetoothAsk` to §12.
 - **2026-09-27, lock.** v1 locked as the anchor. Folded in the remaining critique fixes:
   - no ✓ in "Nearby" (it read as "verified")
   - phones semibold in the evidence line
