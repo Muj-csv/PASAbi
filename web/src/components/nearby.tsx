@@ -11,7 +11,7 @@ import { useState } from "react";
 
 import { clock } from "../design/format";
 import { useT } from "../design/i18n";
-import { allowBluetooth, bluetooth, inbox, nearby, pingAll } from "../nearby";
+import { allowBluetooth, bluetooth, inbox, nearby, openBluetoothSettings, pingAll } from "../nearby";
 import { location, requestLocation } from "../permissions";
 
 import { Button, Notice } from "./kit";
@@ -71,8 +71,16 @@ function RadarCard({ webLine }: { webLine: "near.webOnly" | "near.webOnlyRecv" }
       ) : !s.running ? (
         <Notice
           message={bt === "unauthorized" ? t("start.btDenied") : t("near.off")}
-          detail={t("bt.hint")}
-          action={<Button variant="secondary" small label={t("near.turnOn")} onClick={() => void allowBluetooth()} />}
+          detail={bt === "unauthorized" ? undefined : t("bt.hint")}
+          action={
+            bt === "unauthorized" ? (
+              <Button variant="secondary" small label={t("start.openSettings")} onClick={() => void openBluetoothSettings()} />
+            ) : (
+              // Asks iOS again, which shows its own "Turn On Bluetooth"
+              // alert; its Settings button goes straight to Bluetooth.
+              <Button variant="secondary" small label={t("near.turnOn")} onClick={() => void allowBluetooth()} />
+            )
+          }
         />
       ) : null}
     </>
@@ -199,8 +207,9 @@ export function StartupAsk() {
         : loc === "unavailable"
           ? t("start.locNone")
           : t("start.locWhy");
-  // Only offer "Allow" when a tap can still change something.
-  const canAsk = btNeeded || loc === "prompt";
+  // Only offer "Allow" when a tap can still change something. After a
+  // refusal iOS never asks again, so that case gets Open Settings instead.
+  const canAsk = (btNeeded && bt !== "unauthorized") || loc === "prompt";
 
   return (
     <div className="scrim">
@@ -216,6 +225,9 @@ export function StartupAsk() {
           <dd>{locStatus}</dd>
         </dl>
         {canAsk ? <Button label={t("start.allow")} disabled={busy} onClick={() => void allow()} /> : null}
+        {s.available && bt === "unauthorized" ? (
+          <Button variant="secondary" label={t("start.openSettings")} onClick={() => void openBluetoothSettings()} />
+        ) : null}
         <div>
           <Button
             variant="quiet"

@@ -17,6 +17,7 @@ import {
   MultipeerTransport,
   multipeerAvailable,
   onBluetoothState,
+  openAppSettings,
   requestBluetooth,
   type BluetoothState,
 } from "../../packages/transport/multipeer";
@@ -155,10 +156,11 @@ export interface NearbyState {
 export const nearby = live<NearbyState>({ available: false, running: false, peers: [] });
 
 /**
- * What iOS says about Bluetooth for PASAbi. "web" = the browser build,
- * where Bluetooth between phones does not exist at all.
+ * What iOS says about Bluetooth for PASAbi. "unknown" = still loading;
+ * "ask" = never asked on this phone; "web" = the browser build, where
+ * Bluetooth between phones does not exist at all.
  */
-export const bluetooth = live<BluetoothState | "unknown" | "web">("unknown");
+export const bluetooth = live<BluetoothState | "unknown" | "ask" | "web">("unknown");
 
 /** The last batch that arrived by Bluetooth, for the Receive screen. */
 export interface InboxEntry {
@@ -245,6 +247,16 @@ export async function allowBluetooth(): Promise<BluetoothState | "web"> {
   return state;
 }
 
+/** Bluetooth permission refused: send the person to PASAbi's Settings page. */
+export async function openBluetoothSettings(): Promise<void> {
+  if (!multipeerAvailable()) return;
+  try {
+    await openAppSettings();
+  } catch {
+    // Nothing to do: the sheet's words still say where to go.
+  }
+}
+
 /**
  * Boot. In the browser: mark Bluetooth as unavailable. In the native app:
  * follow Bluetooth being switched on and off, and if the person already
@@ -262,4 +274,8 @@ export async function restoreNearby(): Promise<void> {
     if (state === "on") void startNearby();
   });
   if ((await kvGet<boolean>(ALLOWED_KEY)) === true) await allowBluetooth();
+  // First launch: nothing asked yet. The StartupAsk sheet explains, then asks.
+  // (Leaving this "unknown" hid the sheet for good: found by the fake-bridge
+  // startup test, 2026-10-01.)
+  else bluetooth.set("ask");
 }

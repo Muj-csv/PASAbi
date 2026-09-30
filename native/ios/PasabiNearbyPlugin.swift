@@ -16,6 +16,7 @@
 // UNTESTED on a device as of 2026-09-30 (no Apple Developer account yet).
 
 import Foundation
+import UIKit
 import Capacitor
 import CoreBluetooth
 import MultipeerConnectivity
@@ -26,6 +27,7 @@ public class PasabiNearbyPlugin: CAPPlugin, CAPBridgedPlugin {
     public let jsName = "PasabiNearby"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "requestBluetooth", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "openSettings", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "start", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "stop", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "send", returnType: CAPPluginReturnPromise),
@@ -33,13 +35,21 @@ public class PasabiNearbyPlugin: CAPPlugin, CAPBridgedPlugin {
 
     // Only used to ASK: the first CBCentralManager raises the Bluetooth
     // permission prompt, and ShowPowerAlert makes iOS itself offer "Turn On
-    // Bluetooth" when it is off. The app never switches Bluetooth on.
+    // Bluetooth" when it is off. iOS gives apps no way to switch Bluetooth
+    // on (and CLAUDE.md forbids trying): the person flips it, we ask.
     private var central: CBCentralManager?
     private var pendingBluetooth: [CAPPluginCall] = []
 
     /** Resolves { state: "on" | "off" | "unauthorized" | "unsupported" }. */
     @objc func requestBluetooth(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
+            if let central = self.central, central.state == .poweredOff {
+                // iOS shows its "Turn On Bluetooth" alert when a manager is
+                // created while Bluetooth is off, so every Allow tap gets a
+                // fresh one. Its Settings button opens Bluetooth settings.
+                central.delegate = nil
+                self.central = nil
+            }
             if let central = self.central, central.state != .unknown, central.state != .resetting {
                 call.resolve(["state": Self.describe(central.state)])
                 return
@@ -51,6 +61,23 @@ public class PasabiNearbyPlugin: CAPPlugin, CAPBridgedPlugin {
                     queue: nil,
                     options: [CBCentralManagerOptionShowPowerAlertKey: true]
                 )
+            }
+        }
+    }
+
+    /**
+     * Opens PASAbi's own page in Settings: where Bluetooth PERMISSION is
+     * given back after "Don't Allow". The public API goes no further; iOS
+     * has no supported link straight to the Bluetooth switch.
+     */
+    @objc func openSettings(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            guard let url = URL(string: UIApplication.openSettingsURLString) else {
+                call.reject("settings unavailable")
+                return
+            }
+            UIApplication.shared.open(url) { opened in
+                opened ? call.resolve() : call.reject("could not open Settings")
             }
         }
     }
