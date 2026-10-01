@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { StartupAsk } from "./components/nearby";
+import { StartupAsk } from "./components/startup";
 import { useNow } from "./hooks";
 import { navigate, usePath } from "./router";
 import { Home } from "./screens/Home";
@@ -45,7 +45,7 @@ export function App() {
   return (
     <>
       <Page />
-      {/* Bluetooth + Location, asked at every launch until on (2026-09-30). */}
+      {/* Location, asked at every launch until on (2026-09-30). */}
       <StartupAsk />
     </>
   );

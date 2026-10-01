@@ -1,4 +1,3 @@
-import { Capacitor } from "@capacitor/core";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -28,24 +27,9 @@ async function probe(): Promise<void> {
     reachable.set(false);
     return;
   }
-  // In the native app (D-033) "/" is inside the app itself and always
-  // answers, so probe the responder database's host instead (any answer,
-  // even an error page, proves the internet is there). With none set, the
-  // phone's own signal is all there is to go on.
-  const native = Capacitor.isNativePlatform();
-  const remote = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-  if (native && !remote) {
-    reachable.set(navigator.onLine);
-    return;
-  }
   const abort = new AbortController();
   const timer = setTimeout(() => abort.abort(), 5000);
   try {
-    if (native) {
-      await fetch(`${remote}?probe=${Date.now()}`, { mode: "no-cors", cache: "no-store", signal: abort.signal });
-      reachable.set(true);
-      return;
-    }
     const res = await fetch(`/favicon.png?probe=${Date.now()}`, { cache: "no-store", signal: abort.signal });
     reachable.set(res.ok);
   } catch {

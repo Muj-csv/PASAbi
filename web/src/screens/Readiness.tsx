@@ -12,7 +12,6 @@ import { clock } from "../design/format";
 import { useT } from "../design/i18n";
 import { Icon } from "../design/pictograms";
 import { offlineReady } from "../hooks";
-import { bluetooth } from "../nearby";
 import { location } from "../permissions";
 import { persisted } from "./Settings";
 import { station, expectedAreas } from "../storage/station";
@@ -39,7 +38,6 @@ export function Readiness() {
   const ready = offlineReady.use();
   const kept = persisted.use();
   const loc = location.use();
-  const bt = bluetooth.use();
   const s = station.use();
   const areas = expectedAreas.use();
   const uploaded = lastUpload.use();
@@ -51,11 +49,6 @@ export function Readiness() {
     { label: t("ready.name"), ok: !!s.name, detail: s.name ?? t("ready.nameFix") },
     { label: t("station.expected"), ok: areas.length > 0, detail: areas.length > 0 ? areas.join(" · ") : t("ready.areasFix") },
     { label: t("start.loc"), ok: loc === "granted", detail: loc === "granted" ? t("start.on") : t("start.locWhy") },
-    {
-      label: t("start.bt"),
-      ok: bt === "on",
-      detail: bt === "web" ? t("start.webBt") : bt === "on" ? t("start.on") : t("start.btOff"),
-    },
     { label: t("ready.qr"), ok: qr, detail: qr ? t("ready.qrOk") : t("ready.qrFail") },
     { label: t("station.lastUpload"), ok: uploaded !== null, detail: uploaded ? clock(uploaded) : t("station.never") },
   ];

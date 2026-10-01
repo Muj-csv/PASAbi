@@ -192,9 +192,7 @@ This is the whole kit. Build **no other components** without adding them here fi
 | `SlipCard` | R1, R3, R6 | Hairline r20: label + time · category · place · stamp row | Same stamp order everywhere. |
 | `TabBar` | Station | 4 items: Ledger · Pass on · Receive · Station; icon 24 + label 11 | Active: `ink` + 16×4 coral bar. Native tab bar allowed (may use Liquid Glass). |
 | `UndoBar` | S2 after Resolve, R6 after Delete | `ink` fill, white text, "Resolved. Undo" | 5 s, then commits. No modal confirm for Resolve. Delete keeps its confirm (irreversible on peers). |
-| `NearbyRadar` *(added 2026-09-30, D-033)* | R4 Pass on, under the QR | White card r20: 3 `rule` rings, this phone as an `ink` dot at the centre, each phone in range as a `ballpen` dot on the middle ring, evenly spaced | Static: no sweep, no pulse (§8). Position carries no meaning: Multipeer gives no distance or direction, and the caption says so ("Shows who is in range, not how far."). Web build: dashed rings, no dots, and the line "Bluetooth needs the PASAbi app." |
-| `NearbySection` *(added, D-033)* | R4 Pass on: above the QR with Ping as the primary where Bluetooth exists (native); under the QR, secondary, in the browser | "Nearby phones" heading · NearbyRadar · count line · **Ping nearby** (`secondary`, since the screen's primary stays "Scan their receipt") · result line | Result is "Passed on to N phones" only for phones that finished the exchange; failure is "Couldn't reach them. Try again." |
-| `StartupAsk` *(added, D-033; replaces BluetoothAsk 2026-09-30)* | Every launch until on (web + native) | Bottom sheet: title · one line · Bluetooth row · Location row (label · status) · [Allow] primary · [Not now] quiet | Asks; never switches anything on. Bluetooth row in the browser reads "Needs the PASAbi app. QR works here." Allow asks iOS for Bluetooth (its prompt, or its own Turn On Bluetooth alert) and raises the location prompt. |
+| `StartupAsk` *(added 2026-09-30; location only since D-041)* | Every launch until location is on | Bottom sheet: title · one line · Location row (label · status) · [Allow] primary · [Not now] quiet | Asks; never switches anything on. After a refusal the browser won't ask again, so only [Continue] shows. |
 | `PassportView` *(added 2026-10-01, P2)* | S2 Incident → "Passport" (station and responder) | Title · "Made hh:mm on this phone" · FactList (what, where, status, evidence, seen, freshness, people, spread) · "What might be wrong" · "Haven't heard about" · "Read before acting" (the three caveats) · evidence timeline · Share and export (QR, JSON, CSV, Copy, Print) | Reads on its own when separated from the app (spec §3.3); prints as its PDF (`@media print` hides band, tabs, buttons). QR carries only the supporting observations (D-035). |
 | `TransferLogSection` *(added 2026-10-01, P1)* | R7 Settings, S4 Station | Heading "Field test log" · one caption · "N of M transfers finished" · "Typical time: S s" · [Copy log] [Download] secondary small · [Clear log] quiet, two taps | Local only; never synced. A measuring tool, not a status: no colour, no success words. |
 | `GapsSection` *(added 2026-10-01, P3)* | S1 Ledger, above Coverage | Heading "Information gaps" · "Sweeps in progress" links · per area: name (Heading) · reasons in words (Body, `ink-2`) · "Not seen when checked: …" · [Start sweep] secondary small | Reasons are facts, never a rating. A sweep's "not seen" is shown as what was checked, never as "none". |
@@ -203,7 +201,6 @@ This is the whole kit. Build **no other components** without adding them here fi
 | Upload state line *(added, P5)* | S4 | One Body line: "Getting N ready" / "Sending N" / "Couldn't send N" / "Server accepted N at hh:mm" | Never "responders notified" (BR-017). |
 | "Exact location" switch *(added, P6)* | PassportView, Share and export | Checkbox + one caption | Off by default: exports round to about 100 m. |
 | "Clear this phone" *(added, P6)* | R7 Settings | Heading · caption · [Clear this phone] quiet, two taps | Deletes PASAbi's data on this phone only; peers keep what they got. |
-| `NearbyReceive` *(added, D-033)* | R5 Receive, above the camera | "Nearby phones" · radar card · "Waiting for nearby phones to ping." or "Got N by Bluetooth · M new · hh:mm" | No tap needed: while PASAbi is open, pings arrive on their own through the one ingest path. Browser: one line, "Bluetooth needs the PASAbi app. Scan their QR below." |
 
 ## 13. Explored and rejected
 
@@ -215,6 +212,7 @@ This is the whole kit. Build **no other components** without adding them here fi
 
 ## 14. Change log
 
+- **2026-10-01, QR only (D-041).** Removed `NearbyRadar`, `NearbySection` and `NearbyReceive`. `StartupAsk` asks for location only.
 - **2026-09-30, Bluetooth pass-on (D-033).** The team asked for a Street View-style map of nearby phones.
   - Replaced by `NearbyRadar`: Street View needs internet, maps as hero are forbidden (§11), and Bluetooth gives no direction.
   - Added `NearbySection` and `BluetoothAsk` to §12.

@@ -1,6 +1,5 @@
-// Location at startup (team decision 2026-09-30): ask on launch, next to
-// Bluetooth, instead of waiting for the first report. Works in the browser
-// and in the native app. Never reads the location itself for anything but
+// Location at startup (team decision 2026-09-30): ask on launch instead of
+// waiting for the first report. Never reads the location itself for anything but
 // raising the prompt; reports still get their fix in the report flow.
 
 import { live } from "./storage/kv";

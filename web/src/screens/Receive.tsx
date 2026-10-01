@@ -9,8 +9,6 @@ import { useEffect, useRef, useState } from "react";
 import { BundleAssembler, encodeReceipt } from "@pasabi/core";
 
 import { BackBar, Button, ModeBand, Notice, TabBar } from "../components/kit";
-import { NearbyReceive } from "../components/nearby";
-import { nearby } from "../nearby";
 import { QrCode, QrScanner, useWakeLock, type CameraState } from "../components/qr";
 import { useT } from "../design/i18n";
 import { deviceIdSync } from "../storage/device";
@@ -25,7 +23,6 @@ type Done = { bundleId: string; received: number; added: number };
 export function Receive() {
   const t = useT();
   const isStation = station.use().enabled;
-  const btAvailable = nearby.use().available;
   const assembler = useRef(new BundleAssembler());
   const applying = useRef(false);
   const tip = useRef(0);
@@ -152,9 +149,6 @@ export function Receive() {
       {back}
       <div className="pad stack gap4" style={{ paddingTop: 16, paddingBottom: 24 }}>
         <h1 className="title">{t("recv.title")}</h1>
-        {/* Bluetooth receiving needs no tap: while PASAbi is open, nearby
-            phones' pings land on their own (2026-09-30). The QR is below. */}
-        {btAvailable ? <NearbyReceive /> : <p className="body">{t("near.webOnlyRecv")}</p>}
         <p className="body">{t("recv.aim")}</p>
         {camera === "denied" ? (
           <Notice

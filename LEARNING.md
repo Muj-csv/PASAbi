@@ -197,3 +197,9 @@ Devlog for FirstCommit. One entry per build phase.
 - **Gap reasons stack.** A purok can be both stale and uncertain, and the first test expected one reason. Listing every true fact beats picking a "worst" one, which would be a rating by another name.
 - **The design guard caught the spec's own word again:** an upload phase called "confirmed" became "accepted", which is also more honest. It's the server's acknowledgement, not a person's.
 - **Exports are coarse by default (3 decimals, about 100 m) and drop GPS accuracy.** Exact location is a checkbox someone has to tick. The data on the phone is untouched; only what leaves through Passport is rounded.
+
+## QR only: Bluetooth removed (2026-10-01, D-041)
+
+- **A web app can't do phone-to-phone Bluetooth, and nobody on the team will run the native build.** Code that never runs on a real phone is cost with no benefit, so the wrapper, the plugin, the radar and Ping are gone. QR is the one path, and it works in any browser.
+- **Keeping the radio behind `Transport` (ADR-007) made removal clean.** Engine, ingest and QR were untouched. The only screens that changed were the ones that rendered the radar.
+- **Old field-test logs may hold Bluetooth entries.** `restoreTransferLog` drops them on load, so the summary only counts QR.
