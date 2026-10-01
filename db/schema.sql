@@ -7,7 +7,7 @@
 
 create table if not exists public.observations (
   id                uuid primary key,
-  type              text not null check (type in ('REPORT', 'STATUS')),
+  type              text not null check (type in ('REPORT', 'STATUS', 'CHECK')),
   category          text,
   people            integer,
   note              text,

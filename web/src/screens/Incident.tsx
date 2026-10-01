@@ -19,11 +19,11 @@ import { BackBar, Button, ModeBand, Notice, Stamp, StatusBand, UndoBar } from ".
 import { ago, clock, FRESH_GLYPH, FRESH_WORD, ordinal, peopleText, placeOf, whyLines } from "../design/format";
 import { useT, type T } from "../design/i18n";
 import { Pictogram } from "../design/pictograms";
-import { navigate } from "../router";
+import { Link, navigate } from "../router";
 import { deviceIdSync } from "../storage/device";
 import { addStatusObservation } from "../storage/observations";
 
-function logLines(timeline: TimelineEntry[], me: string, t: T) {
+export function logLines(timeline: TimelineEntry[], me: string, t: T) {
   const seen = new Set<string>();
   return timeline.map((e) => {
     const src = `#${e.source.toUpperCase()}`;
@@ -169,6 +169,10 @@ export function IncidentDetail({
           <span className="body ink2">{placeOf(i, t)}</span>
         </div>
         <p className="small ink2">{statusLine}</p>
+        {/* P2: the portable document for this incident (spec §3). */}
+        <Link to={(readOnly ? "/responder/incident/" : "/station/incident/") + i.key + "/passport"} className="body">
+          {t("pp.open")}
+        </Link>
         {acked && lastAck ? (
           <div style={{ paddingTop: 4 }}>
             <Stamp

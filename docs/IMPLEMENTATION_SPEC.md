@@ -56,7 +56,14 @@ Rules for every phase (from `CLAUDE.md` and spec §19):
 - P0 done: decisions accepted.
 - P1 software done: the field-test log on every phone (`web/src/storage/transferLog.ts`), exported from Settings and S4; protocol in `docs/FIELD_TEST.md` §9.
 - P1 field runs are still to do, by people with iPhones.
-- Next: P2 Incident Passport.
+- P2 done: `packages/core/Passport.ts` (passportOf plus JSON, CSV and API exporters, with round-trip tests) and `web/src/screens/Passport.tsx` (read, print or PDF, QR, download, copy), linked from S2 and the responder view.
+- P3 done: `packages/core/AreaGaps.ts` (per-area reasons: no observations, stale, single source, uncertain, and "not seen when checked" from CHECK observations, D-037), shown as "Information gaps" on S1.
+- P4 done: Purok Sweep (`web/src/storage/sweeps.ts`, `web/src/screens/Sweep.tsx`): station-local sweep records; Seen opens the form prefilled, Not seen (two taps) records a CHECK observation, Couldn't check stays unknown.
+- P5 done: upload states (prepared, attempted, failed, accepted) on S4, plus a one-implementation `Gateway` seam. No third-party integrations.
+- P6 done: `docs/THREAT_MODEL.md`, coarse location in Passport exports by default (`coarsePassport`, "Exact location" opt-in), and "Clear this phone" in Settings.
+- P7 done: the readiness check at S4 → `/station/ready` (offline, storage, name, areas, location, Bluetooth, QR self-test, last upload). The field exercise script is in `docs/FIELD_TEST.md` §10.
+- P8 left by design: only if field data asks for it.
+- **DB migration for existing Supabase projects (P3):** `alter table observations drop constraint observations_type_check, add constraint observations_type_check check (type in ('REPORT','STATUS','CHECK'));`
 
 ### P0: Decisions and scaffolding
 - Confirm or change D-035 to D-040, and record them.

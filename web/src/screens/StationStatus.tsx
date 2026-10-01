@@ -13,10 +13,10 @@ import { Button, CountWidget, ModeBand, Notice, TabBar } from "../components/kit
 import { clock } from "../design/format";
 import { useT } from "../design/i18n";
 import { useOnline } from "../hooks";
-import { navigate } from "../router";
+import { Link, navigate } from "../router";
 import { observations, storeCapacity } from "../storage/observations";
 import { disableStation, expectedAreas, saveExpectedAreas, station } from "../storage/station";
-import { isConfigured, lastUpload, uploadPending } from "../storage/uplink";
+import { isConfigured, lastUpload, uploadPending, uploadState } from "../storage/uplink";
 
 type UploadState = { kind: "idle" } | { kind: "busy" } | { kind: "done"; n: number } | { kind: "failed"; detail: string };
 
@@ -27,6 +27,7 @@ export function StationStatus() {
   const uploadedAt = lastUpload.use();
   const expected = expectedAreas.use();
   const online = useOnline();
+  const upState = uploadState.use();
   const [upload, setUpload] = useState<UploadState>({ kind: "idle" });
   const [area, setArea] = useState("");
   const [areaNote, setAreaNote] = useState<string | null>(null);
@@ -105,6 +106,17 @@ export function StationStatus() {
             ) : null}
           </>
         )}
+      </div>
+
+      {upState.phase !== "idle" ? (
+        <p className="pad body" role="status" style={{ paddingTop: 12 }}>
+          {t(`up.${upState.phase}`, { n: upState.count, time: upState.at ? clock(upState.at) : "" })}
+        </p>
+      ) : null}
+      <div className="pad" style={{ paddingTop: 16 }}>
+        <Link to="/station/ready" className="body">
+          {t("ready.title")}
+        </Link>
       </div>
 
       <section className="pad stack gap3" style={{ paddingTop: 32 }}>

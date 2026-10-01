@@ -13,7 +13,12 @@ export type Category =
   | "SHELTER"
   | "SAFE_CHECKIN";
 
-export type ObservationType = "REPORT" | "STATUS";
+/**
+ * CHECK (D-037): "this area was checked for this category at this time, and
+ * it was not seen". Recorded by a Purok Sweep. Never forms an incident,
+ * never scores, never means "safe": it only says somebody went and looked.
+ */
+export type ObservationType = "REPORT" | "STATUS" | "CHECK";
 
 /** BR-007. */
 export type StatusAction = "ACK" | "RESOLVE";

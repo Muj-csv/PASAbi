@@ -189,3 +189,20 @@ export const COVERAGE_STALE_SECONDS = 3 * 60 * 60;
 
 /** Expected areas (puroks) a station can list; a small cap keeps it a list. */
 export const EXPECTED_AREAS_MAX = 50;
+
+// ---------------------------------------------------------------- Purok Sweep (spec §4.4, D-037)
+
+/**
+ * What a sweep asks about, in order. Extend by adding a category here; the
+ * sweep screen and its records follow. SAFE_CHECKIN is recorded as a
+ * check-in when seen, and never as a CHECK ("nobody checked in" is not news).
+ */
+export const SWEEP_CATEGORIES: readonly Category[] = [
+  "FLOOD",
+  "TRAPPED",
+  "MEDICAL",
+  "ROAD_BLOCKED",
+  "WATER_FOOD",
+  "SHELTER",
+  "SAFE_CHECKIN",
+];

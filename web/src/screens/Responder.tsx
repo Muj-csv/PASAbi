@@ -26,6 +26,7 @@ import { nowSeconds } from "../storage/observations";
 import { fetchObservations, isConfigured } from "../storage/uplink";
 
 import { IncidentDetail } from "./Incident";
+import { PassportView } from "./Passport";
 import { CoverageSection, LedgerHeader, LedgerList } from "./Ledger";
 
 const LAST_VISIT_KEY = "responder.lastVisit.v1";
@@ -169,4 +170,13 @@ export function ResponderIncident({ incidentKey }: { incidentKey: string }) {
     if (!loaded && isConfigured()) void load();
   }, [loaded]);
   return <IncidentDetail incidentKey={incidentKey} held={loaded?.observations ?? []} now={now} readOnly />;
+}
+
+export function ResponderPassport({ incidentKey }: { incidentKey: string }) {
+  const loaded = data.use();
+  const now = useNow();
+  useEffect(() => {
+    if (!loaded && isConfigured()) void load();
+  }, [loaded]);
+  return <PassportView incidentKey={incidentKey} held={loaded?.observations ?? []} now={now} responder />;
 }

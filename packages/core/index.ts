@@ -15,3 +15,5 @@ export * from "./qr";
 export * from "./Propagation";
 export * from "./Gaps";
 export * from "./Coverage";
+export * from "./Passport";
+export * from "./AreaGaps";

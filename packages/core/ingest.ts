@@ -75,7 +75,10 @@ export function isObservation(value: unknown): value is Observation {
   const o = value as Record<string, unknown>;
   return (
     isUuid(o.id) &&
-    (o.type === "REPORT" || o.type === "STATUS") &&
+    (o.type === "REPORT" || o.type === "STATUS" || o.type === "CHECK") &&
+    // A CHECK means nothing without what was checked and where (D-037).
+    (o.type !== "CHECK" ||
+      (CATEGORIES.includes(o.category as Category) && typeof o.area_text === "string" && o.area_text.trim().length > 0)) &&
     Number.isInteger(o.created_at) &&
     typeof o.device_id === "string" &&
     o.device_id.length > 0 &&

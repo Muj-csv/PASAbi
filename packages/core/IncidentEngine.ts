@@ -391,6 +391,8 @@ export function compute(observations: Observation[], now: number): Incident[] {
       statuses.push(o);
       continue;
     }
+    // D-037: a sweep's "checked, not seen" never forms or feeds an incident.
+    if (o.type === "CHECK") continue;
     // BR-006: check-ins never form incidents.
     if (!o.category || o.category === SAFE_CHECKIN) continue;
     reports.push(o);
