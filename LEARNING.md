@@ -1,6 +1,6 @@
 # Learning log
 
-Devlog for FirstCommit. One entry per build phase.
+Devlog for the Global Innovation Build Challenge V2. One entry per build phase.
 
 ## Phase 0 — Foundation (2026-09-25)
 

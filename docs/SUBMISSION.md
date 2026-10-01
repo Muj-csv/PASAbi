@@ -1,9 +1,9 @@
 # Pasabi: Submission
 
-Everything needed to submit to Beginner's Paradise: FirstCommit, in one file,
+Everything needed to submit to the Global Innovation Build Challenge V2, in one file,
 so nothing is discovered missing at 2am.
 
-**Target:** submitted by **Sept 30, 22:00 PHT**. Hard deadline Oct 1, 05:00 PHT.
+**Target:** _the challenge deadline: fill in from the GIBC V2 rules._
 
 ---
 
@@ -13,16 +13,16 @@ so nothing is discovered missing at 2am.
 |---|---|---|
 | Working project | Engine, capture, sync protocol, station board, uplink, dashboard — green in CI | |
 | Public GitHub repo with README and setup steps | Repo public? _____ | |
-| Project description (Devpost) | Draft in §3 | |
+| Project description | Draft in §3 | |
 | 3–5 minute video | Script in §4 | |
 | `LEARNING.md` devlog | Written per phase | |
 
 **Still blank in the README, and each needs a human:**
 - [ ] Dashboard / preview URL (needs Vercel connected)
 - [x] Team names beyond the lead (README, 2026-09-27) — Mark Jemiel Guevarra's GitHub still missing
-- [ ] **Team size: 7 named, FirstCommit allows 6.** Decide who is listed on Devpost before submitting, and make the README match
-- [ ] Age eligibility (13–21): six confirmed; Mark's pending. Three members are 20–21; the rules don't say whether 21 is inclusive, so ask the organisers if unsure
-- [ ] Keep emails and birthdates out of the repo — Devpost collects those directly
+- [ ] **Team size: 7 named.** Check the GIBC V2 team-size limit, and make the README match who is entered
+- [ ] Eligibility: check every member against the GIBC V2 rules
+- [ ] Keep emails and birthdates out of the repo; the submission form collects those directly
 - [ ] Licence — *pick one before submitting*. "To be decided" on a public repo means nobody may legally use it.
 - [ ] Remove the "Draft README" notice once the above are filled
 
@@ -35,8 +35,8 @@ so nothing is discovered missing at 2am.
 ## 2. The honest-limits block
 
 Use this wording, or something equally plain, in the README, the video and
-the Devpost entry. A clearly stated limitation reads better than a staged
-demo, and *Learning & Growth* is weighted at 30%.
+the submission. A clearly stated limitation reads better than a staged
+demo.
 
 > Pasabi's mesh does not span platforms: iOS devices sync with iOS devices
 > and Android with Android, because Multipeer Connectivity and Nearby
@@ -56,7 +56,7 @@ If the field test did not happen, add:
 
 ---
 
-## 3. Devpost description (draft)
+## 3. Project description (draft)
 
 ### Inspiration
 

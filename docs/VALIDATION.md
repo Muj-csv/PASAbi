@@ -10,6 +10,8 @@ This is a validation of a project that is already largely built, so the question
 
 ## Event constraints (checked on Devpost, 2026-09-27)
 
+> **Correction (2026-10-01, D-042):** these are the rules of Beginner's Paradise: FirstCommit, checked by mistake. PASAbi is entered in the **Global Innovation Build Challenge V2**. Re-check deadline, judging, required items and eligibility against its rules; nothing below applies as written.
+
 - **Deadline:** Sept 30, 2026, 5:00 pm EDT = **Oct 1, 05:00 PHT**. Team target: Sept 30, 22:00 PHT.
 - **Judging:** Learning & Growth **30 %** · Creativity & Impact 25 % · Technical Execution 25 % · Presentation & Communication 20 %.
 - **Required:** functional project started during the hackathon · public GitHub repo · project description · 3–5 min demo video · README with setup instructions for judges. Live hosting recommended, not required.

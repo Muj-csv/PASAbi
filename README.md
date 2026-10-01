@@ -9,11 +9,11 @@
 
 ![Status](https://img.shields.io/badge/status-in%20development-orange)
 ![Platform](https://img.shields.io/badge/platform-iOS%2015%2B%20%C2%B7%20Android%2010%2B-black)
-![Hackathon](https://img.shields.io/badge/FirstCommit-2026-blue)
+![Challenge](https://img.shields.io/badge/Global_Innovation_Build_Challenge-V2-blue)
 
 </div>
 
-> **Draft README.** Pasabi is being built during the Beginner's Paradise: FirstCommit hackathon (Sept 2026). Features marked *planned* aren't finished yet, and this document will change as the project does.
+> **Draft README.** Pasabi is being built for the **Global Innovation Build Challenge V2** (2026). Features marked *planned* aren't finished yet, and this document will change as the project does.
 
 ---
 
@@ -174,7 +174,7 @@ What Pasabi adds is grouping and corroborating reports **on the devices, offline
 
 ## Roadmap
 
-- [ ] MVP for FirstCommit (see [implementation plan](docs/IMPLEMENTATION_PLAN.md))
+- [ ] MVP for the Global Innovation Build Challenge V2 (see [implementation plan](docs/IMPLEMENTATION_PLAN.md))
 - [ ] Field test with a real barangay disaster-response team
 - [ ] Android background carry service
 - [ ] SMS / satellite uplink for phones with satellite messaging
@@ -199,4 +199,4 @@ _To be decided before submission._
 
 ## Acknowledgments
 
-Built for **Beginner's Paradise: FirstCommit 2026**.
+Built for the **Global Innovation Build Challenge V2**.

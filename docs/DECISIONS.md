@@ -53,6 +53,7 @@ The full text of each decision is in `docs/IMPLEMENTATION_PWA.md` §1. Summary:
 | D-039 | **The Passport's propagation history is what this phone can prove** (its own flags, received time, receipts). The full relay chain is deferred (wire change) | **Accepted** (team, 2026-10-01) | Spec §3.2 |
 | D-040 | **Passport PDF = the browser's print view.** Works offline, no PDF library | **Accepted** (team, 2026-10-01) | Spec §3.4 |
 | D-041 | **QR only: Bluetooth removed.** A web app can't use Bluetooth between phones, and the team won't run a native build. The Capacitor wrapper, the iOS Multipeer plugin, the radar, Ping nearby and the Bluetooth part of the startup ask are deleted. The startup ask keeps location. `Transport` (ADR-007) stays for the mock and tests. Supersedes D-033 and D-034 | **Accepted** (team, 2026-10-01) | Pass on, Receive, startup, readiness |
+| D-042 | **The event is the Global Innovation Build Challenge V2, not Beginner's Paradise: FirstCommit.** FirstCommit's rules (6 per team, ages 13–21, Devpost, the Sept 30 deadline, its judging weights) don't carry over; the GIBC V2 rules are checked instead. Phase docs that say "FirstCommit" are kept as history | **Accepted** (team, 2026-10-01) | README, SUBMISSION, PRD, D-009 |
 | D-032 | The name stays **PASAbi**. The source plan's AgapAI-only parts (voice API routes, region packs, jurisdiction) are not ported | **Accepted** (2026-09-29) | Scope |
 
 ## Package R (applied 2026-09-25)
