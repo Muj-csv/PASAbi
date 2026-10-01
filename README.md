@@ -21,7 +21,7 @@
 
 When a typhoon knocks out power, cell towers go dark with it. For days, sometimes weeks, a barangay's disaster-response team only knows what people walk in and tell them, usually as a pile of duplicate, scattered reports.
 
-Pasabi turns the phones already in the community into the network. Residents and volunteers record short, structured **observations** ("flood water entering the road", "3 households need water"). Phones pass those observations to each other over Bluetooth and Wi-Fi whenever they come near one another, with no signal or internet needed. Every phone groups related observations into **incidents**, counts how many independent people reported each one, and ranks them with a transparent urgency score.
+Pasabi turns the phones already in the community into the network. Residents and volunteers record short, structured **observations** ("flood water entering the road", "3 households need water"). Phones pass those observations to each other by QR code, one phone's screen to the other's camera, with no signal or internet needed. Every phone groups related observations into **incidents**, counts how many independent people reported each one, and ranks them with a transparent urgency score.
 
 At the barangay hall or evacuation centre, a **station** device shows the whole picture on a situation board. When any device reaches the internet, everything uploads and responders see the same picture, including **what changed since the last sync**.
 
@@ -35,7 +35,7 @@ At the barangay hall or evacuation centre, a **station** device shows the whole 
 | Phone-to-phone exchange by QR code: paged, most urgent first, with a receipt (works in airplane mode, any two phones with cameras) | Built; not yet tested on iPhones |
 | Installable offline app: add to the iPhone Home Screen, opens and saves with no signal (PWA rewrite, React + Vite, in `web/`) | Built (W1–W4): every resident and station screen from the design package, offline shell and IndexedDB store; not yet tested on iPhones |
 | AI-drafted report from voice or text, always confirmed by the person; the form still works offline without it | Planned (W6, stretch) |
-| Phone-to-phone exchange over Bluetooth / Wi-Fi: a radar of nearby phones and one **Ping nearby** tap to pass to all of them, under the QR on Pass on (native iPhone app, Multipeer) | Built, not yet run on a device: needs an Apple Developer account for the native build (`native/README.md`). The web app shows the section but says Bluetooth needs the app |
+| Phone-to-phone exchange over Bluetooth | Removed (2026-10-01, D-041): a web app can't use Bluetooth between phones, so QR is the only path |
 | On-device incident engine: grouping, corroboration, urgency with explanation | Done |
 | Station mode: situation board, acknowledge / resolve, "what changed" | Done |
 | Honest status for the reporter: saved on this phone → passed to another phone → reached a station → uploaded, and never "responders received it" | Done (set by QR receipts; radio sync hook ready for later) |
@@ -48,7 +48,7 @@ At the barangay hall or evacuation centre, a **station** device shows the whole 
 | Upload states said exactly: prepared → attempted → failed or accepted by the server, never "responders notified" | Done (P5) |
 | Privacy: coarse location in exports by default, "Clear this phone", threat model (`docs/THREAT_MODEL.md`) | Done (P6) |
 | Readiness check for a station before a disaster (offline, storage, areas, permissions, QR self-test) | Done (P7) |
-| Field-test log: every phone times its own QR and Bluetooth transfers (finished or not) and exports them as JSON, for measuring reliability and speed on real devices | Done (P1); the field runs themselves still to do |
+| Field-test log: every phone times its own QR transfers (finished or not) and exports them as JSON, for measuring reliability and speed on real devices | Done (P1); the field runs themselves still to do |
 | Upload to the cloud when a device has internet | Done (manual trigger; automatic on network change is later) |
 | Responder web dashboard (ranked list, category filter, since-last-sync) | Done (map deferred) |
 | Signed observations (tamper resistance) | Planned, supporting |
@@ -60,7 +60,7 @@ At the barangay hall or evacuation centre, a **station** device shows the whole 
 ```mermaid
 flowchart LR
   subgraph Barangay["Barangay: no cell service"]
-    R1((Resident)) <-- Bluetooth / Wi-Fi --> V((Volunteer))
+    R1((Resident)) <-- QR code --> V((Volunteer))
     V <--> S1[(Station: barangay hall)]
     R2((Resident)) <--> S2[(Station: evacuation centre)]
   end
@@ -81,7 +81,7 @@ Ranking uses fixed, documented rules (category, number of independent reporters,
 | Layer | Technology |
 |---|---|
 | App | TypeScript, React Native (Expo), Expo Router, React Native Web |
-| Offline transport | Multipeer Connectivity (iOS), Google Nearby Connections (Android) |
+| Offline transport | QR codes, screen to camera (no radio) |
 | Local store | AsyncStorage |
 | Cloud | Supabase (Postgres + row-level security) |
 | Dashboard | The same app's web build, running the same incident engine |

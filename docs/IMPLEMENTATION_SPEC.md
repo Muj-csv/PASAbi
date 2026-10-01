@@ -18,7 +18,7 @@
 | Freshness, stale warnings (§8) | `Evidence.ts` (fresh / aging / old), "May have changed." | none |
 | Known / not yet reported near an incident (§5) | `Gaps.ts` | Per incident only; no per-area gap with reasons |
 | Coverage per area, "no report ≠ safe" (§4.2, §5) | `Coverage.ts` (none / stale / limited / high), expected areas, fixed caveats | No stated reasons; no "single source" or "unresolved uncertainty" signal |
-| Transport abstraction (§10) | `Transport` (ADR-007): QR (live), Multipeer (written, untested) | Real-device validation (P1) |
+| Transport abstraction (§10) | `Transport` (ADR-007): QR, the only phone-to-phone path (Bluetooth removed, D-041) | Real-device validation (P1) |
 | Local persistence, retention, deletion (§12) | IndexedDB store, `StorePolicy` (72 h TTL), own-report delete | No encryption at rest; no retention policy doc |
 | Recovery without claiming delivery (§14) | Supabase upsert, honest stamps (BR-015) | The four states (prepared / attempted / failed / confirmed) are not all shown |
 | AI only as confirmed input help (§9) | ADR-010 (not built) | none |
@@ -61,8 +61,9 @@ Rules for every phase (from `CLAUDE.md` and spec §19):
 - P4 done: Purok Sweep (`web/src/storage/sweeps.ts`, `web/src/screens/Sweep.tsx`): station-local sweep records; Seen opens the form prefilled, Not seen (two taps) records a CHECK observation, Couldn't check stays unknown.
 - P5 done: upload states (prepared, attempted, failed, accepted) on S4, plus a one-implementation `Gateway` seam. No third-party integrations.
 - P6 done: `docs/THREAT_MODEL.md`, coarse location in Passport exports by default (`coarsePassport`, "Exact location" opt-in), and "Clear this phone" in Settings.
-- P7 done: the readiness check at S4 → `/station/ready` (offline, storage, name, areas, location, Bluetooth, QR self-test, last upload). The field exercise script is in `docs/FIELD_TEST.md` §10.
+- P7 done: the readiness check at S4 → `/station/ready` (offline, storage, name, areas, location, QR self-test, last upload). The field exercise script is in `docs/FIELD_TEST.md` §10.
 - P8 left by design: only if field data asks for it.
+- **Bluetooth removed (D-041, 2026-10-01).** QR is the only phone-to-phone path; the native wrapper and its plugin are gone.
 - **DB migration for existing Supabase projects (P3):** `alter table observations drop constraint observations_type_check, add constraint observations_type_check check (type in ('REPORT','STATUS','CHECK'));`
 
 ### P0: Decisions and scaffolding
@@ -74,8 +75,8 @@ Rules for every phase (from `CLAUDE.md` and spec §19):
 
 ### P1: Real-device transport validation (spec §10, Phase E; priority #1)
 Mostly human work. The software part is making it measurable.
-1. **Transfer log:** a local, station-only record of each exchange: transport (QR / Bluetooth), start and end times, frames or payloads, observations sent and received, and whether it completed. It is exportable as JSON from S4 and never synced.
-2. **Run the protocol** in `docs/FIELD_TEST.md` on real iPhones, over QR now and Multipeer once the native build exists. Cover:
+1. **Transfer log:** a local, station-only record of each exchange: transport (QR send / receive), start and end times, frames or payloads, observations sent and received, and whether it completed. It is exportable as JSON from S4 and never synced.
+2. **Run the protocol** in `docs/FIELD_TEST.md` on real iPhones, over QR. Cover:
    - interrupted and partial transfers
    - duplicates
    - three or more phones relaying
@@ -147,7 +148,7 @@ Mostly human work. The software part is making it measurable.
       - **Not seen**: a CHECK observation, after a confirm step (§4.3 "Confirm observations")
       - **Couldn't check**: stays unknown
    3. **Complete**: the engine rebuilds incidents, gaps are recalculated, and the sweep shows what's still unknown.
-   4. Works fully offline, and the findings pass on by QR or Bluetooth like any observation.
+   4. Works fully offline, and the findings pass on by QR like any observation.
 4. **UI:** Sweeps sit on the station tab "Station" (S4), plus a **Sweeps in progress** line on the Ledger (§15.1). New components go into DESIGN_BRIEF §12 first.
 
 **Acceptance:** all Purok Sweep criteria in spec §18.
@@ -162,7 +163,7 @@ Mostly human work. The software part is making it measurable.
 ### P6: Security and privacy (spec §12, Phase F; priority #4)
 1. **`docs/THREAT_MODEL.md`** covers:
    - lost or stolen phone
-   - malicious QR or Bluetooth injection
+   - malicious QR injection
    - replay
    - a fake station
    - location leaks in exports
@@ -182,7 +183,6 @@ Mostly human work. The software part is making it measurable.
    - storage kept
    - camera
    - location
-   - Bluetooth
    - a loop-back QR test (show and read on the same device, where possible)
    - the last upload
 3. **Field validation** follows spec Phase G: a simulated disconnected disaster, real devices and minimally trained operators. Measure propagation, reliability, friction, battery, comprehension and gap detection. **Record field problems before adding features.**
@@ -193,7 +193,6 @@ Mostly human work. The software part is making it measurable.
 - **Clustering improvements (§6.2):** category thresholds, a maximum incident radius, cluster confidence, spatial-extent warnings. Each must stay deterministic, explainable and covered by vectors.
 - AI-assisted input (W6, ADR-010).
 - Retire the Expo app (W5).
-- The Android Nearby plugin (D-034).
 
 ---
 

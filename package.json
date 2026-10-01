@@ -17,7 +17,6 @@
     "check:design": "node docs/design/code/scripts/check-design.mjs web/src"
   },
   "dependencies": {
-    "@capacitor/core": "^8.5.2",
     "@expo-google-fonts/doto": "^0.4.1",
     "@fontsource/doto": "^5.3.0",
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -51,8 +50,6 @@
     "workbox-window": "^7.4.1"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.5.2",
-    "@capacitor/ios": "^8.5.2",
     "@types/node": "^26.6.2",
     "@types/qrcode": "^1.5.6",
     "@types/react": "~19.2.2",

@@ -957,32 +957,6 @@ dialog.confirm::backdrop {
     linear-gradient(var(--c), var(--c)) bottom right / 4px 28px;
   background-repeat: no-repeat;
 }
-/* NearbyRadar (D-033): rings are ruling, phones in range are ballpen
-   (information), this phone is ink. Static: no sweep, no pulse (§8). */
-.radar {
-  width: 100%;
-  max-width: 280px;
-  aspect-ratio: 1;
-  display: block;
-}
-.radar .ring {
-  fill: none;
-  stroke: var(--rule);
-  stroke-width: 2;
-}
-.radar .me {
-  fill: var(--ink);
-}
-.radar .peer {
-  fill: var(--ballpen);
-}
-.radar.off .ring {
-  stroke-dasharray: 4 6;
-}
-.radar.off .me {
-  fill: var(--ink3);
-}
-
 .progress {
   height: 8px;
   border-radius: var(--r-stamp);

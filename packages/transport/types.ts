@@ -1,5 +1,5 @@
-// ADR-007: one interface, three implementations. multipeer (iOS), nearby
-// (Android), mock (web and tests). Nothing above this line knows which.
+// ADR-007: one interface. Today only the mock (tests, /sim) implements it;
+// phone to phone in the PWA is QR (ADR-008, D-041). Nothing above this line knows which.
 //
 // Pure TypeScript. The platform adapters live in their own files and are the
 // only place a native module is allowed to appear.

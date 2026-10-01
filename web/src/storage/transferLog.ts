@@ -1,19 +1,18 @@
 // P1 (spec §10): measure real transfers instead of guessing. Every QR send
-// and receive, Bluetooth ping and Bluetooth batch received is logged on the
-// phone that did it. Local only: never synced, never uploaded; exported by
+// and receive is logged on the phone that did it. Local only: never synced, never uploaded; exported by
 // hand (copy / download) for docs/FIELD_TEST.md. Times are epoch ms.
 
 import { uuid4 } from "./device";
 import { kvGet, kvSet, live } from "./kv";
 
-export type TransferKind = "qr-send" | "qr-receive" | "bt-ping" | "bt-receive";
+export type TransferKind = "qr-send" | "qr-receive";
 
 export interface TransferEntry {
   id: string;
   kind: TransferKind;
   startedAt: number;
   endedAt: number;
-  /** Finished as intended: receipt scanned, bundle complete, a peer reached. */
+  /** Finished as intended: receipt scanned, or bundle complete. */
   completed: boolean;
   /** Observations sent / received / new to this phone. */
   sent: number;
@@ -22,9 +21,6 @@ export interface TransferEntry {
   /** QR: frames in the bundle, and frames caught before giving up. */
   frames?: number;
   framesSeen?: number;
-  /** Bluetooth ping: phones in range, and phones that finished. */
-  peers?: number;
-  peersReached?: number;
 }
 
 const KEY = "transfers.v1";
@@ -37,7 +33,7 @@ let queue: Promise<unknown> = Promise.resolve();
 
 export async function restoreTransferLog(): Promise<void> {
   const stored = await kvGet<TransferEntry[]>(KEY);
-  transferLog.set(Array.isArray(stored) ? stored : []);
+  transferLog.set(Array.isArray(stored) ? stored.filter((e) => e.kind === "qr-send" || e.kind === "qr-receive") : []);
 }
 
 /** Appends one entry. Never throws into the transfer it measures. */
@@ -78,7 +74,7 @@ export function summarize(entries: TransferEntry[]): KindSummary & { byKind: Par
     medianMs: median(list.filter((e) => e.completed).map((e) => e.endedAt - e.startedAt)),
   });
   const byKind: Partial<Record<TransferKind, KindSummary>> = {};
-  for (const kind of ["qr-send", "qr-receive", "bt-ping", "bt-receive"] as const) {
+  for (const kind of ["qr-send", "qr-receive"] as const) {
     const list = entries.filter((e) => e.kind === kind);
     if (list.length > 0) byKind[kind] = one(list);
   }

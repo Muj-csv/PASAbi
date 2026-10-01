@@ -31,25 +31,24 @@ describe("transfer log", () => {
       entry("qr-send", 30000, true),
       entry("qr-send", 50000, true),
       entry("qr-send", 90000, false), // gave up: counts against reliability, not time
-      entry("bt-ping", 4000, true),
+      entry("qr-receive", 4000, true),
     ].map((e, i) => ({ ...e, id: String(i) }));
     const s = summarize(list);
     expect(s.total).toBe(4);
     expect(s.completed).toBe(3);
     expect(s.byKind["qr-send"]).toEqual({ total: 3, completed: 2, medianMs: 40000 });
-    expect(s.byKind["bt-ping"]).toEqual({ total: 1, completed: 1, medianMs: 4000 });
-    expect(s.byKind["qr-receive"]).toBeUndefined();
+    expect(s.byKind["qr-receive"]).toEqual({ total: 1, completed: 1, medianMs: 4000 });
     expect(summarize([]).medianMs).toBeNull();
   });
 
   it("persists on this phone and survives a restart, then clears", async () => {
     await clearTransferLog();
     await logTransfer(entry("qr-receive", 20000, true));
-    await logTransfer(entry("bt-receive", 0, true));
+    await logTransfer(entry("qr-send", 0, true));
     expect((await kvGet<TransferEntry[]>("transfers.v1"))?.length).toBe(2);
     transferLog.set([]); // simulate a restart
     await restoreTransferLog();
-    expect(transferLog.get().map((e) => e.kind)).toEqual(["qr-receive", "bt-receive"]);
+    expect(transferLog.get().map((e) => e.kind)).toEqual(["qr-receive", "qr-send"]);
     await clearTransferLog();
     expect(await kvGet<TransferEntry[]>("transfers.v1")).toEqual([]);
   });

@@ -31,8 +31,6 @@ packages/transport/    Transport interface + mock (tests, /sim)
 web/                   the Vite PWA: src/design (tokens, copy, pictograms), src/components,
                        src/screens (one per screen ID in SCREENS.md), src/storage (IndexedDB)
 api/                   Vercel server functions (AI draft only, W6)
-native/                Capacitor wrapper pieces (D-033): the iOS Multipeer plugin + setup.
-                       Transport adapter: packages/transport/multipeer.ts
 src/                   legacy Expo app, deleted in W5; don't extend it
 assets/images/         app icon, splash, favicon
 db/                    schema.sql, rls.sql
@@ -52,7 +50,7 @@ Cross-package imports use the `@pasabi/core` and `@pasabi/transport` aliases (ts
 - PWA dev/build scripts are added in W1 (see `docs/IMPLEMENTATION_PWA.md`). Until W5, `npm run build:web` still builds the Expo web app.
 
 ## Out of scope
-Chat · AI anywhere outside the ADR-010 report draft · photos · custom BLE stack · Bluetooth/Wi-Fi radio in the browser build (impossible there; only the Capacitor native app has it, via Multipeer, D-033) · accounts · offline map tiles · SMS codec (later).
+Chat · AI anywhere outside the ADR-010 report draft · photos · custom BLE stack · Bluetooth/Wi-Fi phone-to-phone (a browser can't do it; the native wrapper was removed, D-041) · accounts · offline map tiles · SMS codec (later).
 
 ## Keeping docs current
 `README.md` is a living draft. When a feature lands or changes, update its row in the README Features table (Planned → Done) in the same change.
