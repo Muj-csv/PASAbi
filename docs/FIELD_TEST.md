@@ -268,3 +268,24 @@ Every phone now keeps a **field-test log** of its own transfers. It covers each 
 | Coverage | Were silent puroks shown as gaps? | |
 | Comprehension | Could an operator say what, where and how fresh within 30 s? | |
 | Recovery | Did the upload after reconnecting show the right states? | |
+
+## 10. P7: field exercise script (spec Phase G, 2026-10-01)
+
+Run this before a real disaster, with one station phone and 2–3 resident phones, in airplane mode.
+1. **Readiness:** on the station, open Station → Readiness check. Sort out every dashed row, or write down why it's left.
+2. **Expected areas:** add the puroks. The ledger's "Information gaps" should list each one as "No observations received".
+3. **Reports:** residents file 5–10 scripted reports in two puroks and pass them to the station by QR.
+4. **Sweep:** on the station, start a sweep for a purok with no reports. Mark one category Not seen, one Seen (file the report), and the rest Couldn't check. Complete. The gaps must now show "Not seen when checked: …" and no gap may read as "safe".
+5. **Passport:** open one incident's Passport. Export JSON with Exact location off, then check that lat/lon have 3 decimals. Pass it by QR to another phone and check that it rebuilds the same incident.
+6. **Recovery:** turn airplane mode off on the station and upload. Record the state line seen (prepared → attempted → accepted, or failed).
+7. **Clear:** on a test resident phone, Settings → Clear this phone (two taps). It must reopen empty.
+
+| Step | Pass? | Notes |
+|---|---|---|
+| 1 Readiness | | |
+| 2 Expected areas | | |
+| 3 Reports | | |
+| 4 Sweep | | |
+| 5 Passport | | |
+| 6 Recovery | | |
+| 7 Clear | | |

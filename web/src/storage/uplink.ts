@@ -51,6 +51,25 @@ async function supabase(): Promise<SupabaseClient | null> {
   return client;
 }
 
+/**
+ * P5 (spec §13): where uploads go. One implementation today (Supabase); an
+ * LGU system can be another later, with no screen changes. No third-party
+ * integrations are built.
+ */
+export interface Gateway {
+  name: string;
+  configured(): boolean;
+}
+
+export const gateway: Gateway = { name: "supabase", configured: isConfigured };
+
+/**
+ * Spec §14: say exactly how far an upload got. "accepted" = the server
+ * acknowledged the write. Never "responders notified" (BR-017).
+ */
+export type UploadPhase = "idle" | "prepared" | "attempted" | "failed" | "accepted";
+export const uploadState = live<{ phase: UploadPhase; count: number; at: number | null }>({ phase: "idle", count: 0, at: null });
+
 export interface UploadResult {
   uploaded: number;
   pending: number;
@@ -65,16 +84,22 @@ export async function uploadPending(): Promise<UploadResult> {
   const db = await supabase();
   const pending = observations.get().filter((o) => o.uploaded !== true);
   if (db === null) return { uploaded: 0, pending: pending.length, error: "not-configured" };
+  uploadState.set({ phase: "prepared", count: pending.length, at: nowSeconds() });
 
   let uploaded = 0;
   for (let i = 0; i < pending.length; i += CHUNK) {
     const batch: Observation[] = pending.slice(i, i + CHUNK);
+    uploadState.set({ phase: "attempted", count: batch.length, at: nowSeconds() });
     const { error } = await db.from(TABLE).upsert(batch.map(toServerRow), { onConflict: "id" });
-    if (error) return { uploaded, pending: pending.length - uploaded, error: error.message };
+    if (error) {
+      uploadState.set({ phase: "failed", count: pending.length - uploaded, at: nowSeconds() });
+      return { uploaded, pending: pending.length - uploaded, error: error.message };
+    }
     await markUploaded(batch.map((o) => o.id));
     uploaded += batch.length;
   }
   const at = nowSeconds();
+  uploadState.set({ phase: "accepted", count: uploaded, at });
   await kvSet(LAST_UPLOAD_KEY, at);
   lastUpload.set(at);
   return { uploaded, pending: 0, error: null };

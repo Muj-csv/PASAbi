@@ -6,14 +6,25 @@
  */
 import { useMemo } from "react";
 
-import { changesSince, coverageByArea, snapshotOf, type Evidence, type Incident } from "@pasabi/core";
+import {
+  areaGaps,
+  changesSince,
+  coverageByArea,
+  snapshotOf,
+  SWEEP_CATEGORIES,
+  type Evidence,
+  type Incident,
+  type Observation,
+} from "@pasabi/core";
 
 import { Button, CoverageRow, ModeBand, TabBar } from "../components/kit";
 import { LedgerRow, rowStamp } from "../components/ledger";
 import { clock } from "../design/format";
 import { useT } from "../design/i18n";
 import { useNow, usePicture } from "../hooks";
+import { Link, navigate } from "../router";
 import { observations } from "../storage/observations";
+import { startSweep, sweeps } from "../storage/sweeps";
 import { expectedAreas, saveSnapshot, snapshot } from "../storage/station";
 
 export function Ledger() {
@@ -41,6 +52,7 @@ export function Ledger() {
         onMarkSeen={() => void saveSnapshot(snapshotOf(incidents, now))}
       />
       <LedgerList incidents={incidents} evidence={evidence} changes={changes} base="/station/incident/" />
+      <GapsSection held={held} now={now} expected={expected} />
       <CoverageSection coverage={coverage} />
       <div style={{ height: 24 }} />
       <TabBar />
@@ -134,6 +146,60 @@ export function CoverageSection({ coverage }: { coverage: ReturnType<typeof cove
       {coverage.map((c) => (
         <CoverageRow key={c.area ?? "unnamed"} c={c} />
       ))}
+    </>
+  );
+}
+
+/**
+ * P3/P4: areas where the picture is incomplete, each with its reasons in
+ * words (D-038), and a sweep to go and look. A gap is never "safe" and
+ * never "unsafe": it is "we don't know enough yet".
+ */
+export function GapsSection({ held, now, expected }: { held: Observation[]; now: number; expected: string[] }) {
+  const t = useT();
+  const all = sweeps.use();
+  const gaps = useMemo(() => areaGaps(held, now, expected).filter((g) => g.reasons.length > 0), [held, now, expected]);
+  const open = all.filter((s) => s.completedAt === null);
+  const start = async (area: string) => navigate(`/station/sweep/${await startSweep(area, SWEEP_CATEGORIES, null)}`);
+  return (
+    <>
+      <div className="section">
+        <h2 className="heading">{t("gaps.title")}</h2>
+        {open.length > 0 ? (
+          <p className="caption">
+            {t("sweep.inProgress")}:{" "}
+            {open.map((s, i) => (
+              <span key={s.sweepId}>
+                {i > 0 ? " · " : ""}
+                <Link to={`/station/sweep/${s.sweepId}`}>{s.targetArea}</Link>
+              </span>
+            ))}
+          </p>
+        ) : null}
+      </div>
+      {gaps.length === 0 ? (
+        <p className="pad body ink2" style={{ paddingTop: 12, paddingBottom: 12 }}>
+          {t("gaps.none")}
+        </p>
+      ) : (
+        gaps.map((g) => {
+          const name = g.label ?? g.area ?? t("cov.unnamed");
+          return (
+            <div key={g.area ?? "unnamed"} className="pad stack gap1 ruled" style={{ paddingTop: 12, paddingBottom: 12 }}>
+              <span className="body strong">{name}</span>
+              <span className="small ink2">{g.reasons.map((r) => t(`gaps.r.${r}`)).join(" · ")}</span>
+              {g.notSeenWhenChecked.length > 0 ? (
+                <span className="caption">{t("gaps.notSeen", { list: g.notSeenWhenChecked.map((c) => t.cat(c)).join(", ") })}</span>
+              ) : null}
+              {g.area !== null ? (
+                <div>
+                  <Button variant="secondary" small label={t("sweep.start")} onClick={() => void start(name)} />
+                </div>
+              ) : null}
+            </div>
+          );
+        })
+      )}
     </>
   );
 }

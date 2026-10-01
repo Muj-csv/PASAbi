@@ -1001,3 +1001,17 @@ dialog.confirm::backdrop {
     animation: none;
   }
 }
+
+/* P2 Passport print view = its PDF (D-040): the document only. */
+@media print {
+  .band,
+  .tabs,
+  .no-print,
+  .pinned,
+  .undo-bar {
+    display: none !important;
+  }
+  #root {
+    max-width: none;
+  }
+}

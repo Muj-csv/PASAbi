@@ -6,7 +6,7 @@
  */
 import { useEffect, useState } from "react";
 
-import { canCreate, type Category } from "@pasabi/core";
+import { CATEGORIES, canCreate, type Category } from "@pasabi/core";
 
 import { Button, Notice, StatusBand } from "../components/kit";
 import { clock, retryAt } from "../design/format";
@@ -15,6 +15,7 @@ import { Pictogram, REPORT_ORDER } from "../design/pictograms";
 import { goBack, navigate } from "../router";
 import { deviceIdSync } from "../storage/device";
 import { createReport, nowSeconds, observations } from "../storage/observations";
+import { recordAnswer } from "../storage/sweeps";
 
 const NOTE_MAX = 140;
 /** FR-001: no fix within 30 s → the purok or landmark becomes required. */
@@ -52,11 +53,17 @@ function useFix(): { state: "finding" | "found" | "none"; fix: Fix | null } {
 export function Report() {
   const t = useT();
   const { state: gps, fix } = useFix();
-  const [step, setStep] = useState(1);
-  const [category, setCategory] = useState<Category | null>(null);
+  // P4: a sweep's "Seen" opens this flow pre-filled and returns to the sweep.
+  const [prefill] = useState(() => {
+    const q = new URLSearchParams(location.search);
+    const c = q.get("category") as Category | null;
+    return { category: c && CATEGORIES.includes(c) ? c : null, area: q.get("area") ?? "", sweep: q.get("sweep") };
+  });
+  const [step, setStep] = useState(prefill.category ? 2 : 1);
+  const [category, setCategory] = useState<Category | null>(prefill.category);
   const [people, setPeople] = useState<number | null>(1);
   const [note, setNote] = useState("");
-  const [area, setArea] = useState("");
+  const [area, setArea] = useState(prefill.area);
   const [busy, setBusy] = useState(false);
   const [limited, setLimited] = useState<number | null>(null);
 
@@ -83,7 +90,12 @@ export function Report() {
         { category, people: people ?? undefined, note, area_text: area, fix },
         me,
       );
-      navigate(`/slip/${id}?new=1`, { replace: true });
+      if (prefill.sweep) {
+        await recordAnswer(prefill.sweep, category, "seen", id);
+        navigate(`/station/sweep/${prefill.sweep}`, { replace: true });
+      } else {
+        navigate(`/slip/${id}?new=1`, { replace: true });
+      }
     } finally {
       setBusy(false);
     }

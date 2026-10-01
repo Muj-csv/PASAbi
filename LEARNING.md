@@ -183,3 +183,17 @@ Devlog for FirstCommit. One entry per build phase.
 - **The spec's #1 priority is proving the transport on real phones, so the software's job was to make that measurable.** Each phone now logs its own transfers: QR send and receive, Bluetooth ping and receive, with timing, completion and frames. It's exported by hand, and a `summarize()` turns it into the spec §10.3 reliability and time numbers. Nothing gets tuned until those numbers exist.
 - **Unfinished transfers are the most useful data point.** Leaving Pass on without a receipt, or Receive part-way, logs a failed attempt with how many frames made it. That is exactly the "interrupted/partial transfer" row the spec asks for.
 - **The logging hooks hit the React Compiler rules straight away:** `useRef(Date.now())` counts as an impure read during render, and reading refs in cleanup triggers warnings. The fixes are `useState(() => Date.now())` and capturing the assembler when the effect runs. The StrictMode double-mount needed the same delayed "left the screen" commit as the Undo bar, or dev runs would log phantom failures.
+
+## P2: Incident Passport (2026-10-01)
+
+- **The Passport is a document about an incident, not the incident.** Its QR carries only the supporting observations, and the receiving phone's own engine rebuilds the incident (D-035). The round-trip test proves that: encode → frames reversed → assemble → ingest → same key, same counts, same timeline. So ADR-002 ("incidents are derived, never transmitted") still holds.
+- **"Local-only fields never leave the device" held by keeping two lists.** `supportingEvidence` is wire-only (`toWire`, asserted field by field in the test). "What this phone knows about where it went" lives in a separate `propagationHistory` for human readers, and never re-enters another phone (D-039).
+- **One word in the spec's own vocabulary trips the design guard.** "Not verified" contains the banned word "verified". The caveat became "Nobody has checked these reports on site.", which says the same thing without the word the brief bans.
+- **PDF is `window.print()` plus `@media print` hiding the band, tabs and buttons** (D-040). It works offline, with no library. An inserted route regex lost its backslashes through a `node -e` string; `tsc` was happy and only the browser check caught it. Always open the new route.
+
+## P3–P7: gaps, sweeps, upload states, privacy, readiness (2026-10-01)
+
+- **"Not seen" had to be an observation, not a station note, or it would never reach another phone.** So D-037 adds a third type, CHECK. It's immutable and goes over the same wire, and the engine skips it in `compute` so a check never becomes an incident. Only `AreaGaps` reads it. It does need a DB constraint migration on existing projects.
+- **Gap reasons stack.** A purok can be both stale and uncertain, and the first test expected one reason. Listing every true fact beats picking a "worst" one, which would be a rating by another name.
+- **The design guard caught the spec's own word again:** an upload phase called "confirmed" became "accepted", which is also more honest. It's the server's acknowledgement, not a person's.
+- **Exports are coarse by default (3 decimals, about 100 m) and drop GPS accuracy.** Exact location is a checkbox someone has to tick. The data on the phone is untouched; only what leaves through Passport is rounded.

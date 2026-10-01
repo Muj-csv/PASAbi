@@ -42,6 +42,12 @@ At the barangay hall or evacuation centre, a **station** device shows the whole 
 | What is known and what is not yet reported nearby, per incident ("Trapped: no report yet", never "no one trapped") on the detail screen and dashboard | Done |
 | Coverage per area on the board and dashboard (high, limited, no recent reports), and expected puroks with no reports shown as "no reports — this does not mean it is safe" | Done |
 | Evidence on every incident: reports vs sources, how fresh it is, a timeline of reports and actions (board, detail, dashboard) | Done |
+| Incident Passport: one incident as a portable document (what, where, evidence, uncertainty, unknowns, timeline) that reads on its own, prints to PDF, exports JSON / CSV / API payload, and shares by QR so another PASAbi phone rebuilds the incident itself | Done (P2) |
+| Information gaps per area: no observations, stale, one phone only, uncertain, and "not seen when checked", on the station ledger | Done (P3) |
+| Purok Sweep: a station checks one area category by category (Seen / Not seen / Couldn't check) and the result feeds the gaps | Done (P4) |
+| Upload states said exactly: prepared → attempted → failed or accepted by the server, never "responders notified" | Done (P5) |
+| Privacy: coarse location in exports by default, "Clear this phone", threat model (`docs/THREAT_MODEL.md`) | Done (P6) |
+| Readiness check for a station before a disaster (offline, storage, areas, permissions, QR self-test) | Done (P7) |
 | Field-test log: every phone times its own QR and Bluetooth transfers (finished or not) and exports them as JSON, for measuring reliability and speed on real devices | Done (P1); the field runs themselves still to do |
 | Upload to the cloud when a device has internet | Done (manual trigger; automatic on network change is later) |
 | Responder web dashboard (ranked list, category filter, since-last-sync) | Done (map deferred) |

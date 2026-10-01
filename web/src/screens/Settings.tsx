@@ -27,6 +27,16 @@ export function Settings() {
   const [pin, setPin] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // P6 (THREAT_MODEL §4): wipe PASAbi from this phone. Two taps; no modal.
+  const [clearArmed, setClearArmed] = useState(false);
+  const clearPhone = () => {
+    if (!clearArmed) {
+      setClearArmed(true);
+      return;
+    }
+    const req = indexedDB.deleteDatabase("pasabi");
+    req.onsuccess = req.onerror = req.onblocked = () => location.replace("/");
+  };
 
   const unlock = async (e: FormEvent) => {
     e.preventDefault();
@@ -133,6 +143,14 @@ export function Settings() {
         </section>
 
         <TransferLogSection />
+
+        <section className="stack gap2">
+          <h2 className="heading">{t("settings.clear")}</h2>
+          <p className="caption ink2">{t("settings.clearHint")}</p>
+          <div>
+            <Button variant="quiet" resident small label={clearArmed ? t("settings.clearConfirm") : t("settings.clear")} onClick={clearPhone} />
+          </div>
+        </section>
 
         <Link to="/responder" className="body">
           {t("settings.responder")}
