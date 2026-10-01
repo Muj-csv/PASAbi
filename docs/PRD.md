@@ -8,7 +8,7 @@
 | Status | Core built; Relay-alignment phases RS, R0–R7 in progress (`docs/IMPLEMENTATION_UPDATE.md`). Validated GO, conditional on the QR spike (`docs/VALIDATION.md`) |
 | Owner | Ian Patrick Flores (team lead) and team — roster in `README.md` |
 | Updated | 2026-09-27 |
-| Event | Beginner's Paradise: FirstCommit. Target **Sept 30, 22:00 PHT**; hard deadline **Oct 1, 05:00 PHT** |
+| Event | Global Innovation Build Challenge V2 (D-042). Deadline: _see the challenge rules_ |
 
 > **The network may disappear. The community's picture of reality should not.**
 
@@ -261,7 +261,7 @@ Coverage — Purok 4: HIGH (4 phones, last report 3 min ago)
 | Live demo fails | Medium | High | `/sim` and a recorded fallback; the honest-limits paragraph in `docs/SUBMISSION.md` |
 | Supabase never tested live | High until done | High | Create the project and run both SQL files before recording |
 
-## 16. Definition of Done (FirstCommit)
+## 16. Definition of Done (GIBC V2)
 
 - QR spike (RS) run and recorded, pass or fallback.
 - Phases R0–R2 complete and green (tests, typecheck, lint, web build); R3–R5 as time allows, cut in the order given in `docs/IMPLEMENTATION_UPDATE.md` §8.
@@ -270,8 +270,8 @@ Coverage — Purok 4: HIGH (4 phones, last report 3 min ago)
 - Web build deployed on Vercel, URL in the README.
 - Public GitHub repo with README, setup steps, a chosen licence and team names; draft banner removed.
 - 3–5 minute video stating the honest limits: iPhone-only this round; runs in Expo Go; transfer by QR scanning (unless R6 landed); iOS carries only while open; corroboration counts phones, not people; thresholds untuned.
-- Devpost description using the Relay framing.
-- `LEARNING.md` updated for every phase (Learning & Growth is weighted 30 %).
+- Project description using the Relay framing.
+- `LEARNING.md` updated for every phase.
 
 ## 17. Related documents
 
@@ -281,7 +281,7 @@ Coverage — Purok 4: HIGH (4 phones, last report 3 min ago)
 - `docs/ARCHITECTURE.md` — engine, sync protocol, platform constraints, ADRs
 - `docs/DECISIONS.md` — D-001 to D-023, ADR-008, Package R
 - `docs/FIELD_TEST.md` — run sheet
-- `docs/SUBMISSION.md` — checklist, Devpost draft, video script
+- `docs/SUBMISSION.md` — checklist, description draft, video script
 
 ## 18. Revision history
 
